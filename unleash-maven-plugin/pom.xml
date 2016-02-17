@@ -25,6 +25,7 @@
 	<properties>
 		<version.aether>1.0.2.v20150114</version.aether>
 		<version.guava>19.0</version.guava>
+		<version.java>1.6</version.java>
 		<version.maven>3.2.1</version.maven>
 		<version.maven-plugin-plugin>3.4</version.maven-plugin-plugin>
 	</properties>
@@ -93,6 +94,18 @@
 	</dependencies>
 
 	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<configuration>
+						<source>${version.java}</source>
+						<target>${version.java}</target>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
