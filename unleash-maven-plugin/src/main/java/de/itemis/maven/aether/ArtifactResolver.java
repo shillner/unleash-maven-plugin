@@ -18,8 +18,7 @@ public final class ArtifactResolver {
 	private ArtifactResolver() {}
 
 	public static Optional<File> resolveArtifact(String groupId, String artifactId, String version,
-		Optional<String> type,
-		Optional<String> classifier, Log log, String updatePolicy) {
+		Optional<String> type, Optional<String> classifier, Optional<String> updatePolicy, Log log) {
 		Optional<File> result;
 
 		RepositorySystem system = AetherBootstrap.newRepositorySystem();
@@ -31,9 +30,9 @@ public final class ArtifactResolver {
 		log.info("ArtifactResolver is using '" + localRepositoryPath + "' as localRepositoryPath");
 
 		DefaultRepositorySystemSession session = AetherBootstrap.newRepositorySystemSession(system, localRepositoryPath);
-		session.setUpdatePolicy(updatePolicy);
+		session.setUpdatePolicy(updatePolicy.orNull());
 		log.debug("Update policy: " + session.getUpdatePolicy());
-		
+
 		Artifact artifact = new DefaultArtifact(groupId, artifactId, classifier.orNull(), type.orNull(), version);
 
 		// FIXME could not find artifact in central repo (if artifact is local only)
