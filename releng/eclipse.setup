@@ -72,18 +72,6 @@
       name="Plugins">
     <setupTask
         xsi:type="setup.p2:P2Task"
-        id="shillner.dev.ump.plugins.egit"
-        disabled="true"
-        label="EGit"
-        licenseConfirmationDisabled="true">
-      <requirement
-          name="org.eclipse.egit.feature.group"/>
-      <repository
-          url="http://download.eclipse.org/egit/updates"/>
-      <description>Git connector</description>
-    </setupTask>
-    <setupTask
-        xsi:type="setup.p2:P2Task"
         id="shillner.dev.ump.plugins.m2e"
         label="M2E"
         licenseConfirmationDisabled="true">
@@ -115,20 +103,6 @@
       <repository
           url="http://download.eclipse.org/egit/updates"/>
       <description>Task and build connector</description>
-    </setupTask>
-    <setupTask
-        xsi:type="setup.p2:P2Task"
-        id="shillner.dev.ump.plugins.eclipse"
-        disabled="true"
-        label="Eclipse Mars"
-        licenseConfirmationDisabled="true">
-      <requirement
-          name="org.eclipse.sdk"/>
-      <repository
-          url="http://download.eclipse.org/releases/luna"/>
-      <repository
-          url="http://download.eclipse.org/eclipse/updates/4.4"/>
-      <description>Installation requirements and repositories for eclipse itself.</description>
     </setupTask>
     <description>Groups all plugin and feature installations.</description>
   </setupTask>
@@ -1763,8 +1737,7 @@
         name="Unleash"
         id="shillner.dev.ump.workingsets.unleash">
       <predicate
-          xsi:type="predicates:RepositoryPredicate"
-          project="unleash-maven-plugin-parent"/>
+          xsi:type="predicates:ImportedPredicate"/>
     </workingSet>
     <description>The dynamic working sets for ${scope.project.label}</description>
   </setupTask>
