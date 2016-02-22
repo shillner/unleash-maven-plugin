@@ -3,8 +3,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>de.itemis.maven.plugins</groupId>
-	<artifactId>unleash-maven-plugin</artifactId>
-	<version>0.1.0-SNAPSHOT</version>
+	<artifactId>unleash-releng</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
 	<packaging>maven-plugin</packaging>
 
 	<name>Unleash Maven Plugin</name>

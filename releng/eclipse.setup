@@ -6,13 +6,13 @@
     xmlns:git="http://www.eclipse.org/oomph/setup/git/1.0"
     xmlns:jdt="http://www.eclipse.org/oomph/setup/jdt/1.0"
     xmlns:launching="http://www.eclipse.org/oomph/setup/launching/1.0"
+    xmlns:maven="http://www.eclipse.org/oomph/setup/maven/1.0"
     xmlns:mylyn="http://www.eclipse.org/oomph/setup/mylyn/1.0"
     xmlns:predicates="http://www.eclipse.org/oomph/predicates/1.0"
-    xmlns:projects="http://www.eclipse.org/oomph/setup/projects/1.0"
     xmlns:setup="http://www.eclipse.org/oomph/setup/1.0"
     xmlns:setup.p2="http://www.eclipse.org/oomph/setup/p2/1.0"
     xmlns:setup.workingsets="http://www.eclipse.org/oomph/setup/workingsets/1.0"
-    xsi:schemaLocation="http://www.eclipse.org/oomph/setup/git/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Git.ecore http://www.eclipse.org/oomph/setup/jdt/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/JDT.ecore http://www.eclipse.org/oomph/setup/launching/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Launching.ecore http://www.eclipse.org/oomph/setup/mylyn/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Mylyn.ecore http://www.eclipse.org/oomph/predicates/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Predicates.ecore http://www.eclipse.org/oomph/setup/projects/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Projects.ecore http://www.eclipse.org/oomph/setup/workingsets/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/SetupWorkingSets.ecore"
+    xsi:schemaLocation="http://www.eclipse.org/oomph/setup/git/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Git.ecore http://www.eclipse.org/oomph/setup/jdt/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/JDT.ecore http://www.eclipse.org/oomph/setup/launching/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Launching.ecore http://www.eclipse.org/oomph/setup/maven/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Maven.ecore http://www.eclipse.org/oomph/setup/mylyn/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Mylyn.ecore http://www.eclipse.org/oomph/predicates/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Predicates.ecore http://www.eclipse.org/oomph/setup/workingsets/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/SetupWorkingSets.ecore"
     name="shillner.dev.ump"
     label="Unleash Maven Plugin">
   <setupTask
@@ -39,7 +39,7 @@
         xsi:type="setup:EclipseIniTask"
         id="shillner.dev.ump.ini.redirect-setup"
         option="-Doomph.redirection.mppDev"
-        value="=https://raw.githubusercontent.com/shillner/unleash-maven-plugin/master/unleash-releng/unleash-maven-plugin.setup->${shillner.dev.ump.git.clone.location|uri}/unleash-releng/unleash-maven-plugin.setup"
+        value="=https://raw.githubusercontent.com/shillner/unleash-maven-plugin/master/releng/eclipse.setup->${shillner.dev.ump.git.clone.location|uri}/releng/eclipse.setup"
         vm="true">
       <description>Specifies a redirection for the setup file. This enables us to use the github URI to include the setup file in the eclipse installer but when locally editing the setup (opened through Navigate-Setup...) the changes are made in our local copy of the setup for committing them.</description>
     </setupTask>
@@ -72,20 +72,8 @@
       name="Plugins">
     <setupTask
         xsi:type="setup.p2:P2Task"
-        id="shillner.dev.ump.plugins.eclipse"
-        label="Eclipse Mars"
-        licenseConfirmationDisabled="true">
-      <requirement
-          name="org.eclipse.sdk"/>
-      <repository
-          url="http://download.eclipse.org/releases/luna"/>
-      <repository
-          url="http://download.eclipse.org/eclipse/updates/4.4"/>
-      <description>Installation requirements and repositories for eclipse itself.</description>
-    </setupTask>
-    <setupTask
-        xsi:type="setup.p2:P2Task"
         id="shillner.dev.ump.plugins.egit"
+        disabled="true"
         label="EGit"
         licenseConfirmationDisabled="true">
       <requirement
@@ -127,6 +115,20 @@
       <repository
           url="http://download.eclipse.org/egit/updates"/>
       <description>Task and build connector</description>
+    </setupTask>
+    <setupTask
+        xsi:type="setup.p2:P2Task"
+        id="shillner.dev.ump.plugins.eclipse"
+        disabled="true"
+        label="Eclipse Mars"
+        licenseConfirmationDisabled="true">
+      <requirement
+          name="org.eclipse.sdk"/>
+      <repository
+          url="http://download.eclipse.org/releases/luna"/>
+      <repository
+          url="http://download.eclipse.org/eclipse/updates/4.4"/>
+      <description>Installation requirements and repositories for eclipse itself.</description>
     </setupTask>
     <description>Groups all plugin and feature installations.</description>
   </setupTask>
@@ -1745,8 +1747,9 @@
       <description>${scope.project.label}</description>
     </setupTask>
     <setupTask
-        xsi:type="projects:ProjectsImportTask"
-        id="shillner.dev.ump.git.import-projects">
+        xsi:type="maven:MavenImportTask"
+        id="shillner.dev.ump.git.import-projects"
+        projectNameTemplate="">
       <sourceLocator
           rootFolder="${shillner.dev.ump.git.clone.location}"
           locateNestedProjects="true"/>
