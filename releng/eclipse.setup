@@ -1764,7 +1764,7 @@
         id="shillner.dev.ump.workingsets.unleash">
       <predicate
           xsi:type="predicates:RepositoryPredicate"
-          project="unleash-maven-plugin"/>
+          project="unleash-maven-plugin-parent"/>
     </workingSet>
     <description>The dynamic working sets for ${scope.project.label}</description>
   </setupTask>
@@ -1776,7 +1776,7 @@
     <setupTask
         xsi:type="launching:LaunchTask"
         id="shillner.dev.ump.launch.build-ump"
-        launcher="build-unleash-maven-plugin">
+        launcher="build-plugin">
       <description>Initially builds the unleash-maven-plugin for a clean development environment.</description>
     </setupTask>
   </setupTask>
