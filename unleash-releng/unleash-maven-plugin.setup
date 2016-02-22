@@ -7,22 +7,21 @@
     xmlns:jdt="http://www.eclipse.org/oomph/setup/jdt/1.0"
     xmlns:launching="http://www.eclipse.org/oomph/setup/launching/1.0"
     xmlns:mylyn="http://www.eclipse.org/oomph/setup/mylyn/1.0"
-    xmlns:pde="http://www.eclipse.org/oomph/setup/pde/1.0"
     xmlns:predicates="http://www.eclipse.org/oomph/predicates/1.0"
     xmlns:projects="http://www.eclipse.org/oomph/setup/projects/1.0"
     xmlns:setup="http://www.eclipse.org/oomph/setup/1.0"
     xmlns:setup.p2="http://www.eclipse.org/oomph/setup/p2/1.0"
-    xmlns:setup.targlets="http://www.eclipse.org/oomph/setup/targlets/1.0"
     xmlns:setup.workingsets="http://www.eclipse.org/oomph/setup/workingsets/1.0"
-    xsi:schemaLocation="http://www.eclipse.org/oomph/setup/git/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Git.ecore http://www.eclipse.org/oomph/setup/jdt/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/JDT.ecore http://www.eclipse.org/oomph/setup/launching/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Launching.ecore http://www.eclipse.org/oomph/setup/mylyn/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Mylyn.ecore http://www.eclipse.org/oomph/setup/pde/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/PDE.ecore http://www.eclipse.org/oomph/predicates/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Predicates.ecore http://www.eclipse.org/oomph/setup/projects/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Projects.ecore http://www.eclipse.org/oomph/setup/targlets/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/SetupTarglets.ecore http://www.eclipse.org/oomph/setup/workingsets/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/SetupWorkingSets.ecore"
-    name="mpp.dev"
-    label="MavenPP">
+    xsi:schemaLocation="http://www.eclipse.org/oomph/setup/git/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Git.ecore http://www.eclipse.org/oomph/setup/jdt/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/JDT.ecore http://www.eclipse.org/oomph/setup/launching/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Launching.ecore http://www.eclipse.org/oomph/setup/mylyn/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Mylyn.ecore http://www.eclipse.org/oomph/predicates/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Predicates.ecore http://www.eclipse.org/oomph/setup/projects/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Projects.ecore http://www.eclipse.org/oomph/setup/workingsets/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/SetupWorkingSets.ecore"
+    name="shillner.dev.ump"
+    label="Unleash Maven Plugin">
   <setupTask
       xsi:type="setup:CompoundTask"
-      id="mpp.dev.ini"
+      id="shillner.dev.ump.ini"
       name="INI">
     <setupTask
         xsi:type="setup:EclipseIniTask"
+        id="shillner.dev.ump.ini.xms"
         option="-Xms"
         value="256m"
         vm="true">
@@ -30,7 +29,7 @@
     </setupTask>
     <setupTask
         xsi:type="setup:EclipseIniTask"
-        id=""
+        id="shillner.dev.ump.ini.xmx"
         option="-Xmx"
         value="1024m"
         vm="true">
@@ -38,11 +37,15 @@
     </setupTask>
     <setupTask
         xsi:type="setup:EclipseIniTask"
+        id="shillner.dev.ump.ini.redirect-setup"
         option="-Doomph.redirection.mppDev"
-        value="=https://raw.githubusercontent.com/shillner/MavenPP/master/mpp-dev.setup->${git.clone.mpp.location|uri}/mpp-dev.setup"
-        vm="true"/>
+        value="=https://raw.githubusercontent.com/shillner/unleash-maven-plugin/master/unleash-maven-plugin.setup->${git.clone.mpp.location|uri}/unleash-maven-plugin.setup"
+        vm="true">
+      <description>Specifies a redirection for the setup file. This enables us to use the github URI to include the setup file in the eclipse installer but when locally editing the setup (opened through Navigate-Setup...) the changes are made in our local copy of the setup for committing them.</description>
+    </setupTask>
     <setupTask
         xsi:type="setup:ResourceCreationTask"
+        id="shillner.dev.ump.ini.pe"
         excludedTriggers="STARTUP MANUAL"
         content="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?>&#xD;&#xA;&lt;section name=&quot;Workbench&quot;>&#xD;&#xA;&#x9;&lt;section name=&quot;org.eclipse.jdt.internal.ui.packageview.PackageExplorerPart&quot;>&#xD;&#xA;&#x9;&#x9;&lt;item value=&quot;true&quot; key=&quot;group_libraries&quot;/>&#xD;&#xA;&#x9;&#x9;&lt;item value=&quot;false&quot; key=&quot;linkWithEditor&quot;/>&#xD;&#xA;&#x9;&#x9;&lt;item value=&quot;2&quot; key=&quot;layout&quot;/>&#xD;&#xA;&#x9;&#x9;&lt;item value=&quot;2&quot; key=&quot;rootMode&quot;/>&#xD;&#xA;&#x9;&#x9;&lt;item value=&quot;&amp;lt;?xml version=&amp;quot;1.0&amp;quot; encoding=&amp;quot;UTF-8&amp;quot;?&amp;gt;&amp;#x0D;&amp;#x0A;&amp;lt;packageExplorer configured=&amp;quot;true&amp;quot; group_libraries=&amp;quot;1&amp;quot; layout=&amp;quot;2&amp;quot; linkWithEditor=&amp;quot;0&amp;quot; rootMode=&amp;quot;2&amp;quot; sortWorkingSets=&amp;quot;false&amp;quot; workingSetName=&amp;quot;&amp;quot;&amp;gt;&amp;#x0D;&amp;#x0A;&amp;lt;localWorkingSetManager&amp;gt;&amp;#x0D;&amp;#x0A;&amp;lt;workingSet editPageId=&amp;quot;org.eclipse.jdt.internal.ui.OthersWorkingSet&amp;quot; factoryID=&amp;quot;org.eclipse.ui.internal.WorkingSetFactory&amp;quot; id=&amp;quot;1382792884467_1&amp;quot; label=&amp;quot;Other Projects&amp;quot; name=&amp;quot;Other Projects&amp;quot;/&amp;gt;&amp;#x0D;&amp;#x0A;&amp;lt;/localWorkingSetManager&amp;gt;&amp;#x0D;&amp;#x0A;&amp;lt;activeWorkingSet workingSetName=&amp;quot;Other Projects&amp;quot;/&amp;gt;&amp;#x0D;&amp;#x0A;&amp;lt;allWorkingSets workingSetName=&amp;quot;Other Projects&amp;quot;/&amp;gt;&amp;#x0D;&amp;#x0A;&amp;lt;/packageExplorer&amp;gt;&quot; key=&quot;memento&quot;/>&#xD;&#xA;&#x9;&lt;/section>&#xD;&#xA;&lt;/section>&#xD;&#xA;"
         targetURL="${workspace.location|uri}/.metadata/.plugins/org.eclipse.jdt.ui/dialog_settings.xml"
@@ -53,57 +56,36 @@
   </setupTask>
   <setupTask
       xsi:type="setup:CompoundTask"
-      id="mpp.dev.compile"
+      id="shillner.dev.ump.compile"
       name="Compile">
     <setupTask
         xsi:type="jdt:JRETask"
+        id="shillner.dev.ump.compile.jre"
         version="JavaSE-1.6"
         location="${jre.location-1.6}">
       <description>Define the JRE needed to compile and run the Java projects of ${scope.project.label}</description>
     </setupTask>
-    <setupTask
-        xsi:type="setup:VariableTask"
-        name="eclipse.target.platform"
-        defaultValue="Luna"
-        storageURI="scope://Workspace"/>
   </setupTask>
   <setupTask
       xsi:type="setup:CompoundTask"
-      id="mpp.dev.plugins"
+      id="shillner.dev.ump.plugins"
       name="Plugins">
     <setupTask
         xsi:type="setup.p2:P2Task"
-        id="mpp.dev.plugins.eclipse"
-        label="Eclipse Luna"
+        id="shillner.dev.ump.plugins.eclipse"
+        label="Eclipse Mars"
         licenseConfirmationDisabled="true">
       <requirement
           name="org.eclipse.sdk"/>
       <repository
-          url="http://download.eclipse.org/releases/luna"/>
+          url="http://download.eclipse.org/releases/mars"/>
       <repository
-          url="http://download.eclipse.org/eclipse/updates/4.4"/>
+          url="http://download.eclipse.org/eclipse/updates/4.5"/>
       <description>Installation requirements and repositories for eclipse itself.</description>
     </setupTask>
     <setupTask
         xsi:type="setup.p2:P2Task"
-        id="mpp.dev.plugins.xtext"
-        label="Xtext/Xtend"
-        licenseConfirmationDisabled="true">
-      <requirement
-          name="org.eclipse.emf.sdk.feature.group"/>
-      <requirement
-          name="org.eclipse.xtext.sdk.feature.group"/>
-      <requirement
-          name="org.eclipse.xtend.sdk.feature.group"/>
-      <repository
-          url="http://download.eclipse.org/modeling/emf/emf/updates/releases/"/>
-      <repository
-          url="http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/"/>
-      <description>Installation requirements and repositories for eclipse Xtext, Xtend and EMF.</description>
-    </setupTask>
-    <setupTask
-        xsi:type="setup.p2:P2Task"
-        id="p2.egit"
+        id="shillner.dev.ump.plugins.egit"
         label="EGit"
         licenseConfirmationDisabled="true">
       <requirement
@@ -114,7 +96,7 @@
     </setupTask>
     <setupTask
         xsi:type="setup.p2:P2Task"
-        id="p2.m2e"
+        id="shillner.dev.ump.plugins.m2e"
         label="M2E"
         licenseConfirmationDisabled="true">
       <requirement
@@ -124,14 +106,14 @@
       <requirement
           name="org.eclipse.m2e.feature.feature.group"/>
       <repository
-          url="http://download.eclipse.org/releases/luna"/>
+          url="http://download.eclipse.org/releases/mars/"/>
       <repository
           url="http://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-tycho/0.9.0/N/LATEST/"/>
       <description>Maven connector</description>
     </setupTask>
     <setupTask
         xsi:type="setup.p2:P2Task"
-        id="p2.mylyn"
+        id="shillner.dev.ump.plugins.mylyn"
         label="Mylyn"
         licenseConfirmationDisabled="true">
       <requirement
@@ -141,7 +123,7 @@
       <requirement
           name="org.eclipse.mylyn.github.feature.feature.group"/>
       <repository
-          url="http://download.eclipse.org/releases/luna"/>
+          url="http://download.eclipse.org/releases/mars"/>
       <repository
           url="http://download.eclipse.org/egit/updates"/>
       <description>Task and build connector</description>
@@ -150,19 +132,20 @@
   </setupTask>
   <setupTask
       xsi:type="setup:CompoundTask"
-      id="mpp.dev.preferences"
+      id="shillner.dev.ump.preferences"
       name="Preferences">
     <setupTask
         xsi:type="setup:CompoundTask"
-        id="mpp.dev.preferences.general"
+        id="shillner.dev.ump.preferences.general"
         name="General">
       <setupTask
           xsi:type="setup:PreferenceTask"
+          id=""
           key="/instance/org.eclipse.ui/SHOW_MEMORY_MONITOR"
           value="true"/>
       <setupTask
           xsi:type="setup:CompoundTask"
-          id="mpp.dev.preferences.general.editors"
+          id="shillner.dev.ump.preferences.general.editors"
           name="Editors">
         <setupTask
             xsi:type="setup:PreferenceTask"
@@ -183,7 +166,7 @@
       </setupTask>
       <setupTask
           xsi:type="setup:CompoundTask"
-          id="mpp.dev.preferences.general.tasktags"
+          id="shillner.dev.ump.preferences.general.tasktags"
           name="Task Tags">
         <setupTask
             xsi:type="setup:PreferenceTask"
@@ -224,7 +207,7 @@
       </setupTask>
       <setupTask
           xsi:type="setup:CompoundTask"
-          id="mpp.dev.preferences.general.rundebug"
+          id="shillner.dev.ump.preferences.general.rundebug"
           name="Run/Debug">
         <setupTask
             xsi:type="setup:PreferenceTask"
@@ -266,11 +249,11 @@
     </setupTask>
     <setupTask
         xsi:type="setup:CompoundTask"
-        id="mpp.dev.preferences.java"
+        id="shillner.dev.ump.preferences.java"
         name="Java">
       <setupTask
           xsi:type="setup:CompoundTask"
-          id="mpp.dev.preferences.java.saveactions"
+          id="shillner.dev.ump.preferences.java.saveactions"
           name="Save Actions">
         <setupTask
             xsi:type="setup:PreferenceTask"
@@ -511,7 +494,7 @@
       </setupTask>
       <setupTask
           xsi:type="setup:CompoundTask"
-          id="mpp.dev.preferences.java.formatter"
+          id="shillner.dev.ump.preferences.java.formatter"
           name="Formatter">
         <setupTask
             xsi:type="setup:PreferenceTask"
@@ -1681,7 +1664,7 @@
     </setupTask>
     <setupTask
         xsi:type="setup:CompoundTask"
-        id="mpp.dev.preferences.maven"
+        id="shillner.dev.ump.preferences.maven"
         name="Maven">
       <setupTask
           xsi:type="setup:PreferenceTask"
@@ -1714,138 +1697,7 @@
     </setupTask>
     <setupTask
         xsi:type="setup:CompoundTask"
-        id="mpp.dev.preferences.xtextxtend"
-        name="Xtext/Xtend">
-      <setupTask
-          xsi:type="setup:PreferenceTask"
-          key="/instance/org.eclipse.xtext.Xtext/org.eclipse.xtext.grammar.DuplicateEnumLiteral"
-          value="error"/>
-      <setupTask
-          xsi:type="setup:CompoundTask"
-          id="mpp.dev.preferences.xtextxtend.formatter"
-          name="Formatter">
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            id="mpp.dev.preferences.xtextxtend.formatter.profile"
-            key="/instance/org.eclipse.xtend.core.Xtend/XtendFormatterProfile"
-            value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?>\r\n&lt;profiles version=&quot;1&quot;>\r\n&lt;profile kind=&quot;XtendFormatterProfile&quot; name=&quot;MVN-DSL&quot; version=&quot;1&quot;>\r\n&lt;setting id=&quot;keep.one.line.methods&quot; value=&quot;true&quot;/>\r\n&lt;setting id=&quot;line.width.max&quot; value=&quot;120&quot;/>\r\n&lt;setting id=&quot;line.separator&quot; value=&quot;&amp;#13;&amp;#10;&quot;/>\r\n&lt;setting id=&quot;braces.in.new.line&quot; value=&quot;false&quot;/>\r\n&lt;setting id=&quot;newline.after.constructor.annotations&quot; value=&quot;true&quot;/>\r\n&lt;setting id=&quot;blank.lines.between.classes&quot; value=&quot;1&quot;/>\r\n&lt;setting id=&quot;blank.lines.after.packagedecl&quot; value=&quot;1&quot;/>\r\n&lt;setting id=&quot;blank.lines.after.last.member&quot; value=&quot;0&quot;/>\r\n&lt;setting id=&quot;blank.line.around.expressions&quot; value=&quot;0&quot;/>\r\n&lt;setting id=&quot;indentation.length&quot; value=&quot;4&quot;/>\r\n&lt;setting id=&quot;newline.after.field.annotations&quot; value=&quot;true&quot;/>\r\n&lt;setting id=&quot;newline.after.parameter.annotations&quot; value=&quot;false&quot;/>\r\n&lt;setting id=&quot;blank.lines.between.imports&quot; value=&quot;0&quot;/>\r\n&lt;setting id=&quot;indentation&quot; value=&quot;&amp;#9;&quot;/>\r\n&lt;setting id=&quot;whitespace.between.keyword.and.parenthesis&quot; value=&quot;false&quot;/>\r\n&lt;setting id=&quot;blank.lines.before.first.member&quot; value=&quot;0&quot;/>\r\n&lt;setting id=&quot;preserve.new.lines&quot; value=&quot;true&quot;/>\r\n&lt;setting id=&quot;blank.lines.between.fields&quot; value=&quot;0&quot;/>\r\n&lt;setting id=&quot;blank.lines.between.fields.and.methods&quot; value=&quot;1&quot;/>\r\n&lt;setting id=&quot;blank.lines.after.imports&quot; value=&quot;1&quot;/>\r\n&lt;setting id=&quot;newline.after.method.annotations&quot; value=&quot;true&quot;/>\r\n&lt;setting id=&quot;blank.lines.between.methods&quot; value=&quot;1&quot;/>\r\n&lt;setting id=&quot;blank.lines.between.enum.literals&quot; value=&quot;0&quot;/>\r\n&lt;setting id=&quot;newline.after.class.annotations&quot; value=&quot;true&quot;/>\r\n&lt;setting id=&quot;preserve.blank.lines&quot; value=&quot;1&quot;/>\r\n&lt;/profile>\r\n&lt;/profiles>\r\n"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/XtendFormatterProfile.version"
-            value="1"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/blank.line.around.expressions"
-            value="0"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/blank.lines.after.imports"
-            value="1"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/blank.lines.after.last.member"
-            value="0"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/blank.lines.after.packagedecl"
-            value="1"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/blank.lines.before.first.member"
-            value="0"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/blank.lines.between.classes"
-            value="1"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/blank.lines.between.enum.literals"
-            value="0"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/blank.lines.between.fields"
-            value="0"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/blank.lines.between.fields.and.methods"
-            value="1"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/blank.lines.between.imports"
-            value="0"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/blank.lines.between.methods"
-            value="1"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/braces.in.new.line"
-            value="false"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/indentation"
-            value="\t"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/indentation.length"
-            value="4"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/keep.one.line.methods"
-            value="true"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/line.separator"
-            value="\r\n"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/line.width.max"
-            value="120"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/newline.after.class.annotations"
-            value="true"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/newline.after.constructor.annotations"
-            value="true"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/newline.after.field.annotations"
-            value="true"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/newline.after.method.annotations"
-            value="true"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/newline.after.parameter.annotations"
-            value="false"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/org.eclipse.xtend.formatter.version"
-            value="1"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/org.eclipse.xtend.ide.default.eclipse_profile"
-            value="_MVN-DSL"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/preserve.blank.lines"
-            value="1"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/preserve.new.lines"
-            value="true"/>
-        <setupTask
-            xsi:type="setup:PreferenceTask"
-            key="/instance/org.eclipse.xtend.core.Xtend/whitespace.between.keyword.and.parenthesis"
-            value="false"/>
-      </setupTask>
-    </setupTask>
-    <setupTask
-        xsi:type="setup:CompoundTask"
-        id="mpp.dev.preferences.xml"
+        id="shillner.dev.ump.preferences.xml"
         name="XML">
       <setupTask
           xsi:type="setup:PreferenceTask"
@@ -1868,12 +1720,13 @@
   </setupTask>
   <setupTask
       xsi:type="setup:CompoundTask"
-      id="mpp.dev.git"
+      id="shillner.dev.ump.git"
       name="Git">
     <setupTask
         xsi:type="git:GitCloneTask"
-        id="git.clone.mpp"
-        remoteURI="shillner/MavenPP">
+        id="shillner.dev.ump.git.clone"
+        remoteURI="shillner/unleash-maven-plugin"
+        pushURI="">
       <annotation
           source="http://www.eclipse.org/oomph/setup/InducedChoices">
         <detail
@@ -1892,108 +1745,47 @@
       <description>${scope.project.label}</description>
     </setupTask>
     <setupTask
-        xsi:type="projects:ProjectsImportTask">
+        xsi:type="projects:ProjectsImportTask"
+        id="shillner.dev.ump.git.import-projects">
       <sourceLocator
-          rootFolder="${git.clone.mpp.location}"/>
+          rootFolder="${shillner.dev.ump.git.clone.location}"
+          locateNestedProjects="true"/>
     </setupTask>
     <description>Groups all git-related actions.</description>
   </setupTask>
   <setupTask
-      xsi:type="pde:TargetPlatformTask"
-      id="mpp.dev.target"
-      name="Maven++ Development Target Platform Definition"/>
-  <setupTask
       xsi:type="setup.workingsets:WorkingSetTask"
-      id="mpp.dev.workingsets">
+      id="shillner.dev.ump.workingsets">
     <workingSet
-        name="Maven++">
+        name="Unleash"
+        id="shillner.dev.ump.workingsets.unleash">
       <predicate
           xsi:type="predicates:RepositoryPredicate"
-          project="de.itemis.mpp"/>
+          project="unleash-maven-plugin"/>
     </workingSet>
     <description>The dynamic working sets for ${scope.project.label}</description>
   </setupTask>
   <setupTask
-      xsi:type="setup.targlets:TargletTask"
-      disabled="true">
-    <targlet
-        name="${scope.project.label}"
-        activeRepositoryList="${eclipse.target.platform}">
-      <annotation
-          source="http:/www.eclipse.org/oomph/targlets/TargetDefinitionGenerator">
-        <detail
-            key="location">
-          <value>${git.clone.mpp.location/de.itemis.mpp.target/de.itemis.mpp.target}</value>
-        </detail>
-        <detail
-            key="includeAllPlatforms">
-          <value>false</value>
-        </detail>
-        <detail
-            key="includeSource">
-          <value>false</value>
-        </detail>
-        <detail
-            key="generateVersions">
-          <value>true</value>
-        </detail>
-      </annotation>
-      <requirement
-          name="de.itemis.mpp.sdk.feature.group"/>
-      <requirement
-          name="org.eclipse.sdk.feature.group"/>
-      <requirement
-          name="org.eclipse.emf.sdk.feature.group"/>
-      <requirement
-          name="org.eclipse.xtext.sdk.feature.group"/>
-      <requirement
-          name="org.eclipse.xtend.sdk.feature.group"/>
-      <requirement
-          name="org.eclipse.m2e.feature.feature.group"/>
-      <sourceLocator
-          rootFolder="${git.clone.mpp.location}"/>
-      <repositoryList
-          name="Mars">
-        <repository
-            url="http://download.eclipse.org/releases/mars"/>
-      </repositoryList>
-      <repositoryList
-          name="Luna">
-        <repository
-            url="http://download.eclipse.org/releases/luna"/>
-      </repositoryList>
-      <repositoryList
-          name="Kepler">
-        <repository
-            url="http://download.eclipse.org/releases/kepler"/>
-      </repositoryList>
-      <repositoryList
-          name="Juno">
-        <repository
-            url="http://download.eclipse.org/releases/juno"/>
-      </repositoryList>
-    </targlet>
-  </setupTask>
-  <setupTask
       xsi:type="setup:CompoundTask"
-      id="mpp.dev.launch"
-      predecessor="mpp.dev.workingsets //@setupTasks.7"
+      id="shillner.dev.ump.launch"
+      predecessor="shillner.dev.ump.workingsets"
       name="Launch Configurations">
     <setupTask
         xsi:type="launching:LaunchTask"
-        launcher="Generate Language Infrastructure (de.itemis.mpp)">
-      <description>Generates the language infrastructure of the DSL.</description>
+        id="shillner.dev.ump.launch.build-ump"
+        launcher="build-unleash-maven-plugin">
+      <description>Initially builds the unleash-maven-plugin for a clean development environment.</description>
     </setupTask>
   </setupTask>
   <setupTask
       xsi:type="setup:CompoundTask"
-      id="mpp.dev.mylyn"
+      id="shillner.dev.ump.mylyn"
       name="Mylyn">
     <setupTask
         xsi:type="mylyn:MylynQueriesTask"
-        id="mpp.dev.mylyn.queries"
+        id="shillner.dev.ump.mylyn.queries"
         connectorKind="github"
-        repositoryURL="https://github.com/shillner/MavenPP"
+        repositoryURL="https://github.com/shillner/unleash-maven-plugin"
         userID="${github.user.id}"
         password="${github.user.password}">
       <query
@@ -2018,6 +1810,6 @@
   <stream name="master"/>
   <logicalProjectContainer
       xsi:type="setup:ProjectCatalog"
-      href="index:/org.eclipse.setup#//@projectCatalogs[name='org.eclipse']"/>
-  <description>Maven++ development environment</description>
+      href="index:/org.eclipse.setup#//@projectCatalogs[name='com.github']"/>
+  <description>Development environment for the unleash-maven-plugin</description>
 </setup:Project>
