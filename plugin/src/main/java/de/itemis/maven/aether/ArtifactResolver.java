@@ -1,49 +1,49 @@
 package de.itemis.maven.aether;
 
 import java.io.File;
+import java.util.List;
 
-import org.apache.maven.plugin.logging.Log;
-import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 
 import com.google.common.base.Optional;
 
-public final class ArtifactResolver {
+import de.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 
-  private ArtifactResolver() {
+public final class ArtifactResolver {
+  private RepositorySystem repoSystem;
+  private RepositorySystemSession repoSession;
+  private List<RemoteRepository> remoteProjectRepos;
+  private MavenLogWrapper log;
+
+  public ArtifactResolver(RepositorySystem repoSystem, RepositorySystemSession repoSession,
+      List<RemoteRepository> remoteProjectRepos, MavenLogWrapper log) {
+    this.repoSystem = repoSystem;
+    this.repoSession = repoSession;
+    this.remoteProjectRepos = remoteProjectRepos;
+    this.log = log;
   }
 
-  public static Optional<File> resolveArtifact(String groupId, String artifactId, String version, Optional<String> type,
-      Optional<String> classifier, Optional<String> updatePolicy, Log log) {
+  // resolves artifacts from remote repos only! -> that's exacly the right thing here but
+  // TODO: how can we resolve local-only artifacts? -> Artifacts that are only installed but not deployed
+  public Optional<File> resolveArtifact(String groupId, String artifactId, String version, Optional<String> type,
+      Optional<String> classifier) {
     Optional<File> result;
-
-    RepositorySystem system = AetherBootstrap.newRepositorySystem();
-    // TODO remove hard coded path to repository and get the one from settings or default to user.home ...
-
-    final String defaultLocalRepositoryPath = System.getProperty("user.home") + "/.m2/repository";
-    final String localRepositoryPath = System.getProperty("maven.repo.local", defaultLocalRepositoryPath);
-
-    log.info("ArtifactResolver is using '" + localRepositoryPath + "' as localRepositoryPath");
-
-    DefaultRepositorySystemSession session = AetherBootstrap.newRepositorySystemSession(system, localRepositoryPath);
-    session.setUpdatePolicy(updatePolicy.orNull());
-    log.debug("Update policy: " + session.getUpdatePolicy());
 
     Artifact artifact = new DefaultArtifact(groupId, artifactId, classifier.orNull(), type.orNull(), version);
 
-    // FIXME could not find artifact in central repo (if artifact is local only)
     ArtifactRequest artifactRequest = new ArtifactRequest();
     artifactRequest.setArtifact(artifact);
-    artifactRequest.setRepositories(AetherBootstrap.newRemoteRepositories(system, session));
+    artifactRequest.setRepositories(this.remoteProjectRepos);
 
     try {
-      // TODO maybe use DefaultArtifactResolver of the eclipse aether package?!
-      ArtifactResult artifactResult = system.resolveArtifact(session, artifactRequest);
+      ArtifactResult artifactResult = this.repoSystem.resolveArtifact(this.repoSession, artifactRequest);
       artifact = artifactResult.getArtifact();
       if (artifact != null) {
         result = Optional.fromNullable(artifact.getFile());
@@ -51,8 +51,8 @@ public final class ArtifactResolver {
         result = Optional.absent();
       }
     } catch (ArtifactResolutionException e) {
-      log.error("ArtifactResolver caught ArtifactResolutionException: " + e.getMessage(), e);
-      // TODO add error handling -> maybe throw an exception that indicates the error or return an Optional
+      this.log.debug(e.getMessage());
+      // must not throw the error or log as an error since this is an expected behavior
       result = Optional.absent();
     }
 
