@@ -12,6 +12,7 @@ import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 
 import de.itemis.maven.plugins.unleash.util.MavenLogWrapper;
@@ -30,8 +31,6 @@ public final class ArtifactResolver {
     this.log = log;
   }
 
-  // resolves artifacts from remote repos only! -> that's exacly the right thing here but
-  // TODO: how can we resolve local-only artifacts? -> Artifacts that are only installed but not deployed
   public Optional<File> resolveArtifact(String groupId, String artifactId, String version, Optional<String> type,
       Optional<String> classifier) {
     Optional<File> result;
@@ -43,10 +42,19 @@ public final class ArtifactResolver {
     artifactRequest.setRepositories(this.remoteProjectRepos);
 
     try {
+      // TODO for loal-only see LocalArtifactRequest
       ArtifactResult artifactResult = this.repoSystem.resolveArtifact(this.repoSession, artifactRequest);
       artifact = artifactResult.getArtifact();
+
       if (artifact != null) {
-        result = Optional.fromNullable(artifact.getFile());
+        // FIXME create other methods that resolve again local or remotes only! -> was just for testing
+        if (!Objects.equal(artifactResult.getRepository().getId(), this.repoSession.getLocalRepository().getId())) {
+          this.log.info("Artifact available also in remote repos!");
+          result = Optional.fromNullable(artifact.getFile());
+        } else {
+          this.log.info("Artifact available only in local repo!");
+          result = Optional.absent();
+        }
       } else {
         result = Optional.absent();
       }
