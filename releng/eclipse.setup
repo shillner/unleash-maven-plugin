@@ -1741,7 +1741,8 @@
         name="Unleash"
         id="shillner.dev.ump.workingsets.unleash">
       <predicate
-          xsi:type="predicates:ImportedPredicate"/>
+          xsi:type="predicates:RepositoryPredicate"
+          project="unleash-maven-plugin-parent"/>
     </workingSet>
     <description>The dynamic working sets for ${scope.project.label}</description>
   </setupTask>
