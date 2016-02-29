@@ -2,6 +2,8 @@ package de.itemis.maven.plugins.unleash;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -15,6 +17,7 @@ import org.eclipse.aether.repository.RemoteRepository;
 
 import com.google.common.collect.Lists;
 
+import de.itemis.maven.aether.cache.ArtifactCache;
 import de.itemis.maven.plugins.unleash.actions.AbstractProcessingAction;
 import de.itemis.maven.plugins.unleash.actions.CheckAether;
 import de.itemis.maven.plugins.unleash.actions.CheckReleasable;
@@ -46,9 +49,16 @@ public class UnleashMojo extends AbstractMojo {
   @Parameter(required = true, defaultValue = "false", property = "unleash.logTimestamps")
   private boolean enableLogTimestamps;
 
+  @Inject
+  private ArtifactCache cache;
+
   private MavenLogWrapper logger;
 
   @Override
+  // http://codehaus-plexus.github.io/plexus-utils/apidocs/index.html
+  // http://codehaus-plexus.github.io/
+  // http://blog.sonatype.com/2009/05/plexus-container-five-minute-tutorial/#.VtAxKtBVaVo
+  // http://maven.apache.org/maven-jsr330.html
   public void execute() throws MojoExecutionException, MojoFailureException {
     init();
 

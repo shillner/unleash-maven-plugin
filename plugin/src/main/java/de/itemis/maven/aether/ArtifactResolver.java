@@ -14,10 +14,12 @@ import org.eclipse.aether.resolution.ArtifactResult;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
+import com.google.common.cache.Cache;
 
 import de.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 
 public final class ArtifactResolver {
+  private Cache<ArtifactCoordinates, Artifact> artifactCache;
   private RepositorySystem repoSystem;
   private RepositorySystemSession repoSession;
   private List<RemoteRepository> remoteProjectRepos;
@@ -29,6 +31,10 @@ public final class ArtifactResolver {
     this.repoSession = repoSession;
     this.remoteProjectRepos = remoteProjectRepos;
     this.log = log;
+  }
+
+  private void setupCache() {
+    // this.artifactCache = CacheBuilder.newBuilder().build(loader);
   }
 
   public Optional<File> resolveArtifact(String groupId, String artifactId, String version, Optional<String> type,
