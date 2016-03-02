@@ -1,4 +1,4 @@
-package de.itemis.maven.aether.cache;
+package de.itemis.maven.aether;
 
 import java.util.List;
 
@@ -14,7 +14,6 @@ import org.eclipse.aether.resolution.ArtifactResult;
 import com.google.common.base.Optional;
 import com.google.common.cache.CacheLoader;
 
-import de.itemis.maven.aether.ArtifactCoordinates;
 import de.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 
 class ArtifactCacheLoader extends CacheLoader<ArtifactCoordinates, Optional<ArtifactResult>> {
