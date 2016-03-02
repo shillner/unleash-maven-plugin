@@ -13,12 +13,10 @@
 // import de.itemis.maven.plugins.unleash.util.PomUtil;
 //
 // public class PreparePomVersionsAction extends AbstractProcessingAction {
-// private String releaseVersion;
-// private String developmentVersion;
+// private String nexVersion;
 //
-// public PreparePomVersionsAction(String releaseVersion, String developmentVersion) {
-// this.releaseVersion = releaseVersion;
-// this.developmentVersion = developmentVersion;
+// public PreparePomVersionsAction(String nexVersion) {
+// this.nexVersion = nexVersion;
 // }
 //
 // @Override
@@ -82,23 +80,5 @@
 // break;
 // }
 // }
-// }
-//
-// @Override
-// protected void doPrepare() {
-// // TODO Auto-generated method stub
-//
-// }
-//
-// @Override
-// protected void doValidate() {
-// // TODO Auto-generated method stub
-//
-// }
-//
-// @Override
-// public void rollback() {
-// // TODO Auto-generated method stub
-//
 // }
 // }

@@ -12,6 +12,7 @@ import com.google.common.base.Preconditions;
 import de.itemis.maven.aether.ArtifactResolver;
 import de.itemis.maven.plugins.unleash.UnleashProcessingAction;
 import de.itemis.maven.plugins.unleash.util.MavenLogWrapper;
+import de.itemis.maven.plugins.unleash.util.ReleaseMetadataManager;
 
 public abstract class AbstractProcessingAction implements UnleashProcessingAction {
   private List<MavenProject> reactorProjects;
@@ -45,12 +46,16 @@ public abstract class AbstractProcessingAction implements UnleashProcessingActio
     this.log = log;
   }
 
-  protected final MavenLogWrapper getLog() {
+  protected MavenLogWrapper getLog() {
     return this.log;
   }
 
-  protected final ArtifactResolver getArtifactResolver() {
+  protected ArtifactResolver getArtifactResolver() {
     return this.artifactResolver;
+  }
+
+  protected ReleaseMetadataManager getReleaseMetaDataManager() {
+    return ReleaseMetadataManager.getInstance();
   }
 
   @Override
