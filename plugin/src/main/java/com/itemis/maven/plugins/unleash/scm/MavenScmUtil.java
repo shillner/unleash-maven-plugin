@@ -11,7 +11,7 @@ public class MavenScmUtil {
     // no instanciation of this utility class!
   }
 
-  public static Optional<String> getScmProviderName(MavenProject project) {
+  public static Optional<String> calcProviderName(MavenProject project) {
     String providerName = null;
 
     Scm scm = project.getScm();

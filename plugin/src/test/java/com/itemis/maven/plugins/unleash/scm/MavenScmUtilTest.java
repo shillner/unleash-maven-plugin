@@ -32,7 +32,7 @@ public class MavenScmUtilTest {
     p.getScm().setDeveloperConnection(devConnection);
     p.getScm().setConnection(connection);
 
-    Optional<String> providerName = MavenScmUtil.getScmProviderName(p);
+    Optional<String> providerName = MavenScmUtil.calcProviderName(p);
     if (expectedProviderName == null) {
       Assert.assertFalse(providerName.isPresent());
     } else {

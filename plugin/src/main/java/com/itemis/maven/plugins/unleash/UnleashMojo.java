@@ -74,39 +74,4 @@ public class UnleashMojo extends AbstractCdiMojo implements Extension {
     }
     return log;
   }
-
-  // private List<UnleashProcessingAction> setupActions() {
-  // this.logger.debug("Initializing the release actions.");
-  // List<UnleashProcessingAction> actions = Lists.newArrayList();
-  //
-  // // QUESTION how can we describe the workflow and setup the actions in another, more flexible way?
-  // // users should be able to include and exclude actions that are not needed!
-  // CheckScmRevision checkScmRevision = new CheckScmRevision();
-  // addCommonActionParams(checkScmRevision);
-  // actions.add(checkScmRevision);
-  //
-  // CheckReleasable releasableCheckAction = new CheckReleasable();
-  // addCommonActionParams(releasableCheckAction);
-  // actions.add(releasableCheckAction);
-  //
-  // CheckAether checkAetherAction = new CheckAether(this.releaseVersion);
-  // addCommonActionParams(checkAetherAction);
-  // checkAetherAction.allowLocalReleaseArtifacts(this.allowLocalReleaseArtifacts);
-  // actions.add(checkAetherAction);
-  //
-  // this.logger.debug("Release action order:");
-  // for (UnleashProcessingAction action : actions) {
-  // this.logger.debug("\t" + action.getClass().getSimpleName());
-  // }
-  // this.logger.debug("");
-  // return actions;
-  // }
-  //
-  // private void addCommonActionParams(AbstractProcessingAction action) {
-  // action.setLog(this.logger);
-  // action.setReactorProjects(this.reactorProjects);
-  // action.setRemoteProjectRepos(this.remoteProjectRepos);
-  // action.setRepoSession(this.repoSession);
-  // action.setRepoSystem(this.repoSystem);
-  // }
 }

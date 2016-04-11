@@ -3,6 +3,7 @@ package com.itemis.maven.aether;
 import java.io.File;
 import java.util.List;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -18,20 +19,15 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 
-public final class ArtifactResolver {
-  private RepositorySystem repoSystem;
+@ApplicationScoped
+public class ArtifactResolver {
   private RepositorySystemSession repoSession;
-  private List<RemoteRepository> remoteProjectRepos;
-  private MavenLogWrapper log;
   private LoadingCache<ArtifactCoordinates, Optional<ArtifactResult>> cache;
 
   @Inject
   public ArtifactResolver(RepositorySystem repoSystem, RepositorySystemSession repoSession,
       @Named("projectRepositories") List<RemoteRepository> remoteProjectRepos, MavenLogWrapper log) {
-    this.repoSystem = repoSystem;
     this.repoSession = repoSession;
-    this.remoteProjectRepos = remoteProjectRepos;
-    this.log = log;
     this.cache = CacheBuilder.newBuilder()
         .build(new ArtifactCacheLoader(repoSystem, repoSession, remoteProjectRepos, log));
   }

@@ -10,7 +10,6 @@ import org.apache.maven.project.MavenProject;
 import com.google.common.collect.Collections2;
 import com.itemis.maven.plugins.cdi.InjectableCdiMojo;
 import com.itemis.maven.plugins.cdi.annotations.MojoExecution;
-import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProjectPredicate;
 
@@ -29,9 +28,6 @@ public class CheckReleasable implements InjectableCdiMojo {
   @Named("reactorProjects")
   private List<MavenProject> reactorProjects;
 
-  @Inject
-  private ReleaseMetadata metadata;
-
   @Override
   public void execute() {
     this.log.debug("Checking that at least one of the reactor projects has a SNAPSHOT version assigned.");
@@ -44,8 +40,5 @@ public class CheckReleasable implements InjectableCdiMojo {
       this.log.error("The reactor project list must contain at least one project with a SNAPSHOT version assigned.");
       throw new IllegalStateException(errorTitle);
     }
-
-    System.out.println("******************************");
-    System.out.println("REVISION: " + this.metadata.getPreReleaseScmRevision());
   }
 }
