@@ -2,17 +2,17 @@ package com.itemis.maven.plugins.unleash.scm;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.apache.maven.project.MavenProject;
 
 import com.google.common.base.Optional;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 
-@ApplicationScoped
+@Singleton
 public class ScmProviderRegistry {
   @Inject
   private MavenLogWrapper log;

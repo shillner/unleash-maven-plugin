@@ -3,9 +3,9 @@ package com.itemis.maven.aether;
 import java.io.File;
 import java.util.List;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Singleton;
 
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
@@ -19,7 +19,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 
-@ApplicationScoped
+@Singleton
 public class ArtifactResolver {
   private RepositorySystemSession repoSession;
   private LoadingCache<ArtifactCoordinates, Optional<ArtifactResult>> cache;

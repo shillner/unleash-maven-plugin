@@ -7,9 +7,10 @@ import org.apache.maven.plugin.MojoFailureException;
 
 import com.google.common.base.Optional;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
-import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.cdi.annotations.Goal;
+import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
+import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 import com.itemis.maven.plugins.unleash.scm.ScmProviderRegistry;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
@@ -41,7 +42,7 @@ public class StoreScmRevision implements CDIMojoProcessingStep {
     }
 
     String revision = provider.get().getLocalRevision();
-    this.metadata.setPreReleaseScmRevision(revision);
+    this.metadata.setScmRevision(revision, ReleasePhase.PRE);
     this.log.info("SCM Revision before releasing the artifacts: " + revision);
   }
 }

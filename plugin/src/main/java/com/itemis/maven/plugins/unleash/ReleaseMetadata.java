@@ -1,37 +1,52 @@
 package com.itemis.maven.plugins.unleash;
 
-import javax.enterprise.context.ApplicationScoped;
+import java.util.Map;
+import java.util.Set;
 
-@ApplicationScoped
+import javax.inject.Singleton;
+
+import com.google.common.base.Objects;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.itemis.maven.aether.ArtifactCoordinates;
+
+@Singleton
 public class ReleaseMetadata {
-  private String preReleaseScmRevision;
-  // private List<ArtifactCoordinates> preReleaseProjectCoordinates;
-  // private List<ArtifactCoordinates> releaseProjectCoodinates;
+  private Map<ReleasePhase, String> scmRevisions;
+  private Map<ReleasePhase, Set<ArtifactCoordinates>> artifactCoordinates;
 
   private ReleaseMetadata() {
+    int numPhases = ReleasePhase.values().length;
+    this.scmRevisions = Maps.newHashMapWithExpectedSize(numPhases);
+    this.artifactCoordinates = Maps.newHashMapWithExpectedSize(numPhases);
+    for (ReleasePhase phase : ReleasePhase.values()) {
+      this.artifactCoordinates.put(phase, Sets.<ArtifactCoordinates> newHashSet());
+    }
   }
 
-  public void setPreReleaseScmRevision(String preReleaseScmRevision) {
-    this.preReleaseScmRevision = preReleaseScmRevision;
+  public void setScmRevision(String scmRevision, ReleasePhase phase) {
+    this.scmRevisions.put(phase, scmRevision);
   }
 
-  public String getPreReleaseScmRevision() {
-    return this.preReleaseScmRevision;
+  public String getPreReleaseScmRevision(ReleasePhase phase) {
+    return this.scmRevisions.get(phase);
   }
 
-  // public void setPreReleaseProjectCoordinates(List<ArtifactCoordinates> preReleaseProjectCoordinates) {
-  // this.preReleaseProjectCoordinates = preReleaseProjectCoordinates;
-  // }
-  //
-  // public List<ArtifactCoordinates> getPreReleaseProjectCoordinates() {
-  // return this.preReleaseProjectCoordinates;
-  // }
-  //
-  // public void setReleaseProjectCoodinates(List<ArtifactCoordinates> releaseProjectCoodinates) {
-  // this.releaseProjectCoodinates = releaseProjectCoodinates;
-  // }
-  //
-  // public List<ArtifactCoordinates> getReleaseProjectCoodinates() {
-  // return this.releaseProjectCoodinates;
-  // }
+  public void addArtifactCoordinates(ArtifactCoordinates coordinates, ReleasePhase phase) {
+    this.artifactCoordinates.get(phase).add(coordinates);
+  }
+
+  public Map<ReleasePhase, ArtifactCoordinates> getArtifactCoordinatesByPhase(String groupId, String artifactId) {
+    Map<ReleasePhase, ArtifactCoordinates> result = Maps.newHashMapWithExpectedSize(this.artifactCoordinates.size());
+    for (ReleasePhase phase : this.artifactCoordinates.keySet()) {
+      for (ArtifactCoordinates coordinates : this.artifactCoordinates.get(phase)) {
+        if (Objects.equal(coordinates.getArtifactId(), artifactId)
+            && Objects.equal(coordinates.getGroupId(), groupId)) {
+          result.put(phase, coordinates);
+          break;
+        }
+      }
+    }
+    return result;
+  }
 }

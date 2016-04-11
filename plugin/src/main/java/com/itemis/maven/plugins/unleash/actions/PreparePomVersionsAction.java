@@ -1,4 +1,3 @@
-package com.itemis.maven.plugins.unleash.actions;
 // package com.itemis.maven.plugins.unleash.actions;
 //
 // import java.io.File;

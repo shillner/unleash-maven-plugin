@@ -12,19 +12,24 @@ import org.apache.maven.project.MavenProject;
 import com.google.common.base.Optional;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.aether.ArtifactResolver;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.annotations.Goal;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
+import com.itemis.maven.plugins.unleash.ReleaseMetadata;
+import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
-import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProjectPredicate;
 
 @ProcessingStep(@Goal(name = "perform", stepNumber = 3))
 public class CheckAether implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;
+
+  @Inject
+  private ReleaseMetadata releaseMetadata;
 
   @Inject
   @Named("reactorProjects")
@@ -34,23 +39,21 @@ public class CheckAether implements CDIMojoProcessingStep {
   private ArtifactResolver artifactResolver;
 
   @Inject
-  @Named("releaseVersion")
-  private String defaultReleaseVersion;
-
-  @Inject
   @Named("allowLocalReleaseArtifacts")
   private boolean allowLocalReleaseArtifacts;
 
   @Override
   public void execute() {
-    List<MavenProject> alreadyReleasedProjects = Lists.newArrayList();
     Collection<MavenProject> snapshotProjects = Collections2.filter(this.reactorProjects,
         new IsSnapshotProjectPredicate());
 
-    for (MavenProject project : snapshotProjects) {
-      if (isReleased(project.getGroupId(), project.getArtifactId(),
-          ReleaseUtil.getReleaseVersion(project.getVersion(), this.defaultReleaseVersion))) {
-        alreadyReleasedProjects.add(project);
+    List<MavenProject> alreadyReleasedProjects = Lists.newArrayList();
+    for (MavenProject p : snapshotProjects) {
+      ArtifactCoordinates calculatedCoordinates = this.releaseMetadata
+          .getArtifactCoordinatesByPhase(p.getGroupId(), p.getArtifactId()).get(ReleasePhase.POST);
+      if (isReleased(calculatedCoordinates.getGroupId(), calculatedCoordinates.getArtifactId(),
+          calculatedCoordinates.getVersion())) {
+        alreadyReleasedProjects.add(p);
       }
     }
 
