@@ -13,12 +13,12 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 
-import com.itemis.maven.plugins.cdi.AbstractCdiMojo;
+import com.itemis.maven.plugins.cdi.AbstractCDIMojo;
 import com.itemis.maven.plugins.cdi.annotations.MojoProduces;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 
 @Mojo(name = "perform", aggregator = true, requiresProject = true)
-public class UnleashMojo extends AbstractCdiMojo implements Extension {
+public class UnleashMojo extends AbstractCDIMojo implements Extension {
   @Component
   @MojoProduces
   public RepositorySystem repoSystem;

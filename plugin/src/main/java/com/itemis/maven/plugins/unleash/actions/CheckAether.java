@@ -13,15 +13,16 @@ import com.google.common.base.Optional;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.itemis.maven.aether.ArtifactResolver;
-import com.itemis.maven.plugins.cdi.InjectableCdiMojo;
-import com.itemis.maven.plugins.cdi.annotations.MojoExecution;
+import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
+import com.itemis.maven.plugins.cdi.annotations.Goal;
+import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProjectPredicate;
 
-@MojoExecution(name = "perform", order = 2)
-public class CheckAether implements InjectableCdiMojo {
+@ProcessingStep(@Goal(name = "perform", stepNumber = 3))
+public class CheckAether implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;
 

@@ -8,8 +8,9 @@ import javax.inject.Named;
 import org.apache.maven.project.MavenProject;
 
 import com.google.common.collect.Collections2;
-import com.itemis.maven.plugins.cdi.InjectableCdiMojo;
-import com.itemis.maven.plugins.cdi.annotations.MojoExecution;
+import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
+import com.itemis.maven.plugins.cdi.annotations.Goal;
+import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProjectPredicate;
 
@@ -19,8 +20,8 @@ import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProjectPredica
  *
  * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
  */
-@MojoExecution(name = "perform", order = 1)
-public class CheckReleasable implements InjectableCdiMojo {
+@ProcessingStep(@Goal(name = "perform", stepNumber = 1))
+public class CheckReleasable implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;
 
