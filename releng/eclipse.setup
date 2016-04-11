@@ -1705,6 +1705,7 @@
     <setupTask
         xsi:type="git:GitCloneTask"
         id="shillner.dev.ump.git.clone"
+        location="plugin"
         remoteURI="shillner/unleash-maven-plugin"
         pushURI="">
       <annotation
@@ -1738,11 +1739,18 @@
       xsi:type="setup.workingsets:WorkingSetTask"
       id="shillner.dev.ump.workingsets">
     <workingSet
-        name="Unleash"
-        id="shillner.dev.ump.workingsets.unleash">
+        name="Unleash-Plugin"
+        id="shillner.dev.ump.workingsets.unleash-plugin">
+      <predicate
+          xsi:type="predicates:RepositoryPredicate"
+          project="unleash-maven-plugin-parent"/>
+    </workingSet>
+    <workingSet
+        name="Unleash-SCM-Providers"
+        id="shillner.dev.ump.workingsets.unleash-scm-providers">
       <predicate
           xsi:type="predicates:NamePredicate"
-          pattern="unleash-maven.*"/>
+          pattern="unleash-scm-provider-*"/>
     </workingSet>
     <description>The dynamic working sets for ${scope.project.label}</description>
   </setupTask>
