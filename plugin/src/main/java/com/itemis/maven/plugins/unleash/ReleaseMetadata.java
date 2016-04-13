@@ -12,6 +12,7 @@ import com.itemis.maven.aether.ArtifactCoordinates;
 
 @Singleton
 public class ReleaseMetadata {
+  // TODO add serialization of metadata as a reporting feature!
   private Map<ReleasePhase, String> scmRevisions;
   private Map<ReleasePhase, Set<ArtifactCoordinates>> artifactCoordinates;
 

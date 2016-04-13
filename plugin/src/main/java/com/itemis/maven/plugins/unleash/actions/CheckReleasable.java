@@ -32,7 +32,7 @@ public class CheckReleasable implements CDIMojoProcessingStep {
   @Override
   public void execute() {
     this.log.debug("Checking that at least one of the reactor projects has a SNAPSHOT version assigned.");
-    boolean hasSnapshotProjects = !Collections2.filter(this.reactorProjects, new IsSnapshotProjectPredicate())
+    boolean hasSnapshotProjects = !Collections2.filter(this.reactorProjects, IsSnapshotProjectPredicate.INSTANCE)
         .isEmpty();
 
     if (!hasSnapshotProjects) {

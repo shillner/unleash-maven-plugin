@@ -29,7 +29,7 @@ public class CheckAether implements CDIMojoProcessingStep {
   private MavenLogWrapper log;
 
   @Inject
-  private ReleaseMetadata releaseMetadata;
+  private ReleaseMetadata metadata;
 
   @Inject
   @Named("reactorProjects")
@@ -45,11 +45,11 @@ public class CheckAether implements CDIMojoProcessingStep {
   @Override
   public void execute() {
     Collection<MavenProject> snapshotProjects = Collections2.filter(this.reactorProjects,
-        new IsSnapshotProjectPredicate());
+        IsSnapshotProjectPredicate.INSTANCE);
 
     List<MavenProject> alreadyReleasedProjects = Lists.newArrayList();
     for (MavenProject p : snapshotProjects) {
-      ArtifactCoordinates calculatedCoordinates = this.releaseMetadata
+      ArtifactCoordinates calculatedCoordinates = this.metadata
           .getArtifactCoordinatesByPhase(p.getGroupId(), p.getArtifactId()).get(ReleasePhase.POST);
       if (isReleased(calculatedCoordinates.getGroupId(), calculatedCoordinates.getArtifactId(),
           calculatedCoordinates.getVersion())) {
