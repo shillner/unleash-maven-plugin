@@ -24,7 +24,7 @@ import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
  */
 // QUESTION: can we omit this step? revision is fetched from local working directory only so we could also just compare
 // local and remote revisions when it is time to commit!
-@ProcessingStep({ @Goal(name = "perform", stepNumber = 0), @Goal(name = "perform", stepNumber = 5) })
+@ProcessingStep(@Goal(name = "perform", stepNumber = 0))
 public class StoreScmRevision implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

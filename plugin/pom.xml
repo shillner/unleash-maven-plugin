@@ -20,6 +20,7 @@
     <version.junit>4.12</version.junit>
     <version.junit-dataprovider>1.10.3</version.junit-dataprovider>
     <version.maven>3.2.1</version.maven>
+    <version.maven-invoker>2.2</version.maven-invoker>
     <version.maven-plugin-plugin>3.4</version.maven-plugin-plugin>
   </properties>
 
@@ -95,6 +96,11 @@
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-core</artifactId>
       <version>${version.maven}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-invoker</artifactId>
+      <version>${version.maven-invoker}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>

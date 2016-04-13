@@ -18,7 +18,7 @@ import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
 
-@ProcessingStep(@Goal(name = "perform", stepNumber = 2))
+@ProcessingStep(@Goal(name = "perform", stepNumber = 20))
 public class CalculateReleaseversions implements CDIMojoProcessingStep {
   @Inject
   @Named("reactorProjects")

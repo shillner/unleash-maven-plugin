@@ -5,6 +5,8 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
 import com.google.common.collect.Collections2;
@@ -20,7 +22,7 @@ import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProjectPredica
  *
  * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
  */
-@ProcessingStep(@Goal(name = "perform", stepNumber = 1))
+@ProcessingStep(@Goal(name = "perform", stepNumber = 10))
 public class CheckReleasable implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;
@@ -30,7 +32,7 @@ public class CheckReleasable implements CDIMojoProcessingStep {
   private List<MavenProject> reactorProjects;
 
   @Override
-  public void execute() {
+  public void execute() throws MojoExecutionException, MojoFailureException {
     this.log.debug("Checking that at least one of the reactor projects has a SNAPSHOT version assigned.");
     boolean hasSnapshotProjects = !Collections2.filter(this.reactorProjects, IsSnapshotProjectPredicate.INSTANCE)
         .isEmpty();

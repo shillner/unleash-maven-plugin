@@ -15,6 +15,7 @@ import org.apache.maven.model.Parent;
 import org.apache.maven.model.io.DefaultModelWriter;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
@@ -26,7 +27,7 @@ import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 
-@ProcessingStep(@Goal(name = "perform", stepNumber = 4))
+@ProcessingStep(@Goal(name = "perform", stepNumber = 40))
 public class PreparePomVersions implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;
@@ -39,7 +40,7 @@ public class PreparePomVersions implements CDIMojoProcessingStep {
   private List<MavenProject> reactorProjects;
 
   @Override
-  public void execute() throws MojoExecutionException {
+  public void execute() throws MojoExecutionException, MojoFailureException {
     for (MavenProject project : this.reactorProjects) {
       updateProjectVersion(project);
       updateParentVersion(project);

@@ -66,6 +66,16 @@ public class UnleashMojo extends AbstractCDIMojo implements Extension {
   @Named("allowLocalReleaseArtifacts")
   private boolean allowLocalReleaseArtifacts;
 
+  @Parameter(property = "unleash.profiles")
+  @MojoProduces
+  @Named("profiles")
+  private List<String> profiles;
+
+  @Parameter(defaultValue = "${maven.home}", property = "unleash.mavenHome")
+  @MojoProduces
+  @Named("maven.home")
+  private String mavenHome;
+
   @MojoProduces
   public MavenLogWrapper createLogWrapper() {
     MavenLogWrapper log = new MavenLogWrapper(getLog());

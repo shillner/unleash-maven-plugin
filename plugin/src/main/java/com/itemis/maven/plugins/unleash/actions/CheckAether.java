@@ -7,6 +7,8 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
 import com.google.common.base.Optional;
@@ -23,7 +25,7 @@ import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProjectPredicate;
 
-@ProcessingStep(@Goal(name = "perform", stepNumber = 3))
+@ProcessingStep(@Goal(name = "perform", stepNumber = 30))
 public class CheckAether implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;
@@ -43,7 +45,7 @@ public class CheckAether implements CDIMojoProcessingStep {
   private boolean allowLocalReleaseArtifacts;
 
   @Override
-  public void execute() {
+  public void execute() throws MojoExecutionException, MojoFailureException {
     Collection<MavenProject> snapshotProjects = Collections2.filter(this.reactorProjects,
         IsSnapshotProjectPredicate.INSTANCE);
 
