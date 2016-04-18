@@ -10,4 +10,8 @@ public interface ScmProvider {
   String getLocalRevision();
 
   String getLatestRemoteRevision();
+
+  void tag(String tagName, String revision, String message) throws ScmException;
+
+  void deleteTag(String tagName) throws ScmException;
 }

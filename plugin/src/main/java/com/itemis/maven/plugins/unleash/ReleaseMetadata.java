@@ -29,7 +29,7 @@ public class ReleaseMetadata {
     this.scmRevisions.put(phase, scmRevision);
   }
 
-  public String getPreReleaseScmRevision(ReleasePhase phase) {
+  public String getScmRevision(ReleasePhase phase) {
     return this.scmRevisions.get(phase);
   }
 

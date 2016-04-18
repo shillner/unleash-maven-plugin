@@ -10,6 +10,7 @@ import javax.inject.Singleton;
 import org.apache.maven.project.MavenProject;
 
 import com.google.common.base.Optional;
+import com.itemis.maven.plugins.unleash.scm.annotations.ScmProviderTypeLiteral;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 
 @Singleton

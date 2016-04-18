@@ -1,4 +1,4 @@
-package com.itemis.maven.plugins.unleash.scm;
+package com.itemis.maven.plugins.unleash.scm.annotations;
 
 import javax.enterprise.util.AnnotationLiteral;
 

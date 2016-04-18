@@ -1,4 +1,4 @@
-package com.itemis.maven.plugins.unleash.scm;
+package com.itemis.maven.plugins.unleash.scm.annotations;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
@@ -10,6 +10,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 import javax.inject.Qualifier;
+
+import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 
 /**
  * A CDI qualifier annotation for the qualification of beans implementing the {@link ScmProvider} interface. This
