@@ -5,6 +5,7 @@ import java.util.List;
 import javax.enterprise.inject.spi.Extension;
 import javax.inject.Named;
 
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -76,6 +77,16 @@ public class UnleashMojo extends AbstractCDIMojo implements Extension {
   @Named("maven.home")
   private String mavenHome;
 
+  @Parameter(defaultValue = "@{project.version}", property = "unleash.tagNamePattern")
+  @MojoProduces
+  @Named("tagNamePattern")
+  private String tagNamePattern;
+
+  @Parameter(defaultValue = "", property = "unleash.scmMessagePrefix")
+  @MojoProduces
+  @Named("scmMessagePrefix")
+  private String scmMessagePrefix;
+
   @MojoProduces
   public MavenLogWrapper createLogWrapper() {
     MavenLogWrapper log = new MavenLogWrapper(getLog());
@@ -83,5 +94,10 @@ public class UnleashMojo extends AbstractCDIMojo implements Extension {
       log.enableLogTimestamps();
     }
     return log;
+  }
+
+  @MojoProduces
+  private PluginDescriptor getPluginDescriptor() {
+    return (PluginDescriptor) getPluginContext().get("pluginDescriptor");
   }
 }

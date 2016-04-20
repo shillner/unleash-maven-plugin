@@ -5,7 +5,7 @@ import org.apache.maven.project.MavenProject;
 import com.google.common.base.Predicate;
 import com.itemis.maven.plugins.unleash.util.MavenVersionUtil;
 
-public enum IsSnapshotProjectPredicate implements Predicate<MavenProject> {
+public enum IsSnapshotProject implements Predicate<MavenProject> {
   INSTANCE;
 
   @Override

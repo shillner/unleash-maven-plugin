@@ -1,4 +1,4 @@
-package com.itemis.maven.plugins.unleash.actions;
+package com.itemis.maven.plugins.unleash.steps.checks;
 
 import java.io.File;
 import java.util.Collection;
@@ -23,7 +23,7 @@ import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
-import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProjectPredicate;
+import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProject;
 
 @ProcessingStep(@Goal(name = "perform", stepNumber = 30))
 public class CheckAether implements CDIMojoProcessingStep {
@@ -47,7 +47,7 @@ public class CheckAether implements CDIMojoProcessingStep {
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
     Collection<MavenProject> snapshotProjects = Collections2.filter(this.reactorProjects,
-        IsSnapshotProjectPredicate.INSTANCE);
+        IsSnapshotProject.INSTANCE);
 
     List<MavenProject> alreadyReleasedProjects = Lists.newArrayList();
     for (MavenProject p : snapshotProjects) {

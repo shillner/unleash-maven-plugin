@@ -1,4 +1,4 @@
-package com.itemis.maven.plugins.unleash.actions;
+package com.itemis.maven.plugins.unleash.steps.actions;
 
 import java.util.List;
 

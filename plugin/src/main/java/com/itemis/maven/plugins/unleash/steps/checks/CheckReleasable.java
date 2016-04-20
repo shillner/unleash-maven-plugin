@@ -1,4 +1,4 @@
-package com.itemis.maven.plugins.unleash.actions;
+package com.itemis.maven.plugins.unleash.steps.checks;
 
 import java.util.List;
 
@@ -14,15 +14,16 @@ import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.annotations.Goal;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
-import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProjectPredicate;
+import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProject;
 
-/***
- * Checks that at least one of the projects is releasable,which means that at least one of the projects must have
- * a*snapshot version assigned.**
+/**
+ * Checks that at least one of the projects is releasable, which means that at least one of the projects must have
+ * a snapshot version assigned.
  *
  * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
  */
 @ProcessingStep(@Goal(name = "perform", stepNumber = 10))
+// TODO: also check parent, dependencies and plugins (respect profiles)
 public class CheckReleasable implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;
@@ -34,8 +35,7 @@ public class CheckReleasable implements CDIMojoProcessingStep {
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
     this.log.debug("Checking that at least one of the reactor projects has a SNAPSHOT version assigned.");
-    boolean hasSnapshotProjects = !Collections2.filter(this.reactorProjects, IsSnapshotProjectPredicate.INSTANCE)
-        .isEmpty();
+    boolean hasSnapshotProjects = !Collections2.filter(this.reactorProjects, IsSnapshotProject.INSTANCE).isEmpty();
 
     if (!hasSnapshotProjects) {
       String errorTitle = "There are no snapshot projects that could be released!";

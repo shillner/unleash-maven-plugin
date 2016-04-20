@@ -38,7 +38,7 @@ public class ScmProviderRegistry {
       this.log.error(
           "Could not determine SCM provider name from your POM configuration! Please check the SCM section of your POM and provide connections in the correct format (see also: https://maven.apache.org/scm/scm-url-format.html).");
     } else {
-      this.log.debug("Resolved required SCM provider implementation to '" + providerName + "'");
+      this.log.debug("Resolved required SCM provider implementation to '" + providerName.get() + "'");
     }
     this.scmProviderName = providerName.orNull();
   }

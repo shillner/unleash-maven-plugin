@@ -11,10 +11,11 @@ import com.google.common.collect.Sets;
 import com.itemis.maven.aether.ArtifactCoordinates;
 
 @Singleton
+// TODO add serialization of metadata as a reporting feature!
 public class ReleaseMetadata {
-  // TODO add serialization of metadata as a reporting feature!
   private Map<ReleasePhase, String> scmRevisions;
   private Map<ReleasePhase, Set<ArtifactCoordinates>> artifactCoordinates;
+  private String scmTagName;
 
   private ReleaseMetadata() {
     int numPhases = ReleasePhase.values().length;
@@ -49,5 +50,13 @@ public class ReleaseMetadata {
       }
     }
     return result;
+  }
+
+  public void setScmTagName(String scmTagName) {
+    this.scmTagName = scmTagName;
+  }
+
+  public String getScmTagName() {
+    return this.scmTagName;
   }
 }

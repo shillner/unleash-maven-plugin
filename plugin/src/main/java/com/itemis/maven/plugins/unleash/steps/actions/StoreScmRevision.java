@@ -1,11 +1,10 @@
-package com.itemis.maven.plugins.unleash.actions;
+package com.itemis.maven.plugins.unleash.steps.actions;
 
 import javax.inject.Inject;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.annotations.Goal;
@@ -14,13 +13,23 @@ import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 import com.itemis.maven.plugins.unleash.scm.ScmProviderRegistry;
+import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 
-@ProcessingStep(@Goal(name = "perform", stepNumber = 60))
-public class CheckScmChanges implements CDIMojoProcessingStep {
-
+/**
+ * A Mojo that just stores the local SCM revision information in the release metadata. This information is needed in a
+ * later step to ensure that no other commits where done while releasing the artifact.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
+ */
+// QUESTION: can we omit this step? revision is fetched from local working directory only so we could also just compare
+// local and remote revisions when it is time to commit!
+@ProcessingStep(@Goal(name = "perform", stepNumber = 0))
+public class StoreScmRevision implements CDIMojoProcessingStep {
+  @Inject
+  private MavenLogWrapper log;
   @Inject
   private ScmProviderRegistry scmProviderRegistry;
-
   @Inject
   private ReleaseMetadata metadata;
 
@@ -32,14 +41,8 @@ public class CheckScmChanges implements CDIMojoProcessingStep {
           "Could not load the SCM provider, please check previous log entries. Maybe you need to add an appropriate provider implementation as a dependency to the plugin.");
     }
 
-    String latestRemoteRevision = provider.get().getLatestRemoteRevision();
-    this.metadata.setScmRevision(latestRemoteRevision, ReleasePhase.POST);
-
-    if (!Objects.equal(latestRemoteRevision, this.metadata.getScmRevision(ReleasePhase.PRE))) {
-      throw new MojoFailureException(
-          "The local working copy which has been built is out of sync with the remote repository. [Local revision: "
-              + this.metadata.getScmRevision(ReleasePhase.PRE) + "] [Latest remote revision: " + latestRemoteRevision
-              + "]");
-    }
+    String revision = provider.get().getLocalRevision();
+    this.metadata.setScmRevision(revision, ReleasePhase.PRE);
+    this.log.info("SCM Revision before releasing the artifacts: " + revision);
   }
 }

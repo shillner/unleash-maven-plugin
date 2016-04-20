@@ -1,6 +1,6 @@
 package com.itemis.maven.plugins.unleash.scm;
 
-public class ScmException extends Exception {
+public class ScmException extends RuntimeException {
   private static final long serialVersionUID = -8864350557327681422L;
 
   private ScmOperation operation;
