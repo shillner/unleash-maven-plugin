@@ -35,7 +35,7 @@ import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotPlugin;
 
 @ProcessingStep(@Goal(name = "perform", stepNumber = 13))
-public class CheckPlugins implements CDIMojoProcessingStep {
+public class CheckPluginVersions implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;
 

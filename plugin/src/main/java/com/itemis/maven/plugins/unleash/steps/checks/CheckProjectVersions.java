@@ -24,7 +24,7 @@ import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProject;
  */
 @ProcessingStep(@Goal(name = "perform", stepNumber = 10))
 // TODO: also check parent, dependencies and plugins (respect profiles)
-public class CheckReleasable implements CDIMojoProcessingStep {
+public class CheckProjectVersions implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;
 

@@ -13,7 +13,7 @@ import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProject;
 
 @ProcessingStep(@Goal(name = "perform", stepNumber = 11))
-public class CheckParent implements CDIMojoProcessingStep {
+public class CheckParentVersion implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;
 
