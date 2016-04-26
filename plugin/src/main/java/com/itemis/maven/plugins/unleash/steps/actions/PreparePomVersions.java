@@ -1,34 +1,44 @@
 package com.itemis.maven.plugins.unleash.steps.actions;
 
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.FileOutputStream;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Parent;
-import org.apache.maven.model.io.DefaultModelWriter;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
+import com.google.common.base.Objects;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.annotations.Goal;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
+import com.itemis.maven.plugins.cdi.annotations.RollbackOnError;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 
 @ProcessingStep(@Goal(name = "perform", stepNumber = 40))
 public class PreparePomVersions implements CDIMojoProcessingStep {
+  private static final String NODE_NAME_VERSION = "version";
+  private static final String NODE_NAME_PARENT = "parent";
+
   @Inject
   private MavenLogWrapper log;
 
@@ -45,29 +55,50 @@ public class PreparePomVersions implements CDIMojoProcessingStep {
       updateProjectVersion(project);
       updateParentVersion(project);
 
+      DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
       try {
-        // loads a plain model from the project file since project.getModel() would return a pom with mixed-in parent
-        // declarations and would thus not be suitable for writing back
-        MavenXpp3Reader reader = new MavenXpp3Reader();
-        Model model = reader.read(new InputStreamReader(new FileInputStream(project.getFile())));
-        if (model.getVersion() != null) {
-          model.setVersion(project.getVersion());
-        }
-        if (model.getParent() != null) {
-          model.getParent().setVersion(project.getParent().getVersion());
+        DocumentBuilder documentBuilder = dbf.newDocumentBuilder();
+        Document document = documentBuilder.parse(new FileInputStream(project.getFile()));
+        Element root = document.getDocumentElement();
+
+        // updates the project version if the project declares the version
+        if (project.getModel().getVersion() != null) {
+          NodeList children = root.getChildNodes();
+          for (int i = 0; i < children.getLength(); i++) {
+            Node child = children.item(i);
+            if (Objects.equal(child.getNodeName(), NODE_NAME_VERSION)) {
+              child.setTextContent(project.getVersion());
+            }
+          }
         }
 
-        // TODO maybe do not just serialize the model but adapt the versions by hand to preserve the exact formatting of
-        // the pom
-        new DefaultModelWriter().write(new File(project.getFile().getAbsolutePath().concat("_new")), null, model);
-      } catch (XmlPullParserException e) {
-        throw new MojoExecutionException(
-            "Unable to load POM for version modification: " + project.getGroupId() + ":" + project.getArtifactId(), e);
-      } catch (IOException e) {
-        throw new MojoExecutionException("Unable to serialize POM with adapted release versions: "
-            + project.getGroupId() + ":" + project.getArtifactId(), e);
+        // updates the parent version if one is set
+        if (project.getParent() != null) {
+          Node parentNode = root.getElementsByTagName(NODE_NAME_PARENT).item(0);
+          NodeList children = parentNode.getChildNodes();
+          for (int i = 0; i < children.getLength(); i++) {
+            Node child = children.item(i);
+            if (Objects.equal(child.getNodeName(), NODE_NAME_VERSION)) {
+              child.setTextContent(project.getParent().getVersion());
+            }
+          }
+        }
+
+        // IDEA outsource pom parsing and writing for further tasks
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Transformer transformer = tf.newTransformer();
+        DOMSource source = new DOMSource(document);
+        StreamResult result = new StreamResult(new FileOutputStream(project.getFile()));
+        transformer.transform(source, result);
+      } catch (Throwable t) {
+        throw new MojoFailureException("Could not update versions for release.", t);
       }
     }
+  }
+
+  @RollbackOnError
+  public void rollback(Exception e) {
+    // TODO implement!
   }
 
   private void updateProjectVersion(MavenProject project) {
