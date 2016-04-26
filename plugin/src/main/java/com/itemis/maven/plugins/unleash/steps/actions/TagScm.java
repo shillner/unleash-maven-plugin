@@ -18,9 +18,9 @@ import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.cdi.annotations.RollbackOnError;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
-import com.itemis.maven.plugins.unleash.scm.ScmException;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 import com.itemis.maven.plugins.unleash.scm.ScmProviderRegistry;
+import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
 
 @ProcessingStep(@Goal(name = "perform", stepNumber = 70))
@@ -37,9 +37,12 @@ public class TagScm implements CDIMojoProcessingStep {
   private String scmMessagePrefix;
   @Inject
   private ScmProviderRegistry scmProviderRegistry;
+  @Inject
+  private MavenLogWrapper log;
 
   private ScmProvider scmProvider;
   private String globalReleaseVersion;
+  private boolean tagWasPresent;
 
   private void init() {
     Optional<ScmProvider> provider = this.scmProviderRegistry.getProvider();
@@ -61,18 +64,33 @@ public class TagScm implements CDIMojoProcessingStep {
   public void execute() throws MojoExecutionException, MojoFailureException {
     init();
 
+    String scmTagName = this.metadata.getScmTagName();
+    this.log.info("Tagging SCM, tag name: " + scmTagName);
+    if (this.scmProvider.hasTag(scmTagName)) {
+      this.tagWasPresent = true;
+      throw new MojoFailureException("A tag with name " + scmTagName + " already exists.");
+    }
+
     StringBuilder message = new StringBuilder("Tag for release version ").append(this.globalReleaseVersion)
         .append(" (base revision: ").append(this.metadata.getScmRevision(ReleasePhase.PRE)).append(")");
     if (StringUtils.isNotBlank(this.scmMessagePrefix)) {
       message.insert(0, this.scmMessagePrefix);
     }
 
-    this.scmProvider.tag(this.metadata.getScmTagName(), this.metadata.getScmRevision(ReleasePhase.PRE),
-        message.toString());
+    this.scmProvider.tag(scmTagName, this.metadata.getScmRevision(ReleasePhase.PRE), message.toString());
+    throw new RuntimeException();
   }
 
-  @RollbackOnError(ScmException.class)
-  private void deleteTag(ScmException e) {
-    this.scmProvider.deleteTag(this.metadata.getScmTagName());
+  @RollbackOnError
+  private void deleteTag() {
+    this.log.info("Rolling back SCM tagging due to a processing exception.");
+    String scmTagName = this.metadata.getScmTagName();
+    if (this.scmProvider.hasTag(scmTagName) && !this.tagWasPresent) {
+      this.log.debug("Deleting scm tag '" + scmTagName + "' since the release build failed.");
+      this.scmProvider.deleteTag(scmTagName);
+    } else {
+      this.log.debug("Skipping deletion of SCM tag '" + scmTagName
+          + "' since the tag was already present before the release build was triggered.");
+    }
   }
 }

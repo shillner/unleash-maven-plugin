@@ -13,5 +13,7 @@ public interface ScmProvider {
 
   void tag(String tagName, String revision, String message) throws ScmException;
 
+  boolean hasTag(String tagName);
+
   void deleteTag(String tagName) throws ScmException;
 }
