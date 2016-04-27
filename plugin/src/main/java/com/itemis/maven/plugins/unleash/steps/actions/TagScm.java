@@ -78,7 +78,6 @@ public class TagScm implements CDIMojoProcessingStep {
     }
 
     this.scmProvider.tag(scmTagName, this.metadata.getScmRevision(ReleasePhase.PRE), message.toString());
-    throw new RuntimeException();
   }
 
   @RollbackOnError

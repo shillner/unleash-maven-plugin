@@ -41,11 +41,10 @@ public class BuildProject implements CDIMojoProcessingStep {
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
     InvocationRequest request = new DefaultInvocationRequest();
-    request.setPomFile(this.project.getFile()); // FIXME builds with the original pom but the modified one is stored in
-                                                // a different file!
+    request.setPomFile(this.project.getFile());
     // installation and deployment are performed in a later step. We first need to ensure that there are no changes in
     // the scm, ...
-    request.setGoals(Lists.newArrayList("verify"));
+    request.setGoals(Lists.newArrayList("clean", "verify"));
     request.setProfiles(this.profiles);
     request.setShellEnvironmentInherited(true);
 

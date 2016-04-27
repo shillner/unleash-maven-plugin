@@ -14,6 +14,7 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 
+import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.AbstractCDIMojo;
 import com.itemis.maven.plugins.cdi.annotations.MojoProduces;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
@@ -86,6 +87,11 @@ public class UnleashMojo extends AbstractCDIMojo implements Extension {
   @MojoProduces
   @Named("scmMessagePrefix")
   private String scmMessagePrefix;
+
+  @MojoProduces
+  @Named("artifactSpyPlugin")
+  private ArtifactCoordinates artifactSpyPluginCoordinates = new ArtifactCoordinates("com.itemis.maven.plugins",
+      "artifact-spy-plugin", "1.0.0", "maven-plugin");
 
   @MojoProduces
   public MavenLogWrapper createLogWrapper() {
