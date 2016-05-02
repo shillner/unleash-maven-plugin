@@ -5,6 +5,7 @@ import java.util.List;
 import javax.enterprise.inject.spi.Extension;
 import javax.inject.Named;
 
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -38,6 +39,11 @@ public class UnleashMojo extends AbstractCDIMojo implements Extension {
   @MojoProduces
   @Named("projectRepositories")
   public List<RemoteRepository> remoteProjectRepos;
+
+  @Parameter(readonly = true, defaultValue = "${localRepository}")
+  @MojoProduces
+  @Named("local")
+  private ArtifactRepository LocalRepository;
 
   @Parameter(defaultValue = "${reactorProjects}", readonly = true, required = true)
   @MojoProduces
@@ -91,7 +97,7 @@ public class UnleashMojo extends AbstractCDIMojo implements Extension {
   @MojoProduces
   @Named("artifactSpyPlugin")
   private ArtifactCoordinates artifactSpyPluginCoordinates = new ArtifactCoordinates("com.itemis.maven.plugins",
-      "artifact-spy-plugin", "1.0.0", "maven-plugin");
+      "artifact-spy-plugin", "1.0.2", "maven-plugin");
 
   @MojoProduces
   public MavenLogWrapper createLogWrapper() {
