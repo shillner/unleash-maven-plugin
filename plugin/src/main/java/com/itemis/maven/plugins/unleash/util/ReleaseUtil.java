@@ -43,7 +43,7 @@ public final class ReleaseUtil {
 
   private static String getMavenProperty(String varName, MavenProject project) {
     if (Objects.equal("project.version", varName)) {
-      return project.getVersion();
+      return MavenVersionUtil.calculateReleaseVersion(project.getVersion());
     } else if (Objects.equal("project.artifactId", varName)) {
       return project.getArtifactId();
     } else if (Objects.equal("project.groupId", varName)) {

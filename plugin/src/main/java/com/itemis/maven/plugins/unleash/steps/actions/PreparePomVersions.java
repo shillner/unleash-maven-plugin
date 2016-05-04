@@ -20,7 +20,6 @@ import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.annotations.Goal;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
-import com.itemis.maven.plugins.cdi.annotations.RollbackOnError;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
@@ -28,8 +27,6 @@ import com.itemis.maven.plugins.unleash.util.PomUtil;
 
 @ProcessingStep(@Goal(name = "perform", stepNumber = 40))
 public class PreparePomVersions implements CDIMojoProcessingStep {
-  private static final String NODE_NAME_VERSION = "version";
-  private static final String NODE_NAME_PARENT = "parent";
 
   @Inject
   private MavenLogWrapper log;
@@ -51,21 +48,6 @@ public class PreparePomVersions implements CDIMojoProcessingStep {
         PomUtil.writePOM(document, project);
       } catch (Throwable t) {
         throw new MojoFailureException("Could not update versions for release.", t);
-      }
-    }
-  }
-
-  @RollbackOnError
-  public void rollback() {
-    this.log.info("Rolling back POM version modifiactions due to a processing exception.");
-    for (MavenProject project : this.reactorProjects) {
-      try {
-        Document document = PomUtil.parsePOM(project);
-        setProjectVersion(project, document, ReleasePhase.PRE);
-        setParentVersion(project, document, ReleasePhase.PRE);
-        PomUtil.writePOM(document, project);
-      } catch (Throwable t) {
-        throw new RuntimeException("Could not reset versions after failed release.", t);
       }
     }
   }
@@ -96,7 +78,7 @@ public class PreparePomVersions implements CDIMojoProcessingStep {
       NodeList children = document.getDocumentElement().getChildNodes();
       for (int i = 0; i < children.getLength(); i++) {
         Node child = children.item(i);
-        if (Objects.equal(child.getNodeName(), NODE_NAME_VERSION)) {
+        if (Objects.equal(child.getNodeName(), PomUtil.NODE_NAME_VERSION)) {
           child.setTextContent(newVersion);
         }
       }
@@ -132,11 +114,11 @@ public class PreparePomVersions implements CDIMojoProcessingStep {
         parent.setVersion(newCoordinates.getVersion());
 
         // second step: update the parent version in the DOM document that will be serialized for later building
-        Node parentNode = document.getDocumentElement().getElementsByTagName(NODE_NAME_PARENT).item(0);
+        Node parentNode = document.getDocumentElement().getElementsByTagName(PomUtil.NODE_NAME_PARENT).item(0);
         NodeList children = parentNode.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
           Node child = children.item(i);
-          if (Objects.equal(child.getNodeName(), NODE_NAME_VERSION)) {
+          if (Objects.equal(child.getNodeName(), PomUtil.NODE_NAME_VERSION)) {
             child.setTextContent(newCoordinates.getVersion());
           }
         }

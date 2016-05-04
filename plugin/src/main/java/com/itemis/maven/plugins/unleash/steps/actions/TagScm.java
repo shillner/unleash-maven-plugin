@@ -1,14 +1,18 @@
 package com.itemis.maven.plugins.unleash.steps.actions;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.model.Scm;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 import com.google.common.base.Optional;
 import com.itemis.maven.aether.ArtifactCoordinates;
@@ -21,24 +25,24 @@ import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 import com.itemis.maven.plugins.unleash.scm.ScmProviderRegistry;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
-import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
+import com.itemis.maven.plugins.unleash.util.PomUtil;
 
 @ProcessingStep(@Goal(name = "perform", stepNumber = 70))
 public class TagScm implements CDIMojoProcessingStep {
   @Inject
+  private MavenLogWrapper log;
+  @Inject
   private MavenProject project;
   @Inject
-  private ReleaseMetadata metadata;
+  @Named("reactorProjects")
+  private List<MavenProject> reactorProjects;
   @Inject
-  @Named("tagNamePattern")
-  private String tagNamePattern;
+  private ReleaseMetadata metadata;
   @Inject
   @Named("scmMessagePrefix")
   private String scmMessagePrefix;
   @Inject
   private ScmProviderRegistry scmProviderRegistry;
-  @Inject
-  private MavenLogWrapper log;
 
   private ScmProvider scmProvider;
   private String globalReleaseVersion;
@@ -52,12 +56,41 @@ public class TagScm implements CDIMojoProcessingStep {
     }
     this.scmProvider = provider.get();
 
-    this.metadata.setScmTagName(ReleaseUtil.getTagName(this.tagNamePattern, this.project));
-
     Map<ReleasePhase, ArtifactCoordinates> coordinates = this.metadata
         .getArtifactCoordinatesByPhase(this.project.getGroupId(), this.project.getArtifactId());
     ArtifactCoordinates postReleaseCoordinates = coordinates.get(ReleasePhase.POST);
     this.globalReleaseVersion = postReleaseCoordinates.getVersion();
+  }
+
+  private void updateScmConnections(String scmTagName) throws MojoFailureException {
+    for (MavenProject p : this.reactorProjects) {
+      Scm scm = p.getModel().getScm();
+      if (scm != null) {
+        try {
+          Document document = PomUtil.parsePOM(p);
+          Node scmNode = PomUtil.getOrCreateScmNode(document, false);
+
+          if (scmNode != null) {
+            if (scm.getConnection() != null) {
+              PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_CONNECTION,
+                  this.scmProvider.calculateTagConnectionString(scm.getConnection(), scmTagName), false);
+            }
+
+            if (scm.getDeveloperConnection() != null) {
+              PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_DEV_CONNECTION,
+                  this.scmProvider.calculateTagConnectionString(scm.getDeveloperConnection(), scmTagName), false);
+            }
+
+            if (!this.scmProvider.isTagInfoIncludedInConnection()) {
+              PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_TAG, scmTagName, true);
+            }
+            PomUtil.writePOM(document, p);
+          }
+        } catch (Throwable t) {
+          throw new MojoFailureException("Could not update scm information for release.", t);
+        }
+      }
+    }
   }
 
   @Override
@@ -65,6 +98,8 @@ public class TagScm implements CDIMojoProcessingStep {
     init();
 
     String scmTagName = this.metadata.getScmTagName();
+    updateScmConnections(scmTagName);
+
     this.log.info("Tagging SCM, tag name: " + scmTagName);
     if (this.scmProvider.hasTag(scmTagName)) {
       this.tagWasPresent = true;
@@ -81,7 +116,7 @@ public class TagScm implements CDIMojoProcessingStep {
   }
 
   @RollbackOnError
-  private void deleteTag() {
+  private void rollback() {
     this.log.info("Rolling back SCM tagging due to a processing exception.");
     String scmTagName = this.metadata.getScmTagName();
     if (this.scmProvider.hasTag(scmTagName) && !this.tagWasPresent) {

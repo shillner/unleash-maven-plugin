@@ -23,6 +23,7 @@ import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
+import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProject;
 
 @ProcessingStep(@Goal(name = "perform", stepNumber = 30))
@@ -46,8 +47,7 @@ public class CheckAether implements CDIMojoProcessingStep {
 
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
-    Collection<MavenProject> snapshotProjects = Collections2.filter(this.reactorProjects,
-        IsSnapshotProject.INSTANCE);
+    Collection<MavenProject> snapshotProjects = Collections2.filter(this.reactorProjects, IsSnapshotProject.INSTANCE);
 
     List<MavenProject> alreadyReleasedProjects = Lists.newArrayList();
     for (MavenProject p : snapshotProjects) {
@@ -62,7 +62,7 @@ public class CheckAether implements CDIMojoProcessingStep {
     if (!alreadyReleasedProjects.isEmpty()) {
       this.log.error("The following projects are already present in one of your remote repositories:");
       for (MavenProject p : alreadyReleasedProjects) {
-        this.log.error("\t" + PomUtil.getBasicCoordinates(p));
+        this.log.error("\t" + ProjectToString.INSTANCE.apply(p));
       }
       this.log.error("");
       throw new IllegalStateException(

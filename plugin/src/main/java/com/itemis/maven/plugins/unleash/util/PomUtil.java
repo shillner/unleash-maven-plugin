@@ -16,9 +16,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 import com.google.common.base.Objects;
 import com.google.common.io.Closeables;
+import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 
 /**
  * Some common constants regarding the POM.
@@ -31,24 +33,23 @@ public final class PomUtil {
   public static final String VERSION_QUALIFIER_SNAPSHOT = "-SNAPSHOT";
   public static final String VERSION_LATEST = "LATEST";
 
-  public static final String NODE_NAME_BUILD = "build";
-  public static final String NODE_NAME_PLUGINS = "plugins";
-  public static final String NODE_NAME_PLUGIN = "plugin";
-  public static final String NODE_NAME_GROUP_ID = "groupId";
   public static final String NODE_NAME_ARTIFACT_ID = "artifactId";
-  public static final String NODE_NAME_VERSION = "version";
-  public static final String NODE_NAME_EXECUTIONS = "executions";
+  public static final String NODE_NAME_BUILD = "build";
   public static final String NODE_NAME_EXECUTION = "execution";
-  public static final String NODE_NAME_ID = "id";
-  public static final String NODE_NAME_PHASE = "phase";
-  public static final String NODE_NAME_GOALS = "goals";
+  public static final String NODE_NAME_EXECUTIONS = "executions";
   public static final String NODE_NAME_GOAL = "goal";
-
-  public static final String getBasicCoordinates(MavenProject project) {
-    StringBuilder sb = new StringBuilder(project.getGroupId()).append(':').append(project.getArtifactId()).append(':')
-        .append(project.getVersion());
-    return sb.toString();
-  }
+  public static final String NODE_NAME_GOALS = "goals";
+  public static final String NODE_NAME_GROUP_ID = "groupId";
+  public static final String NODE_NAME_ID = "id";
+  public static final String NODE_NAME_PARENT = "parent";
+  public static final String NODE_NAME_PHASE = "phase";
+  public static final String NODE_NAME_PLUGIN = "plugin";
+  public static final String NODE_NAME_PLUGINS = "plugins";
+  public static final String NODE_NAME_SCM = "scm";
+  public static final String NODE_NAME_SCM_CONNECTION = "connection";
+  public static final String NODE_NAME_SCM_DEV_CONNECTION = "developerConnection";
+  public static final String NODE_NAME_SCM_TAG = "tag";
+  public static final String NODE_NAME_VERSION = "version";
 
   private PomUtil() {
     // Should not be instanciated
@@ -63,7 +64,8 @@ public final class PomUtil {
       return document;
     } catch (Exception e) {
       throw new RuntimeException(
-          "Could not load the project object model of the following module: " + getBasicCoordinates(project), e);
+          "Could not load the project object model of the following module: " + ProjectToString.INSTANCE.apply(project),
+          e);
     } finally {
       Closeables.closeQuietly(is);
     }
@@ -77,8 +79,8 @@ public final class PomUtil {
       os = new FileOutputStream(project.getFile());
       transformer.transform(source, new StreamResult(os));
     } catch (Exception e) {
-      throw new RuntimeException(
-          "Could not serialize the project object model of the following module: " + getBasicCoordinates(project), e);
+      throw new RuntimeException("Could not serialize the project object model of the following module: "
+          + ProjectToString.INSTANCE.apply(project), e);
     } finally {
       try {
         Closeables.close(os, true);
@@ -212,5 +214,45 @@ public final class PomUtil {
     }
 
     return execution;
+  }
+
+  public static Node getOrCreateScmNode(Document document, boolean createOnDemand) {
+    NodeList scmNodeList = document.getElementsByTagName(NODE_NAME_SCM);
+    Node scm = null;
+    if (scmNodeList.getLength() == 0 && createOnDemand) {
+      scm = document.createElement(NODE_NAME_SCM);
+      document.appendChild(scm);
+    } else {
+      scm = scmNodeList.item(0);
+    }
+    return scm;
+  }
+
+  public static void setNodeTextContent(Node parentNode, String nodeName, String content, boolean createOnDemand) {
+    Node node = null;
+    NodeList children = parentNode.getChildNodes();
+    for (int i = 0; i < children.getLength(); i++) {
+      Node n = children.item(i);
+      if (Objects.equal(nodeName, n.getNodeName())) {
+        node = n;
+        break;
+      }
+    }
+
+    if (node == null && createOnDemand) {
+      node = parentNode.getOwnerDocument().createElement(nodeName);
+      if (children.getLength() > 0) {
+        Node lastChild = children.item(children.getLength() - 1);
+        Text lineBreak = parentNode.getOwnerDocument().createTextNode("\n");
+        parentNode.insertBefore(lineBreak, lastChild);
+        parentNode.insertBefore(node, lastChild);
+      } else {
+        parentNode.appendChild(node);
+      }
+    }
+
+    if (node != null) {
+      node.setTextContent(content);
+    }
   }
 }

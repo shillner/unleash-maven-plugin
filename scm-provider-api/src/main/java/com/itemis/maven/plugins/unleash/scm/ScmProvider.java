@@ -16,4 +16,10 @@ public interface ScmProvider {
   boolean hasTag(String tagName);
 
   void deleteTag(String tagName) throws ScmException;
+
+  String calculateTagConnectionString(String currentConnectionString, String tagName);
+
+  String calculateBranchConnectionString(String currentConnectionString, String branchName);
+
+  boolean isTagInfoIncludedInConnection();
 }
