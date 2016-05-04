@@ -118,7 +118,7 @@ public final class MavenVersionUtil {
    * @return the calculated release version which might be identical to the passed version.
    */
   public static String calculateReleaseVersion(String version) {
-    if (version.endsWith(PomUtil.VERSION_QUALIFIER_SNAPSHOT)) {
+    if (version.toUpperCase().endsWith(PomUtil.VERSION_QUALIFIER_SNAPSHOT)) {
       return version.substring(0, version.length() - PomUtil.VERSION_QUALIFIER_SNAPSHOT.length());
     }
     return version;

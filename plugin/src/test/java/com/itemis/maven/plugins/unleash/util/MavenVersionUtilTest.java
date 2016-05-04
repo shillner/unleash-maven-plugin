@@ -12,8 +12,9 @@ import com.tngtech.java.junit.dataprovider.UseDataProvider;
 public class MavenVersionUtilTest {
   @DataProvider
   public static Object[][] calculateReleaseVersion() {
-    return new Object[][] { { "3.8.1", "3.8.1" }, { "1.0.0-SNAPSHOT", "1.0.0" }, { "1.12", "1.12" },
-        { "1.3-SNAPSH", "1.3-SNAPSH" }, { "3", "3" }, { "5-SNAPSHOT", "5" } };
+    return new Object[][] { { "3.8.1", "3.8.1" }, { "1.0.0" + PomUtil.VERSION_QUALIFIER_SNAPSHOT, "1.0.0" },
+        { "3.2" + PomUtil.VERSION_QUALIFIER_SNAPSHOT.toLowerCase(), "3.2" }, { "1.12", "1.12" },
+        { "1.3-SNAPSH", "1.3-SNAPSH" }, { "3", "3" }, { "5" + PomUtil.VERSION_QUALIFIER_SNAPSHOT, "5" } };
   }
 
   @DataProvider
