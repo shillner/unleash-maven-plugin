@@ -11,8 +11,12 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Settings;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.impl.Deployer;
+import org.eclipse.aether.impl.Installer;
+import org.eclipse.aether.impl.RemoteRepositoryManager;
 import org.eclipse.aether.repository.RemoteRepository;
 
 import com.itemis.maven.aether.ArtifactCoordinates;
@@ -40,6 +44,18 @@ public class UnleashMojo extends AbstractCDIMojo implements Extension {
   @Named("projectRepositories")
   public List<RemoteRepository> remoteProjectRepos;
 
+  @Component
+  @MojoProduces
+  public RemoteRepositoryManager remoteRepositoryManager;
+
+  @Component
+  @MojoProduces
+  public Deployer deployer;
+
+  @Component
+  @MojoProduces
+  public Installer installer;
+
   @Parameter(readonly = true, defaultValue = "${localRepository}")
   @MojoProduces
   @Named("local")
@@ -53,6 +69,10 @@ public class UnleashMojo extends AbstractCDIMojo implements Extension {
   @Component
   @MojoProduces
   private MavenProject project;
+
+  @Parameter(defaultValue = "${settings}", readonly = true)
+  @MojoProduces
+  private Settings settings;
 
   @Parameter
   @MojoProduces
