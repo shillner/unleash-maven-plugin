@@ -61,8 +61,6 @@ public class DeployArtifacts implements CDIMojoProcessingStep {
     } catch (DeploymentException e) {
       throw new MojoFailureException("Unable to deploy artifacts into remote repository.", e);
     }
-
-    throw new RuntimeException();
   }
 
   private Properties loadModuleArtifacts(MavenProject p) throws IOException {
