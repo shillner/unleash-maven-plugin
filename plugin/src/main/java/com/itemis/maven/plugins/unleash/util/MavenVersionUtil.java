@@ -11,14 +11,15 @@ public final class MavenVersionUtil {
   }
 
   /**
-   * Checks whether the passed version represents a SNAPSHOT version by checking if the version String ends on
-   * '-SNAPSHOT'.
+   * Checks whether the passed version represents a SNAPSHOT version by checking if the version String ends with
+   * '-SNAPSHOT' or equals 'LATEST'.
    *
    * @param version the version to check
    * @return {@code true} if the version String represents a SNAPSHOT version.
    */
   public static boolean isSnapshot(String version) {
-    return version.endsWith(PomUtil.VERSION_QUALIFIER_SNAPSHOT);
+    return version.toUpperCase().endsWith(PomUtil.VERSION_QUALIFIER_SNAPSHOT)
+        || version.toUpperCase().equals(PomUtil.VERSION_LATEST);
   }
 
   /**

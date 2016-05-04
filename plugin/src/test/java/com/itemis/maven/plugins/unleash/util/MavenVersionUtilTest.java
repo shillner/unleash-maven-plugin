@@ -4,7 +4,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.itemis.maven.plugins.unleash.util.MavenVersionUtil;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
@@ -26,8 +25,10 @@ public class MavenVersionUtilTest {
 
   @DataProvider
   public static Object[][] isSnapshot() {
-    return new Object[][] { { "1.0.0-SNAPSHOT", true }, { "1.0.0", false }, { "3.1-Alpha", false },
-        { "1-SNAPSHOT-alpha", false } };
+    return new Object[][] { { "1.0.0" + PomUtil.VERSION_QUALIFIER_SNAPSHOT, true },
+        { "1.0.0" + PomUtil.VERSION_QUALIFIER_SNAPSHOT.toLowerCase(), true }, { "1.0.0", false },
+        { "3.1-Alpha", false }, { "1-SNAPSHOT-alpha", false }, { "1-alpha" + PomUtil.VERSION_QUALIFIER_SNAPSHOT, true },
+        { PomUtil.VERSION_LATEST, true }, { PomUtil.VERSION_LATEST.toLowerCase(), true } };
   }
 
   @Test

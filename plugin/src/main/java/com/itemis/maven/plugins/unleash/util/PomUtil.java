@@ -29,6 +29,7 @@ public final class PomUtil {
   public static final String ARTIFACT_TYPE_JAR = "jar";
   public static final String ARTIFACT_TYPE_POM = "pom";
   public static final String VERSION_QUALIFIER_SNAPSHOT = "-SNAPSHOT";
+  public static final String VERSION_LATEST = "LATEST";
 
   public static final String NODE_NAME_BUILD = "build";
   public static final String NODE_NAME_PLUGINS = "plugins";
