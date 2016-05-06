@@ -11,6 +11,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.maven.model.Model;
+import org.apache.maven.model.Parent;
 import org.apache.maven.project.MavenProject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -86,6 +88,41 @@ public final class PomUtil {
         Closeables.close(os, true);
       } catch (IOException e) {
         throw new RuntimeException("Actually this should not happen :(", e);
+      }
+    }
+  }
+
+  public static void setProjectVersion(MavenProject project, Document document, String newVersion) {
+    Model model = project.getModel();
+    // if model version is null, the parent version is inherited
+    if (model.getVersion() != null) {
+      // first step: update the version of the in-memory project
+      model.setVersion(newVersion);
+
+      // second step: update the project version in the DOM document that is then serialized for later building
+      NodeList children = document.getDocumentElement().getChildNodes();
+      for (int i = 0; i < children.getLength(); i++) {
+        Node child = children.item(i);
+        if (Objects.equal(child.getNodeName(), PomUtil.NODE_NAME_VERSION)) {
+          child.setTextContent(newVersion);
+        }
+      }
+    }
+  }
+
+  public static void setParentVersion(MavenProject project, Document document, String newParentVersion) {
+    Model model = project.getModel();
+    Parent parent = model.getParent();
+    // first step: update parent version of the in-memory model
+    parent.setVersion(newParentVersion);
+
+    // second step: update the parent version in the DOM document that will be serialized for later building
+    Node parentNode = document.getDocumentElement().getElementsByTagName(PomUtil.NODE_NAME_PARENT).item(0);
+    NodeList children = parentNode.getChildNodes();
+    for (int i = 0; i < children.getLength(); i++) {
+      Node child = children.item(i);
+      if (Objects.equal(child.getNodeName(), PomUtil.NODE_NAME_VERSION)) {
+        child.setTextContent(newParentVersion);
       }
     }
   }

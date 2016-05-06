@@ -42,7 +42,7 @@ public class StoreScmRevision implements CDIMojoProcessingStep {
     }
 
     String revision = provider.get().getLocalRevision();
-    this.metadata.setScmRevision(revision, ReleasePhase.PRE);
+    this.metadata.setScmRevision(revision, ReleasePhase.PRE_RELEASE);
     this.log.info("SCM Revision before releasing the artifacts: " + revision);
   }
 }

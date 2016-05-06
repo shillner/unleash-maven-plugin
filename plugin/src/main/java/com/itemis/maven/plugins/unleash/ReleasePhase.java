@@ -1,5 +1,5 @@
 package com.itemis.maven.plugins.unleash;
 
 public enum ReleasePhase {
-  PRE, POST;
+  PRE_RELEASE, RELEASE, POST_RELEASE;
 }

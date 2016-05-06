@@ -24,6 +24,7 @@ import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 import com.itemis.maven.plugins.unleash.scm.ScmProviderRegistry;
+import com.itemis.maven.plugins.unleash.scm.requests.TagRequest;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 
@@ -58,10 +59,11 @@ public class TagScm implements CDIMojoProcessingStep {
 
     Map<ReleasePhase, ArtifactCoordinates> coordinates = this.metadata
         .getArtifactCoordinatesByPhase(this.project.getGroupId(), this.project.getArtifactId());
-    ArtifactCoordinates postReleaseCoordinates = coordinates.get(ReleasePhase.POST);
+    ArtifactCoordinates postReleaseCoordinates = coordinates.get(ReleasePhase.RELEASE);
     this.globalReleaseVersion = postReleaseCoordinates.getVersion();
   }
 
+  // FIXME outsource to extra step
   private void updateScmConnections(String scmTagName) throws MojoFailureException {
     for (MavenProject p : this.reactorProjects) {
       Scm scm = p.getModel().getScm();
@@ -107,12 +109,13 @@ public class TagScm implements CDIMojoProcessingStep {
     }
 
     StringBuilder message = new StringBuilder("Tag for release version ").append(this.globalReleaseVersion)
-        .append(" (base revision: ").append(this.metadata.getScmRevision(ReleasePhase.PRE)).append(")");
+        .append(" (base revision: ").append(this.metadata.getScmRevision(ReleasePhase.PRE_RELEASE)).append(")");
     if (StringUtils.isNotBlank(this.scmMessagePrefix)) {
       message.insert(0, this.scmMessagePrefix);
     }
 
-    this.scmProvider.tag(scmTagName, this.metadata.getScmRevision(ReleasePhase.PRE), message.toString());
+    // this.scmProvider.tag(scmTagName, this.metadata.getScmRevision(ReleasePhase.PRE), message.toString());
+    this.scmProvider.tag(TagRequest.builder().setMessage(message.toString()).setTagName(scmTagName).build());
   }
 
   @RollbackOnError

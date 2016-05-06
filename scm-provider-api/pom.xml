@@ -9,11 +9,20 @@
   
   <artifactId>unleash-maven-plugin-scm-provider-api</artifactId>
   
+  <properties>
+    <version.guava>19.0</version.guava>
+  </properties>
+  
   <dependencies>
     <dependency>
       <groupId>javax.enterprise</groupId>
       <artifactId>cdi-api</artifactId>
       <version>1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>${version.guava}</version>
     </dependency>
   </dependencies>
 </project>

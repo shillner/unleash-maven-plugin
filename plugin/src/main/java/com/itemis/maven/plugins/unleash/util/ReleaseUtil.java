@@ -18,9 +18,9 @@ public final class ReleaseUtil {
     return MavenVersionUtil.calculateReleaseVersion(version);
   }
 
-  public static String getNextDevelopmentVersion(String version, String defaultDevelopmentversion) {
-    if (!Strings.isNullOrEmpty(defaultDevelopmentversion)) {
-      return defaultDevelopmentversion;
+  public static String getNextDevelopmentVersion(String version, String defaultDevelopmentVersion) {
+    if (!Strings.isNullOrEmpty(defaultDevelopmentVersion)) {
+      return defaultDevelopmentVersion;
     }
 
     return MavenVersionUtil.calculateNextSnapshotVersion(version);

@@ -2,20 +2,29 @@ package com.itemis.maven.plugins.unleash.scm;
 
 import java.io.File;
 
+import com.itemis.maven.plugins.unleash.scm.requests.CommitRequest;
+import com.itemis.maven.plugins.unleash.scm.requests.TagRequest;
+
 public interface ScmProvider {
   void initialize(File workingDirectory);
 
   void close();
 
-  String getLocalRevision();
+  void commit(CommitRequest request) throws ScmException;
 
-  String getLatestRemoteRevision();
+  void push() throws ScmException;
 
-  void tag(String tagName, String revision, String message) throws ScmException;
+  void update() throws ScmException;
+
+  void tag(TagRequest request) throws ScmException;
 
   boolean hasTag(String tagName);
 
   void deleteTag(String tagName) throws ScmException;
+
+  String getLocalRevision();
+
+  String getLatestRemoteRevision();
 
   String calculateTagConnectionString(String currentConnectionString, String tagName);
 

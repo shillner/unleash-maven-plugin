@@ -33,13 +33,13 @@ public class CheckScmChanges implements CDIMojoProcessingStep {
     }
 
     String latestRemoteRevision = provider.get().getLatestRemoteRevision();
-    this.metadata.setScmRevision(latestRemoteRevision, ReleasePhase.POST);
+    this.metadata.setScmRevision(latestRemoteRevision, ReleasePhase.RELEASE);
 
-    if (!Objects.equal(latestRemoteRevision, this.metadata.getScmRevision(ReleasePhase.PRE))) {
+    if (!Objects.equal(latestRemoteRevision, this.metadata.getScmRevision(ReleasePhase.PRE_RELEASE))) {
       throw new MojoFailureException(
           "The local working copy which has been built is out of sync with the remote repository. [Local revision: "
-              + this.metadata.getScmRevision(ReleasePhase.PRE) + "] [Latest remote revision: " + latestRemoteRevision
-              + "]");
+              + this.metadata.getScmRevision(ReleasePhase.PRE_RELEASE) + "] [Latest remote revision: "
+              + latestRemoteRevision + "]");
     }
   }
 }

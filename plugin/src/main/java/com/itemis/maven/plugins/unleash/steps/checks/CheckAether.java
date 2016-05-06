@@ -52,7 +52,7 @@ public class CheckAether implements CDIMojoProcessingStep {
     List<MavenProject> alreadyReleasedProjects = Lists.newArrayList();
     for (MavenProject p : snapshotProjects) {
       ArtifactCoordinates calculatedCoordinates = this.metadata
-          .getArtifactCoordinatesByPhase(p.getGroupId(), p.getArtifactId()).get(ReleasePhase.POST);
+          .getArtifactCoordinatesByPhase(p.getGroupId(), p.getArtifactId()).get(ReleasePhase.RELEASE);
       if (isReleased(calculatedCoordinates.getGroupId(), calculatedCoordinates.getArtifactId(),
           calculatedCoordinates.getVersion())) {
         alreadyReleasedProjects.add(p);

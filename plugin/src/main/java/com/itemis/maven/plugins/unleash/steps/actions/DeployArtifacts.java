@@ -25,7 +25,7 @@ import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 
-@ProcessingStep(@Goal(name = "perform", stepNumber = 90))
+@ProcessingStep(@Goal(name = "perform", stepNumber = 100))
 public class DeployArtifacts implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

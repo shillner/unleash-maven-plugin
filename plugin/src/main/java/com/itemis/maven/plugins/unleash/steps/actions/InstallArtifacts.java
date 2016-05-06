@@ -30,7 +30,7 @@ import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.functions.AetherToMavenArtifact;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 
-@ProcessingStep(@Goal(name = "perform", stepNumber = 80))
+@ProcessingStep(@Goal(name = "perform", stepNumber = 90))
 public class InstallArtifacts implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;
