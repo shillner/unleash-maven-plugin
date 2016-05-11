@@ -10,7 +10,7 @@ public interface ScmProvider {
 
   void close();
 
-  void commit(CommitRequest request) throws ScmException;
+  String commit(CommitRequest request) throws ScmException;
 
   void push() throws ScmException;
 

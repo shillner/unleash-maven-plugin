@@ -33,6 +33,8 @@ public class ScmProviderRegistry {
 
   @PostConstruct
   private void init() {
+    // TODO find a way to detect the API version the scmProvider is implementing! must match the version the plugin
+    // provides (bugfix version diffs are ok)
     Optional<String> providerName = MavenScmUtil.calcProviderName(this.project);
     if (!providerName.isPresent()) {
       this.log.error(
