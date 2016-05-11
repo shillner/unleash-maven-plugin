@@ -7,12 +7,11 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
-import com.itemis.maven.plugins.cdi.annotations.Goal;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProject;
 
-@ProcessingStep(@Goal(name = "perform", stepNumber = 11))
+@ProcessingStep(id = "checkParentVersion", description = "Checks that the project does not reference a SNAPSHOT parent.")
 public class CheckParentVersion implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

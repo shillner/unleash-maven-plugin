@@ -8,14 +8,13 @@ import org.apache.maven.plugin.MojoFailureException;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
-import com.itemis.maven.plugins.cdi.annotations.Goal;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 import com.itemis.maven.plugins.unleash.scm.ScmProviderRegistry;
 
-@ProcessingStep(@Goal(name = "perform", stepNumber = 60))
+@ProcessingStep(id = "checkForScmChanges", description = "Checks the SCM for changes that would require stopping the release.")
 public class CheckScmChanges implements CDIMojoProcessingStep {
 
   @Inject

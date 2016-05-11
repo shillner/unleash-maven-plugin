@@ -17,7 +17,6 @@ import com.google.common.collect.Lists;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.aether.ArtifactResolver;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
-import com.itemis.maven.plugins.cdi.annotations.Goal;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
@@ -26,7 +25,7 @@ import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProject;
 
-@ProcessingStep(@Goal(name = "perform", stepNumber = 30))
+@ProcessingStep(id = "checkAether", description = "Checks the Aether for already released artifacts. The goal is to ensure that the artifacts produced by this release build can be deployed safely to the aether.")
 public class CheckAether implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

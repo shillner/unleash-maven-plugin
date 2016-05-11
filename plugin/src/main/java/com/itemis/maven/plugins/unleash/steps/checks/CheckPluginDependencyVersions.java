@@ -26,7 +26,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
-import com.itemis.maven.plugins.cdi.annotations.Goal;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
@@ -35,7 +34,7 @@ import com.itemis.maven.plugins.unleash.util.functions.PluginToString;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotDependency;
 
-@ProcessingStep(@Goal(name = "perform", stepNumber = 14))
+@ProcessingStep(id = "checkPluginDependencies", description = "Checks that the plugins used by the projects do not reference SNAPSHOT dependencies.")
 public class CheckPluginDependencyVersions implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

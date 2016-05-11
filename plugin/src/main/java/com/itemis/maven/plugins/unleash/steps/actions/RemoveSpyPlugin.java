@@ -11,12 +11,11 @@ import org.w3c.dom.Node;
 
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
-import com.itemis.maven.plugins.cdi.annotations.Goal;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 
-@ProcessingStep(@Goal(name = "perform", stepNumber = 51))
+@ProcessingStep(id = "removeSpyPlugin", description = "Removes the artifact-spy-plugin from the build configuration.")
 public class RemoveSpyPlugin implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

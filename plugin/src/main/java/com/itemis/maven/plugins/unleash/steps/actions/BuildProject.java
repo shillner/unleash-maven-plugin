@@ -18,11 +18,10 @@ import org.apache.maven.shared.invoker.MavenInvocationException;
 
 import com.google.common.collect.Lists;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
-import com.itemis.maven.plugins.cdi.annotations.Goal;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 
-@ProcessingStep(@Goal(name = "perform", stepNumber = 50))
+@ProcessingStep(id = "buildReleaseArtifacts", description = "Triggers the atual release build (clean verify) which produces the artifacts for later installation and deployment.")
 public class BuildProject implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

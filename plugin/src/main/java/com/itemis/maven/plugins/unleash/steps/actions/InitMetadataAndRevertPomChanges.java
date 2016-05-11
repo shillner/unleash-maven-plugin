@@ -10,7 +10,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
-import com.itemis.maven.plugins.cdi.annotations.Goal;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.cdi.annotations.RollbackOnError;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
@@ -18,7 +17,7 @@ import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 
-@ProcessingStep(@Goal(name = "perform", stepNumber = 0))
+@ProcessingStep(id = "initMetadataAndRollbackPomChanges", description = "Initializes the release metadata and rolls back all POM changes in case of an error.")
 public class InitMetadataAndRevertPomChanges implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;
@@ -32,9 +31,9 @@ public class InitMetadataAndRevertPomChanges implements CDIMojoProcessingStep {
 
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
-    // nothing to do here since this is only a step for the reversal of all pom modifications
-    // Metadata initialization is done implicitly as soon as the metadata instance is created, which is the cause when
-    // injecting it here
+    for (MavenProject p : this.reactorProjects) {
+      this.metadata.cacheScmSettings(p.getGroupId() + ":" + p.getArtifactId(), p.getModel().getScm());
+    }
   }
 
   @RollbackOnError

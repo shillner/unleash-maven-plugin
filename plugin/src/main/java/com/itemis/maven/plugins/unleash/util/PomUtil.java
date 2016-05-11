@@ -292,4 +292,31 @@ public final class PomUtil {
       node.setTextContent(content);
     }
   }
+
+  public static void deleteNode(Node parentNode, String nodeName) {
+    Node nodeToDelete = null;
+    NodeList children = parentNode.getChildNodes();
+    for (int i = 0; i < children.getLength(); i++) {
+      Node n = children.item(i);
+      if (Objects.equal(nodeName, n.getNodeName())) {
+        nodeToDelete = n;
+        break;
+      }
+    }
+
+    if (nodeToDelete != null) {
+      parentNode.removeChild(nodeToDelete);
+    }
+  }
+
+  public static boolean hasChildNode(Node parentNode, String nodeName) {
+    NodeList children = parentNode.getChildNodes();
+    for (int i = 0; i < children.getLength(); i++) {
+      Node n = children.item(i);
+      if (Objects.equal(nodeName, n.getNodeName())) {
+        return true;
+      }
+    }
+    return false;
+  }
 }

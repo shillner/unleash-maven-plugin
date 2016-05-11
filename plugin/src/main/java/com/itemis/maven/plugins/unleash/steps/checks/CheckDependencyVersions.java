@@ -20,14 +20,13 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
-import com.itemis.maven.plugins.cdi.annotations.Goal;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.functions.DependencyToString;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotDependency;
 
-@ProcessingStep(@Goal(name = "perform", stepNumber = 12))
+@ProcessingStep(id = "checkDependencies", description = "Checks that the projects do not reference SNAPSHOT artifacts as dependencies")
 public class CheckDependencyVersions implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

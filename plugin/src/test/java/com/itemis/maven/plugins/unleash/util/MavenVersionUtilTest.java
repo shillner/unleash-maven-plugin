@@ -21,7 +21,7 @@ public class MavenVersionUtilTest {
   public static Object[][] calculateNextSnapshotVersion() {
     return new Object[][] { { "3.8.1", "3.8.2-SNAPSHOT" }, { "1.0.0-SNAPSHOT", "1.0.1-SNAPSHOT" },
         { "1.12", "1.13-SNAPSHOT" }, { "1.3-SNAPSH", "1.4-SNAPSH-SNAPSHOT" }, { "3-Alpha1", "3-Alpha2-SNAPSHOT" },
-        { "3-Alpha1-SNAPSHOT", "3-Alpha2-SNAPSHOT" } };
+        { "3-Alpha1-SNAPSHOT", "3-Alpha2-SNAPSHOT" }, { "1-SNAPSHOT", "2-SNAPSHOT" }, { "3", "4-SNAPSHOT" } };
   }
 
   @DataProvider

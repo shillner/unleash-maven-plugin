@@ -14,14 +14,13 @@ import org.w3c.dom.Document;
 
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
-import com.itemis.maven.plugins.cdi.annotations.Goal;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 
-@ProcessingStep(@Goal(name = "perform", stepNumber = 40))
+@ProcessingStep(id = "setReleaseVersions", description = "Updates all projects with their release versions calculated previously.")
 public class SetReleaseVersions implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;
@@ -38,8 +37,8 @@ public class SetReleaseVersions implements CDIMojoProcessingStep {
     for (MavenProject project : this.reactorProjects) {
       try {
         Document document = PomUtil.parsePOM(project);
-        setProjectReleaseVersion(project, document);
-        setParentReleaseVersion(project, document);
+        setProjectVersion(project, document);
+        setParentVersion(project, document);
         PomUtil.writePOM(document, project);
       } catch (Throwable t) {
         throw new MojoFailureException("Could not update versions for release.", t);
@@ -47,7 +46,7 @@ public class SetReleaseVersions implements CDIMojoProcessingStep {
     }
   }
 
-  private void setProjectReleaseVersion(MavenProject project, Document document) {
+  private void setProjectVersion(MavenProject project, Document document) {
     Map<ReleasePhase, ArtifactCoordinates> coordinatesByPhase = this.metadata
         .getArtifactCoordinatesByPhase(project.getGroupId(), project.getArtifactId());
     String oldVerion = coordinatesByPhase.get(ReleasePhase.PRE_RELEASE).getVersion();
@@ -57,7 +56,7 @@ public class SetReleaseVersions implements CDIMojoProcessingStep {
         + " => " + newVersion + "]");
   }
 
-  private void setParentReleaseVersion(MavenProject project, Document document) {
+  private void setParentVersion(MavenProject project, Document document) {
     Parent parent = project.getModel().getParent();
     if (parent != null) {
       Map<ReleasePhase, ArtifactCoordinates> coordinatesByPhase = this.metadata

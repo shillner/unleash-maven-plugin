@@ -11,13 +11,12 @@ import org.w3c.dom.Node;
 
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
-import com.itemis.maven.plugins.cdi.annotations.Goal;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.cdi.annotations.RollbackOnError;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 
-@ProcessingStep(@Goal(name = "perform", stepNumber = 41))
+@ProcessingStep(id = "addSpyPlugin", description = "Adds the artifact-spy-plugin to the build configuration. This plugin determines the built artifacts for later installation and deployment.")
 public class AddSpyPlugin implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

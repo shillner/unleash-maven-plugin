@@ -7,7 +7,6 @@ import org.apache.maven.plugin.MojoFailureException;
 
 import com.google.common.base.Optional;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
-import com.itemis.maven.plugins.cdi.annotations.Goal;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
@@ -24,7 +23,7 @@ import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
  */
 // QUESTION: can we omit this step? revision is fetched from local working directory only so we could also just compare
 // local and remote revisions when it is time to commit!
-@ProcessingStep(@Goal(name = "perform", stepNumber = 1))
+@ProcessingStep(id = "storeScmRevision", description = "Stores the checked out SCM revision in the release metadata for later usage.")
 public class StoreScmRevision implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

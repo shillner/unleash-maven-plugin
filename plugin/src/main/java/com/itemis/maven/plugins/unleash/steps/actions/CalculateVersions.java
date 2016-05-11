@@ -11,7 +11,6 @@ import org.apache.maven.project.MavenProject;
 
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
-import com.itemis.maven.plugins.cdi.annotations.Goal;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
@@ -20,7 +19,7 @@ import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 
-@ProcessingStep(@Goal(name = "perform", stepNumber = 20))
+@ProcessingStep(id = "prepareVersions", description = "Calculates the required project versions (release versions and next development versions)")
 public class CalculateVersions implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

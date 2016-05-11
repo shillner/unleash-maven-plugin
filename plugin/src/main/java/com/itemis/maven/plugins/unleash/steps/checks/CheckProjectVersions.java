@@ -11,7 +11,6 @@ import org.apache.maven.project.MavenProject;
 
 import com.google.common.collect.Collections2;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
-import com.itemis.maven.plugins.cdi.annotations.Goal;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProject;
@@ -22,7 +21,7 @@ import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProject;
  *
  * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
  */
-@ProcessingStep(@Goal(name = "perform", stepNumber = 10))
+@ProcessingStep(id = "checkProjectVersions", description = "Checks that at least one of the projects as a SNAPSHOT version assigned and is thus releasable.")
 // TODO: also check parent, dependencies and plugins (respect profiles)
 public class CheckProjectVersions implements CDIMojoProcessingStep {
   @Inject

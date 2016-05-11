@@ -6,22 +6,28 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.model.Parent;
+import org.apache.maven.model.Scm;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
+import com.google.common.base.Optional;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
-import com.itemis.maven.plugins.cdi.annotations.Goal;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
+import com.itemis.maven.plugins.unleash.scm.ScmProvider;
+import com.itemis.maven.plugins.unleash.scm.ScmProviderRegistry;
+import com.itemis.maven.plugins.unleash.scm.requests.CommitRequest;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 
-@ProcessingStep(@Goal(name = "perform", stepNumber = 80))
+@ProcessingStep(id = "setDevVersion", description = "Updates the projects with the next development versions")
 public class SetNextDevVersion implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;
@@ -30,27 +36,50 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
   private ReleaseMetadata metadata;
 
   @Inject
+  MavenProject project;
+
+  @Inject
   @Named("reactorProjects")
   private List<MavenProject> reactorProjects;
 
+  @Inject
+  private ScmProviderRegistry scmProviderRegistry;
+
+  @Inject
+  @Named("scmMessagePrefix")
+  private String scmMessagePrefix;
+
+  private ScmProvider scmProvider;
+
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
+    init();
+
     for (MavenProject project : this.reactorProjects) {
       try {
         Document document = PomUtil.parsePOM(project);
-        setProjectReleaseVersion(project, document);
-        setParentReleaseVersion(project, document);
+        setProjectVersion(project, document);
+        setParentVersion(project, document);
+        revertScmSettings(project, document);
         PomUtil.writePOM(document, project);
-
-        // TODO commit changes to scm ...
-        // TODO implement step to set scm urls back
       } catch (Throwable t) {
         throw new MojoFailureException("Could not update versions for next development cycle.", t);
       }
     }
+
+    commitChanges();
   }
 
-  private void setProjectReleaseVersion(MavenProject project, Document document) {
+  private void init() {
+    Optional<ScmProvider> provider = this.scmProviderRegistry.getProvider();
+    if (!provider.isPresent()) {
+      throw new IllegalStateException(
+          "Could not load the SCM provider, please check previous log entries. Maybe you need to add an appropriate provider implementation as a dependency to the plugin.");
+    }
+    this.scmProvider = provider.get();
+  }
+
+  private void setProjectVersion(MavenProject project, Document document) {
     Map<ReleasePhase, ArtifactCoordinates> coordinatesByPhase = this.metadata
         .getArtifactCoordinatesByPhase(project.getGroupId(), project.getArtifactId());
     String oldVerion = coordinatesByPhase.get(ReleasePhase.RELEASE).getVersion();
@@ -60,7 +89,7 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
         + " => " + newVersion + "]");
   }
 
-  private void setParentReleaseVersion(MavenProject project, Document document) {
+  private void setParentVersion(MavenProject project, Document document) {
     Parent parent = project.getModel().getParent();
     if (parent != null) {
       Map<ReleasePhase, ArtifactCoordinates> coordinatesByPhase = this.metadata
@@ -76,5 +105,37 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
             + "' [" + oldCoordinates.getVersion() + " => " + newCoordinates.getVersion() + "]");
       }
     }
+  }
+
+  private void revertScmSettings(MavenProject project, Document document) {
+    Scm scm = this.metadata.getCachedScmSettings(project.getGroupId() + ":" + project.getArtifactId());
+    if (scm != null) {
+      Node scmNode = PomUtil.getOrCreateScmNode(document, false);
+
+      if (scmNode != null) {
+        if (scm.getConnection() != null) {
+          PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_CONNECTION, scm.getConnection(), false);
+        }
+
+        if (scm.getDeveloperConnection() != null) {
+          PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_DEV_CONNECTION, scm.getDeveloperConnection(),
+              false);
+        }
+
+        if (scm.getTag() != null) {
+          PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_TAG, scm.getTag(), false);
+        } else {
+          PomUtil.deleteNode(scmNode, PomUtil.NODE_NAME_SCM_TAG);
+        }
+      }
+    }
+  }
+
+  private void commitChanges() {
+    StringBuilder message = new StringBuilder("Preparation for next development cycle.");
+    if (StringUtils.isNotBlank(this.scmMessagePrefix)) {
+      message.insert(0, this.scmMessagePrefix);
+    }
+    this.scmProvider.commit(CommitRequest.builder().setMessage(message.toString()).build());
   }
 }

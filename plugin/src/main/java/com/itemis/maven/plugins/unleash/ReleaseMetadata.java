@@ -10,7 +10,9 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.maven.RepositoryUtils;
+import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.w3c.dom.Document;
 
@@ -38,6 +40,8 @@ public class ReleaseMetadata {
   private String scmTagName;
   private RemoteRepository deploymentRepository;
   private Map<MavenProject, Document> cachedPomDocs;
+  private Set<Artifact> releaseArtifacts;
+  private Map<String, Scm> oldScmSettings;
 
   private ReleaseMetadata() {
     int numPhases = ReleasePhase.values().length;
@@ -105,5 +109,27 @@ public class ReleaseMetadata {
 
   public Document getCachedDocument(MavenProject p) {
     return this.cachedPomDocs.get(p);
+  }
+
+  public void addReleaseArtifact(Artifact artifact) {
+    if (this.releaseArtifacts == null) {
+      this.releaseArtifacts = Sets.newHashSet();
+    }
+    this.releaseArtifacts.add(artifact);
+  }
+
+  public Set<Artifact> getReleaseArtifacts() {
+    return this.releaseArtifacts;
+  }
+
+  public void cacheScmSettings(String simpleCoordinates, Scm scm) {
+    if (this.oldScmSettings == null) {
+      this.oldScmSettings = Maps.newHashMap();
+    }
+    this.oldScmSettings.put(simpleCoordinates, scm);
+  }
+
+  public Scm getCachedScmSettings(String simpleProjectCoordinates) {
+    return this.oldScmSettings.get(simpleProjectCoordinates);
   }
 }

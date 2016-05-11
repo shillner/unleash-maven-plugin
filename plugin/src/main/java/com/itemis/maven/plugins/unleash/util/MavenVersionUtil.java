@@ -84,6 +84,10 @@ public final class MavenVersionUtil {
       }
     }
 
+    if (end >= 0 && start == -1) {
+      start = 0;
+    }
+
     int versionSegmentToIncrease = Integer.parseInt(sb.substring(start, end + 1));
     sb.replace(start, end + 1, Integer.toString(versionSegmentToIncrease + 1));
     sb.append(PomUtil.VERSION_QUALIFIER_SNAPSHOT);

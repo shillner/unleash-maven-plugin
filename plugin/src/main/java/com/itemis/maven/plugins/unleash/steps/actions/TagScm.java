@@ -17,7 +17,6 @@ import org.w3c.dom.Node;
 import com.google.common.base.Optional;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
-import com.itemis.maven.plugins.cdi.annotations.Goal;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.cdi.annotations.RollbackOnError;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
@@ -28,7 +27,7 @@ import com.itemis.maven.plugins.unleash.scm.requests.TagRequest;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 
-@ProcessingStep(@Goal(name = "perform", stepNumber = 70))
+@ProcessingStep(id = "tagScm", description = "Creates an SCM Tag with the release setup.")
 public class TagScm implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;
@@ -48,6 +47,29 @@ public class TagScm implements CDIMojoProcessingStep {
   private ScmProvider scmProvider;
   private String globalReleaseVersion;
   private boolean tagWasPresent;
+
+  @Override
+  public void execute() throws MojoExecutionException, MojoFailureException {
+    init();
+
+    String scmTagName = this.metadata.getScmTagName();
+    updateScmConnections(scmTagName);
+
+    this.log.info("Tagging SCM, tag name: " + scmTagName);
+    if (this.scmProvider.hasTag(scmTagName)) {
+      this.tagWasPresent = true;
+      throw new MojoFailureException("A tag with name " + scmTagName + " already exists.");
+    }
+
+    StringBuilder message = new StringBuilder("Tag for release version ").append(this.globalReleaseVersion)
+        .append(" (base revision: ").append(this.metadata.getScmRevision(ReleasePhase.PRE_RELEASE)).append(")");
+    if (StringUtils.isNotBlank(this.scmMessagePrefix)) {
+      message.insert(0, this.scmMessagePrefix);
+    }
+
+    // this.scmProvider.tag(scmTagName, this.metadata.getScmRevision(ReleasePhase.PRE), message.toString());
+    this.scmProvider.tag(TagRequest.builder().setMessage(message.toString()).setTagName(scmTagName).build());
+  }
 
   private void init() {
     Optional<ScmProvider> provider = this.scmProviderRegistry.getProvider();
@@ -93,29 +115,6 @@ public class TagScm implements CDIMojoProcessingStep {
         }
       }
     }
-  }
-
-  @Override
-  public void execute() throws MojoExecutionException, MojoFailureException {
-    init();
-
-    String scmTagName = this.metadata.getScmTagName();
-    updateScmConnections(scmTagName);
-
-    this.log.info("Tagging SCM, tag name: " + scmTagName);
-    if (this.scmProvider.hasTag(scmTagName)) {
-      this.tagWasPresent = true;
-      throw new MojoFailureException("A tag with name " + scmTagName + " already exists.");
-    }
-
-    StringBuilder message = new StringBuilder("Tag for release version ").append(this.globalReleaseVersion)
-        .append(" (base revision: ").append(this.metadata.getScmRevision(ReleasePhase.PRE_RELEASE)).append(")");
-    if (StringUtils.isNotBlank(this.scmMessagePrefix)) {
-      message.insert(0, this.scmMessagePrefix);
-    }
-
-    // this.scmProvider.tag(scmTagName, this.metadata.getScmRevision(ReleasePhase.PRE), message.toString());
-    this.scmProvider.tag(TagRequest.builder().setMessage(message.toString()).setTagName(scmTagName).build());
   }
 
   @RollbackOnError
