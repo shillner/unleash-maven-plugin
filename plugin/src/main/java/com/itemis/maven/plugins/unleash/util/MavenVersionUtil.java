@@ -1,5 +1,8 @@
 package com.itemis.maven.plugins.unleash.util;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+
 /**
  * A utility class for maven version management.
  *
@@ -126,5 +129,52 @@ public final class MavenVersionUtil {
       return version.substring(0, version.length() - PomUtil.VERSION_QUALIFIER_SNAPSHOT.length());
     }
     return version;
+  }
+
+  /**
+   * Checks whether version1 is newer than version 2.
+   *
+   * @param version1 the first version to check
+   * @param version2 the second version to check (the anchestor)
+   * @return {@code true} if version1 is newer than version2.
+   */
+  public static boolean isNewerVersion(String version1, String version2) {
+    String v1 = Strings.emptyToNull(version1);
+    String v2 = Strings.emptyToNull(version2);
+
+    if (Objects.equal(v1, v2)) {
+      return false;
+    } else if (v1 == null) {
+      return false;
+    } else if (v2 == null) {
+      return true;
+    } else if (Objects.equal(PomUtil.VERSION_LATEST, v1)) {
+      return true;
+    } else if (Objects.equal(PomUtil.VERSION_LATEST, v2)) {
+      return false;
+    }
+
+    String commonPrefix = Strings.commonPrefix(v1, v2);
+    v1 = v1.substring(commonPrefix.length());
+    v2 = v2.substring(commonPrefix.length());
+    String commonSuffix = Strings.commonSuffix(v1, v2);
+    v1 = v1.substring(0, v1.length() - commonSuffix.length());
+    v2 = v2.substring(0, v2.length() - commonSuffix.length());
+
+    if (v1.isEmpty()) {
+      if (Objects.equal(PomUtil.VERSION_QUALIFIER_SNAPSHOT, v2.toUpperCase())) {
+        return true;
+      } else {
+        return false;
+      }
+    } else if (Objects.equal(PomUtil.VERSION_QUALIFIER_SNAPSHOT, v1.toUpperCase())) {
+      return false;
+    } else {
+      if (Objects.equal(PomUtil.VERSION_QUALIFIER_SNAPSHOT, v2.toUpperCase())) {
+        return true;
+      } else {
+        return v1.compareTo(v2) > 0;
+      }
+    }
   }
 }

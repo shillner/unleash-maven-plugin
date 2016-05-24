@@ -7,15 +7,14 @@ import com.google.common.collect.Sets;
 import com.itemis.maven.plugins.unleash.scm.merge.MergeClient;
 import com.itemis.maven.plugins.unleash.scm.merge.MergeStrategy;
 
-public class CommitRequest {
-  private String message;
-  private boolean push;
-  private Set<String> pathsToCommit;
+public class UpdateRequest {
+  private Set<String> pathsToUpdate;
+  private String targetRevision;
   private MergeStrategy mergeStrategy = MergeStrategy.DO_NOT_MERGE;
   private MergeClient mergeClient;
 
-  CommitRequest() {
-    this.pathsToCommit = Sets.newHashSet();
+  UpdateRequest() {
+    this.pathsToUpdate = Sets.newHashSet();
     // use builder!
   }
 
@@ -23,20 +22,16 @@ public class CommitRequest {
     return new Builder();
   }
 
-  public String getMessage() {
-    return this.message;
+  public Set<String> getPathsToUpdate() {
+    return this.pathsToUpdate;
   }
 
-  public boolean push() {
-    return this.push;
+  public boolean updateAllChanges() {
+    return this.pathsToUpdate == null;
   }
 
-  public Set<String> getPathsToCommit() {
-    return this.pathsToCommit;
-  }
-
-  public boolean commitAllChanges() {
-    return this.pathsToCommit == null;
+  public Optional<String> getTargetRevision() {
+    return Optional.fromNullable(this.targetRevision);
   }
 
   public MergeStrategy getMergeStrategy() {
@@ -48,31 +43,26 @@ public class CommitRequest {
   }
 
   public static class Builder {
-    private CommitRequest request = new CommitRequest();
-
-    public Builder message(String message) {
-      this.request.message = message;
-      return this;
-    }
-
-    public Builder push() {
-      this.request.push = true;
-      return this;
-    }
+    private UpdateRequest request = new UpdateRequest();
 
     public Builder addPaths(String... paths) {
       for (String path : paths) {
-        this.request.pathsToCommit.add(path);
+        this.request.pathsToUpdate.add(path);
       }
       return this;
     }
 
     public Builder paths(Set<String> paths) {
       if (paths != null) {
-        this.request.pathsToCommit = paths;
+        this.request.pathsToUpdate = paths;
       } else {
-        this.request.pathsToCommit = Sets.newHashSet();
+        this.request.pathsToUpdate = Sets.newHashSet();
       }
+      return this;
+    }
+
+    public Builder toRevision(String revision) {
+      this.request.targetRevision = revision;
       return this;
     }
 
@@ -110,7 +100,7 @@ public class CommitRequest {
       return this;
     }
 
-    public CommitRequest build() {
+    public UpdateRequest build() {
       return this.request;
     }
   }

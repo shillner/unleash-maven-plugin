@@ -109,6 +109,11 @@ public class UnleashMojo extends AbstractCDIMojo implements Extension {
   @Named("tagNamePattern")
   private String tagNamePattern;
 
+  @Parameter(defaultValue = "false", property = "unleash.commitBeforeTagging")
+  @MojoProduces
+  @Named("commitBeforeTagging")
+  private boolean commitBeforeTagging;
+
   @Parameter(defaultValue = "", property = "unleash.scmMessagePrefix")
   @MojoProduces
   @Named("scmMessagePrefix")
@@ -118,6 +123,16 @@ public class UnleashMojo extends AbstractCDIMojo implements Extension {
   @Named("artifactSpyPlugin")
   private ArtifactCoordinates artifactSpyPluginCoordinates = new ArtifactCoordinates("com.itemis.maven.plugins",
       "artifact-spy-plugin", "1.0.2", "maven-plugin");
+
+  @MojoProduces
+  @Named("scmUsername")
+  @Parameter(property = "unleash.scmUsername")
+  private String scmUsername;
+
+  @MojoProduces
+  @Named("scmPassword")
+  @Parameter(property = "unleash.scmPassword")
+  private String scmPassword;
 
   @MojoProduces
   public MavenLogWrapper createLogWrapper() {

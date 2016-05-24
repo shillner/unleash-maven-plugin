@@ -1,13 +1,11 @@
 package com.itemis.maven.plugins.unleash.scm.requests;
 
-public class TagRequest {
+public class DeleteTagRequest {
   protected String message;
   protected boolean push;
   protected String tagName;
-  protected boolean commitBeforeTagging;
-  protected String preTagCommitMessage;
 
-  TagRequest() {
+  DeleteTagRequest() {
     // use builder!
   }
 
@@ -27,16 +25,8 @@ public class TagRequest {
     return this.tagName;
   }
 
-  public boolean commitBeforeTagging() {
-    return this.commitBeforeTagging;
-  }
-
-  public String getPreTagCommitMessage() {
-    return this.preTagCommitMessage;
-  }
-
   public static class Builder {
-    private TagRequest request = new TagRequest();
+    private DeleteTagRequest request = new DeleteTagRequest();
 
     public Builder message(String message) {
       this.request.message = message;
@@ -53,17 +43,7 @@ public class TagRequest {
       return this;
     }
 
-    public Builder commitBeforeTagging() {
-      this.request.commitBeforeTagging = true;
-      return this;
-    }
-
-    public Builder preTagCommitMessage(String message) {
-      this.request.preTagCommitMessage = message;
-      return this;
-    }
-
-    public TagRequest build() {
+    public DeleteTagRequest build() {
       return this.request;
     }
   }

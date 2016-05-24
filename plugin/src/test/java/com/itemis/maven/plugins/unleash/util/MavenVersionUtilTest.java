@@ -32,6 +32,16 @@ public class MavenVersionUtilTest {
         { PomUtil.VERSION_LATEST, true }, { PomUtil.VERSION_LATEST.toLowerCase(), true } };
   }
 
+  @DataProvider
+  public static Object[][] isNewerVersion() {
+    return new Object[][] { { "1.0.0", "1.0.1", false }, { "1.0.0", "1.0.0", false }, { "1.0.1", "1.0.0", true },
+        { "1-SNAPSHOT", "1.1-SNAPSHOT", false }, { "1.1-SNAPSHOT", "1.0-SNAPSHOT", true },
+        { "1.0.1-SNAPSHOT", "1.0-SNAPSHOT", true }, { "3.Alpha1", "3.Alpha2", false }, { "3.Alpha2", "3.Alpha1", true },
+        { "1-Alpha", "1-Final", false }, { "1.2.Final", "1.2.Alpha", true }, { PomUtil.VERSION_LATEST, "1.2", true },
+        { "3.17.9-SNAPSHOT", PomUtil.VERSION_LATEST, false }, { "3", null, true }, { "1.0-SNAPSHOT", "", true },
+        { "", "1", false }, { null, "1-SNAPSHOT", false } };
+  }
+
   @Test
   @UseDataProvider("calculateReleaseVersion")
   public void testCalculateReleaseVersion(String version, String expectedReleaseVersion) {
@@ -48,5 +58,11 @@ public class MavenVersionUtilTest {
   @UseDataProvider("isSnapshot")
   public void testIsSnapshot(String version, boolean expectedResult) {
     Assert.assertEquals(expectedResult, MavenVersionUtil.isSnapshot(version));
+  }
+
+  @Test
+  @UseDataProvider("isNewerVersion")
+  public void testIsNewerVersion(String v1, String v2, boolean expectedResult) {
+    Assert.assertEquals(expectedResult, MavenVersionUtil.isNewerVersion(v1, v2));
   }
 }

@@ -12,7 +12,7 @@ import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
-import com.itemis.maven.plugins.unleash.scm.ScmProviderRegistry;
+import com.itemis.maven.plugins.unleash.util.scm.ScmProviderRegistry;
 
 @ProcessingStep(id = "checkForScmChanges", description = "Checks the SCM for changes that would require stopping the release.")
 public class CheckScmChanges implements CDIMojoProcessingStep {

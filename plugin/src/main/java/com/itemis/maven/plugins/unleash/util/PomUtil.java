@@ -1,8 +1,10 @@
 package com.itemis.maven.plugins.unleash.util;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -58,42 +60,57 @@ public final class PomUtil {
   }
 
   public static final Document parsePOM(MavenProject project) {
-    FileInputStream is = null;
     try {
-      DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-      is = new FileInputStream(project.getFile());
-      Document document = documentBuilder.parse(is);
-      return document;
-    } catch (Exception e) {
+      return parsePOM(project.getFile());
+    } catch (RuntimeException e) {
       throw new RuntimeException(
           "Could not load the project object model of the following module: " + ProjectToString.INSTANCE.apply(project),
           e);
+    }
+  }
+
+  public static final Document parsePOM(File f) {
+    FileInputStream is = null;
+    try {
+      DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+      is = new FileInputStream(f);
+      Document document = documentBuilder.parse(is);
+      return document;
+    } catch (Exception e) {
+      throw new RuntimeException("Could not load the project object model from file: " + f.getAbsolutePath(), e);
     } finally {
       Closeables.closeQuietly(is);
     }
   }
 
   public static final void writePOM(Document document, MavenProject project) {
-    FileOutputStream os = null;
+    try {
+      writePOM(document, new FileOutputStream(project.getFile()), true);
+    } catch (Throwable t) {
+      throw new RuntimeException("Could not serialize the project object model of the following module: "
+          + ProjectToString.INSTANCE.apply(project), t);
+    }
+  }
+
+  public static final void writePOM(Document document, OutputStream out, boolean closeOut) {
     try {
       Transformer transformer = TransformerFactory.newInstance().newTransformer();
       DOMSource source = new DOMSource(document);
-      os = new FileOutputStream(project.getFile());
-      transformer.transform(source, new StreamResult(os));
+      transformer.transform(source, new StreamResult(out));
     } catch (Exception e) {
-      throw new RuntimeException("Could not serialize the project object model of the following module: "
-          + ProjectToString.INSTANCE.apply(project), e);
+      throw new RuntimeException("Could not serialize the project object model to given output stream.", e);
     } finally {
-      try {
-        Closeables.close(os, true);
-      } catch (IOException e) {
-        throw new RuntimeException("Actually this should not happen :(", e);
+      if (closeOut) {
+        try {
+          Closeables.close(out, true);
+        } catch (IOException e) {
+          throw new RuntimeException("Actually this should not happen :(", e);
+        }
       }
     }
   }
 
-  public static void setProjectVersion(MavenProject project, Document document, String newVersion) {
-    Model model = project.getModel();
+  public static void setProjectVersion(Model model, Document document, String newVersion) {
     // if model version is null, the parent version is inherited
     if (model.getVersion() != null) {
       // first step: update the version of the in-memory project
@@ -110,8 +127,7 @@ public final class PomUtil {
     }
   }
 
-  public static void setParentVersion(MavenProject project, Document document, String newParentVersion) {
-    Model model = project.getModel();
+  public static void setParentVersion(Model model, Document document, String newParentVersion) {
     Parent parent = model.getParent();
     // first step: update parent version of the in-memory model
     parent.setVersion(newParentVersion);

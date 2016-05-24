@@ -11,8 +11,8 @@ import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
-import com.itemis.maven.plugins.unleash.scm.ScmProviderRegistry;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
+import com.itemis.maven.plugins.unleash.util.scm.ScmProviderRegistry;
 
 /**
  * A Mojo that just stores the local SCM revision information in the release metadata. This information is needed in a

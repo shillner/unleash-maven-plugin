@@ -22,10 +22,12 @@ import com.itemis.maven.plugins.cdi.annotations.RollbackOnError;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
-import com.itemis.maven.plugins.unleash.scm.ScmProviderRegistry;
+import com.itemis.maven.plugins.unleash.scm.requests.DeleteTagRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.TagRequest;
+import com.itemis.maven.plugins.unleash.scm.requests.TagRequest.Builder;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
+import com.itemis.maven.plugins.unleash.util.scm.ScmProviderRegistry;
 
 @ProcessingStep(id = "tagScm", description = "Creates an SCM Tag with the release setup.")
 public class TagScm implements CDIMojoProcessingStep {
@@ -43,6 +45,9 @@ public class TagScm implements CDIMojoProcessingStep {
   private String scmMessagePrefix;
   @Inject
   private ScmProviderRegistry scmProviderRegistry;
+  @Inject
+  @Named("commitBeforeTagging")
+  private boolean commitBeforeTagging;
 
   private ScmProvider scmProvider;
   private String globalReleaseVersion;
@@ -67,8 +72,17 @@ public class TagScm implements CDIMojoProcessingStep {
       message.insert(0, this.scmMessagePrefix);
     }
 
-    // this.scmProvider.tag(scmTagName, this.metadata.getScmRevision(ReleasePhase.PRE), message.toString());
-    this.scmProvider.tag(TagRequest.builder().setMessage(message.toString()).setTagName(scmTagName).build());
+    Builder requestBuilder = TagRequest.builder().message(message.toString()).tagName(scmTagName).push();
+    if (this.commitBeforeTagging) {
+      requestBuilder.commitBeforeTagging();
+      StringBuilder preTagMessage = new StringBuilder("Preparation for tag ").append(scmTagName);
+      if (StringUtils.isNotBlank(this.scmMessagePrefix)) {
+        preTagMessage.insert(0, this.scmMessagePrefix);
+      }
+      requestBuilder.preTagCommitMessage(preTagMessage.toString());
+    }
+
+    this.scmProvider.tag(requestBuilder.build());
   }
 
   private void init() {
@@ -123,7 +137,16 @@ public class TagScm implements CDIMojoProcessingStep {
     String scmTagName = this.metadata.getScmTagName();
     if (this.scmProvider.hasTag(scmTagName) && !this.tagWasPresent) {
       this.log.debug("Deleting scm tag '" + scmTagName + "' since the release build failed.");
-      this.scmProvider.deleteTag(scmTagName);
+
+      StringBuilder message = new StringBuilder("Deletion of tag '").append(scmTagName)
+          .append("' due to release rollback.");
+      if (StringUtils.isNotBlank(this.scmMessagePrefix)) {
+        message.insert(0, this.scmMessagePrefix);
+      }
+
+      DeleteTagRequest request = DeleteTagRequest.builder().message(message.toString()).tagName(scmTagName).push()
+          .build();
+      this.scmProvider.deleteTag(request);
     } else {
       this.log.debug("Skipping deletion of SCM tag '" + scmTagName
           + "' since the tag was already present before the release build was triggered.");

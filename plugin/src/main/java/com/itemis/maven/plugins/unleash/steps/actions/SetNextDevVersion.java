@@ -22,10 +22,14 @@ import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
-import com.itemis.maven.plugins.unleash.scm.ScmProviderRegistry;
+import com.itemis.maven.plugins.unleash.scm.merge.MergeClient;
 import com.itemis.maven.plugins.unleash.scm.requests.CommitRequest;
+import com.itemis.maven.plugins.unleash.scm.requests.CommitRequest.Builder;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
+import com.itemis.maven.plugins.unleash.util.functions.FileToRelativePath;
+import com.itemis.maven.plugins.unleash.util.scm.ScmPomVersionsMergeClient;
+import com.itemis.maven.plugins.unleash.util.scm.ScmProviderRegistry;
 
 @ProcessingStep(id = "setDevVersion", description = "Updates the projects with the next development versions")
 public class SetNextDevVersion implements CDIMojoProcessingStep {
@@ -84,7 +88,7 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
         .getArtifactCoordinatesByPhase(project.getGroupId(), project.getArtifactId());
     String oldVerion = coordinatesByPhase.get(ReleasePhase.RELEASE).getVersion();
     String newVersion = coordinatesByPhase.get(ReleasePhase.POST_RELEASE).getVersion();
-    PomUtil.setProjectVersion(project, document, newVersion);
+    PomUtil.setProjectVersion(project.getModel(), document, newVersion);
     this.log.info("Update of module version '" + project.getGroupId() + ":" + project.getArtifact() + "' [" + oldVerion
         + " => " + newVersion + "]");
   }
@@ -100,7 +104,7 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
       // null indicates that the parent is not part of the reactor projects since no release version had been calculated
       // for it
       if (newCoordinates != null) {
-        PomUtil.setParentVersion(project, document, newCoordinates.getVersion());
+        PomUtil.setParentVersion(project.getModel(), document, newCoordinates.getVersion());
         this.log.info("Update of parent version of module '" + project.getGroupId() + ":" + project.getArtifact()
             + "' [" + oldCoordinates.getVersion() + " => " + newCoordinates.getVersion() + "]");
       }
@@ -136,6 +140,15 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
     if (StringUtils.isNotBlank(this.scmMessagePrefix)) {
       message.insert(0, this.scmMessagePrefix);
     }
-    this.scmProvider.commit(CommitRequest.builder().setMessage(message.toString()).build());
+
+    MergeClient mergeClient = new ScmPomVersionsMergeClient();
+    Builder requestBuilder = CommitRequest.builder().merge().mergeClient(mergeClient).message(message.toString())
+        .push();
+    FileToRelativePath pathConverter = new FileToRelativePath(this.project.getBasedir());
+    for (MavenProject p : this.reactorProjects) {
+      requestBuilder.addPaths(pathConverter.apply(p.getFile()));
+    }
+
+    this.scmProvider.commit(requestBuilder.build());
   }
 }

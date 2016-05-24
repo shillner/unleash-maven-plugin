@@ -51,7 +51,7 @@ public class SetReleaseVersions implements CDIMojoProcessingStep {
         .getArtifactCoordinatesByPhase(project.getGroupId(), project.getArtifactId());
     String oldVerion = coordinatesByPhase.get(ReleasePhase.PRE_RELEASE).getVersion();
     String newVersion = coordinatesByPhase.get(ReleasePhase.RELEASE).getVersion();
-    PomUtil.setProjectVersion(project, document, newVersion);
+    PomUtil.setProjectVersion(project.getModel(), document, newVersion);
     this.log.info("Update of module version '" + project.getGroupId() + ":" + project.getArtifact() + "' [" + oldVerion
         + " => " + newVersion + "]");
   }
@@ -67,7 +67,7 @@ public class SetReleaseVersions implements CDIMojoProcessingStep {
       // null indicates that the parent is not part of the reactor projects since no release version had been calculated
       // for it
       if (newCoordinates != null) {
-        PomUtil.setParentVersion(project, document, newCoordinates.getVersion());
+        PomUtil.setParentVersion(project.getModel(), document, newCoordinates.getVersion());
         this.log.info("Update of parent version of module '" + project.getGroupId() + ":" + project.getArtifact()
             + "' [" + oldCoordinates.getVersion() + " => " + newCoordinates.getVersion() + "]");
       }

@@ -1,15 +1,17 @@
-package com.itemis.maven.plugins.unleash.scm;
+package com.itemis.maven.plugins.unleash.util.scm;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.maven.project.MavenProject;
 
 import com.google.common.base.Optional;
+import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 import com.itemis.maven.plugins.unleash.scm.annotations.ScmProviderTypeLiteral;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 
@@ -24,6 +26,14 @@ public class ScmProviderRegistry {
 
   @Inject
   private MavenProject project;
+
+  @Inject
+  @Named("scmUsername")
+  private String scmUsername;
+
+  @Inject
+  @Named("scmPassword")
+  private String scmPassword;
 
   private String scmProviderName;
   private ScmProvider provider;
@@ -48,7 +58,8 @@ public class ScmProviderRegistry {
   public Optional<ScmProvider> getProvider() {
     try {
       this.provider = this.providers.select(new ScmProviderTypeLiteral(this.scmProviderName)).get();
-      this.provider.initialize(this.project.getBasedir());
+      this.provider.initialize(this.project.getBasedir(), Optional.fromNullable(this.scmUsername),
+          Optional.fromNullable(this.scmPassword));
     } catch (Throwable t) {
       this.log.warn("No SCM provider found for SCM with name " + this.scmProviderName, t);
     }

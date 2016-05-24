@@ -5,6 +5,10 @@ public class ScmException extends RuntimeException {
 
   private ScmOperation operation;
 
+  public ScmException(String message) {
+    this(ScmOperation.UNKNOWN, message);
+  }
+
   public ScmException(ScmOperation operation, String message) {
     super(message);
     this.operation = operation;
