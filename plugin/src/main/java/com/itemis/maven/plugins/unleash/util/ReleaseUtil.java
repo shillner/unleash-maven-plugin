@@ -1,29 +1,50 @@
 package com.itemis.maven.plugins.unleash.util;
 
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.components.interactivity.Prompter;
+import org.codehaus.plexus.components.interactivity.PrompterException;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 public final class ReleaseUtil {
   // TODO need to handle reactors where modules have different versions!
-  public static String getReleaseVersion(String version, String defaultReleaseVersion) {
+  public static String getReleaseVersion(String version, String defaultReleaseVersion, Optional<Prompter> prompter) {
     if (!Strings.isNullOrEmpty(defaultReleaseVersion)) {
       return defaultReleaseVersion;
     }
 
     // TODO calc for each project
-    // in interactive mode, ask user whether versions are correct
-    return MavenVersionUtil.calculateReleaseVersion(version);
+    String releaseVersion = MavenVersionUtil.calculateReleaseVersion(version);
+    if (prompter.isPresent()) {
+      try {
+        releaseVersion = prompter.get().prompt("Please specify the release version", releaseVersion);
+      } catch (PrompterException e) {
+        // in case of an error the calculated version is used
+      }
+    }
+
+    return releaseVersion;
   }
 
-  public static String getNextDevelopmentVersion(String version, String defaultDevelopmentVersion) {
+  public static String getNextDevelopmentVersion(String version, String defaultDevelopmentVersion,
+      Optional<Prompter> prompter) {
     if (!Strings.isNullOrEmpty(defaultDevelopmentVersion)) {
       return defaultDevelopmentVersion;
     }
 
-    return MavenVersionUtil.calculateNextSnapshotVersion(version);
+    String devVersion = MavenVersionUtil.calculateNextSnapshotVersion(version);
+    if (prompter.isPresent()) {
+      try {
+        devVersion = prompter.get().prompt("Please specify the next development version", devVersion);
+      } catch (PrompterException e) {
+        // in case of an error the calculated version is used
+      }
+    }
+
+    return devVersion;
   }
 
   // supports @{project.version}, @{project.artifactId}, @{project.groupId}

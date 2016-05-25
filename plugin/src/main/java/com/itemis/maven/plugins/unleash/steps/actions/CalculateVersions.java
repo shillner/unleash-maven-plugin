@@ -8,7 +8,10 @@ import javax.inject.Named;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Settings;
+import org.codehaus.plexus.components.interactivity.Prompter;
 
+import com.google.common.base.Optional;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
@@ -39,6 +42,12 @@ public class CalculateVersions implements CDIMojoProcessingStep {
   @Named("developmentVersion")
   private String defaultDevelopmentVersion;
 
+  @Inject
+  private Settings settings;
+
+  @Inject
+  private Prompter prompter;
+
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
     this.log.info("Calculating versions for all modules.");
@@ -51,19 +60,22 @@ public class CalculateVersions implements CDIMojoProcessingStep {
       this.metadata.addArtifactCoordinates(coordinates, ReleasePhase.PRE_RELEASE);
       this.log.debug("\t" + ReleasePhase.PRE_RELEASE + " = " + coordinates.getVersion());
 
-      // TODO add user questions for new release versions here!
-      String releaseVersion = ReleaseUtil.getReleaseVersion(project.getVersion(), this.defaultReleaseVersion);
+      Optional<Prompter> prompterToUse = this.settings.isInteractiveMode() ? Optional.of(this.prompter)
+          : Optional.<Prompter> absent();
+
+      String releaseVersion = ReleaseUtil.getReleaseVersion(project.getVersion(), this.defaultReleaseVersion,
+          prompterToUse);
       ArtifactCoordinates releaseCoordinates = new ArtifactCoordinates(project.getGroupId(), project.getArtifactId(),
           releaseVersion, PomUtil.ARTIFACT_TYPE_POM);
       this.metadata.addArtifactCoordinates(releaseCoordinates, ReleasePhase.RELEASE);
-      this.log.debug("\t" + ReleasePhase.RELEASE + " = " + releaseVersion);
+      this.log.info("\t" + ReleasePhase.RELEASE + " = " + releaseVersion);
 
       String nextDevVersion = ReleaseUtil.getNextDevelopmentVersion(project.getVersion(),
-          this.defaultDevelopmentVersion);
+          this.defaultDevelopmentVersion, prompterToUse);
       ArtifactCoordinates postReleaseCoordinates = new ArtifactCoordinates(project.getGroupId(),
           project.getArtifactId(), nextDevVersion, PomUtil.ARTIFACT_TYPE_POM);
       this.metadata.addArtifactCoordinates(postReleaseCoordinates, ReleasePhase.POST_RELEASE);
-      this.log.debug("\t" + ReleasePhase.POST_RELEASE + " = " + nextDevVersion);
+      this.log.info("\t" + ReleasePhase.POST_RELEASE + " = " + nextDevVersion);
     }
   }
 }

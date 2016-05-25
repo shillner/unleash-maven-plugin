@@ -12,6 +12,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
+import org.codehaus.plexus.components.interactivity.Prompter;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.impl.Deployer;
@@ -70,7 +71,7 @@ public class UnleashMojo extends AbstractCDIMojo implements Extension {
   @MojoProduces
   private MavenProject project;
 
-  @Parameter(defaultValue = "${settings}", readonly = true)
+  @Parameter(defaultValue = "${settings}", readonly = true, required = true)
   @MojoProduces
   private Settings settings;
 
@@ -133,6 +134,10 @@ public class UnleashMojo extends AbstractCDIMojo implements Extension {
   @Named("scmPassword")
   @Parameter(property = "unleash.scmPassword")
   private String scmPassword;
+
+  @MojoProduces
+  @Component
+  private Prompter prompter;
 
   @MojoProduces
   public MavenLogWrapper createLogWrapper() {

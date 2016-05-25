@@ -25,6 +25,7 @@
     <version.maven>3.2.1</version.maven>
     <version.maven-invoker>2.2</version.maven-invoker>
     <version.maven-plugin-plugin>3.4</version.maven-plugin-plugin>
+    <version.plexus-interactivity-api>1.0-alpha-6</version.plexus-interactivity-api>
     <version.weld-se>2.3.3.Final</version.weld-se>
   </properties>
 
@@ -128,6 +129,11 @@
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
       <version>${version.maven}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-interactivity-api</artifactId>
+      <version>${version.plexus-interactivity-api}</version>
     </dependency>
     <dependency>
       <groupId>org.jboss.weld.se</groupId>
