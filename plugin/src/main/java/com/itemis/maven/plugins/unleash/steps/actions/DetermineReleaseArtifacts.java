@@ -23,7 +23,7 @@ import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 
-@ProcessingStep(id = "determineReleaseArtifacts", description = "Determines all release artifacts based on the output of the artifact-spy-plugin and stores the data in the release metadata.")
+@ProcessingStep(id = "determineReleaseArtifacts", description = "Determines all release artifacts based on the output of the artifact-spy-plugin and stores the data in the release metadata.", requiresOnline = false)
 public class DetermineReleaseArtifacts implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

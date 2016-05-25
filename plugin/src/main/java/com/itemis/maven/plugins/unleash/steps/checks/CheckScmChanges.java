@@ -14,7 +14,7 @@ import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 import com.itemis.maven.plugins.unleash.util.scm.ScmProviderRegistry;
 
-@ProcessingStep(id = "checkForScmChanges", description = "Checks the SCM for changes that would require stopping the release.")
+@ProcessingStep(id = "checkForScmChanges", description = "Checks the SCM for changes that would require stopping the release.", requiresOnline = true)
 public class CheckScmChanges implements CDIMojoProcessingStep {
 
   @Inject

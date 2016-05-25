@@ -16,7 +16,7 @@ import com.itemis.maven.plugins.cdi.annotations.RollbackOnError;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 
-@ProcessingStep(id = "addSpyPlugin", description = "Adds the artifact-spy-plugin to the build configuration. This plugin determines the built artifacts for later installation and deployment.")
+@ProcessingStep(id = "addSpyPlugin", description = "Adds the artifact-spy-plugin to the build configuration. This plugin determines the built artifacts for later installation and deployment.", requiresOnline = false)
 public class AddSpyPlugin implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

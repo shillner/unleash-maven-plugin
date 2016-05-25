@@ -17,7 +17,7 @@ import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 
-@ProcessingStep(id = "initMetadataAndRollbackPomChanges", description = "Initializes the release metadata and rolls back all POM changes in case of an error.")
+@ProcessingStep(id = "initMetadataAndRollbackPomChanges", description = "Initializes the release metadata and rolls back all POM changes in case of an error.", requiresOnline = false)
 public class InitMetadataAndRevertPomChanges implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

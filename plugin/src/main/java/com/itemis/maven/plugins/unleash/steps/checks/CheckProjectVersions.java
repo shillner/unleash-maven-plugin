@@ -21,7 +21,7 @@ import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProject;
  *
  * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
  */
-@ProcessingStep(id = "checkProjectVersions", description = "Checks that at least one of the projects as a SNAPSHOT version assigned and is thus releasable.")
+@ProcessingStep(id = "checkProjectVersions", description = "Checks that at least one of the projects as a SNAPSHOT version assigned and is thus releasable.", requiresOnline = false)
 // TODO: also check parent, dependencies and plugins (respect profiles)
 public class CheckProjectVersions implements CDIMojoProcessingStep {
   @Inject

@@ -20,7 +20,7 @@ import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 
-@ProcessingStep(id = "setReleaseVersions", description = "Updates all projects with their release versions calculated previously.")
+@ProcessingStep(id = "setReleaseVersions", description = "Updates all projects with their release versions calculated previously.", requiresOnline = false)
 public class SetReleaseVersions implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

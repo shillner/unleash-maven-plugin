@@ -29,33 +29,33 @@ import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 public class UnleashMojo extends AbstractCDIMojo implements Extension {
   @Component
   @MojoProduces
-  public RepositorySystem repoSystem;
+  private RepositorySystem repoSystem;
 
   @Parameter(readonly = true, defaultValue = "${repositorySystemSession}")
   @MojoProduces
-  public RepositorySystemSession repoSession;
+  private RepositorySystemSession repoSession;
 
   @Parameter(readonly = true, defaultValue = "${project.remotePluginRepositories}")
   @MojoProduces
   @Named("pluginRepositories")
-  public List<RemoteRepository> remotePluginRepos;
+  private List<RemoteRepository> remotePluginRepos;
 
   @Parameter(readonly = true, defaultValue = "${project.remoteProjectRepositories}")
   @MojoProduces
   @Named("projectRepositories")
-  public List<RemoteRepository> remoteProjectRepos;
+  private List<RemoteRepository> remoteProjectRepos;
 
   @Component
   @MojoProduces
-  public RemoteRepositoryManager remoteRepositoryManager;
+  private RemoteRepositoryManager remoteRepositoryManager;
 
   @Component
   @MojoProduces
-  public Deployer deployer;
+  private Deployer deployer;
 
   @Component
   @MojoProduces
-  public Installer installer;
+  private Installer installer;
 
   @Parameter(readonly = true, defaultValue = "${localRepository}")
   @MojoProduces
@@ -67,7 +67,7 @@ public class UnleashMojo extends AbstractCDIMojo implements Extension {
   @Named("reactorProjects")
   private List<MavenProject> reactorProjects;
 
-  @Component
+  @Parameter(defaultValue = "${project}", readonly = true, required = true)
   @MojoProduces
   private MavenProject project;
 

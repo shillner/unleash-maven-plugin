@@ -11,7 +11,7 @@ import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProject;
 
-@ProcessingStep(id = "checkParentVersion", description = "Checks that the project does not reference a SNAPSHOT parent.")
+@ProcessingStep(id = "checkParentVersion", description = "Checks that the project does not reference a SNAPSHOT parent.", requiresOnline = false)
 public class CheckParentVersion implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

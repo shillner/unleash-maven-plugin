@@ -16,7 +16,7 @@ import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 
-@ProcessingStep(id = "deployArtifacts", description = "Deploys the release artifacts to the remote repository.")
+@ProcessingStep(id = "deployArtifacts", description = "Deploys the release artifacts to the remote repository.", requiresOnline = true)
 public class DeployArtifacts implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

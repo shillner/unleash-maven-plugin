@@ -29,7 +29,7 @@ import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.scm.ScmProviderRegistry;
 
-@ProcessingStep(id = "tagScm", description = "Creates an SCM Tag with the release setup.")
+@ProcessingStep(id = "tagScm", description = "Creates an SCM Tag with the release setup.", requiresOnline = true)
 public class TagScm implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

@@ -25,7 +25,7 @@ import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProject;
 
-@ProcessingStep(id = "checkAether", description = "Checks the Aether for already released artifacts. The goal is to ensure that the artifacts produced by this release build can be deployed safely to the aether.")
+@ProcessingStep(id = "checkAether", description = "Checks the Aether for already released artifacts. The goal is to ensure that the artifacts produced by this release build can be deployed safely to the aether.", requiresOnline = true)
 public class CheckAether implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

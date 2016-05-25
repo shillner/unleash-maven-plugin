@@ -9,6 +9,7 @@ import javax.inject.Named;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Settings;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.DefaultInvoker;
 import org.apache.maven.shared.invoker.InvocationRequest;
@@ -21,7 +22,7 @@ import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 
-@ProcessingStep(id = "buildReleaseArtifacts", description = "Triggers the atual release build (clean verify) which produces the artifacts for later installation and deployment.")
+@ProcessingStep(id = "buildReleaseArtifacts", description = "Triggers the atual release build (clean verify) which produces the artifacts for later installation and deployment.", requiresOnline = true)
 public class BuildProject implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;
@@ -37,6 +38,9 @@ public class BuildProject implements CDIMojoProcessingStep {
   @Named("maven.home")
   private String mavenHome;
 
+  @Inject
+  private Settings settings;
+
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
     InvocationRequest request = new DefaultInvocationRequest();
@@ -46,6 +50,8 @@ public class BuildProject implements CDIMojoProcessingStep {
     request.setGoals(Lists.newArrayList("clean", "verify"));
     request.setProfiles(this.profiles);
     request.setShellEnvironmentInherited(true);
+    request.setOffline(this.settings.isOffline());
+    request.setInteractive(this.settings.isInteractiveMode());
 
     // IDEA outsource maven executions to an injectable executor since this part will also be needed in later steps
     Invoker invoker = new DefaultInvoker();

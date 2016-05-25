@@ -25,7 +25,7 @@ import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.functions.AetherToMavenArtifact;
 
-@ProcessingStep(id = "installArtifacts", description = "Installs the release artifacts into the local repository.")
+@ProcessingStep(id = "installArtifacts", description = "Installs the release artifacts into the local repository.", requiresOnline = false)
 public class InstallArtifacts implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

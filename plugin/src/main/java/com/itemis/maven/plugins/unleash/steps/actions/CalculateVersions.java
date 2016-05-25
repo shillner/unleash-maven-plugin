@@ -22,7 +22,7 @@ import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 
-@ProcessingStep(id = "prepareVersions", description = "Calculates the required project versions (release versions and next development versions)")
+@ProcessingStep(id = "prepareVersions", description = "Calculates the required project versions (release versions and next development versions)", requiresOnline = false)
 public class CalculateVersions implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

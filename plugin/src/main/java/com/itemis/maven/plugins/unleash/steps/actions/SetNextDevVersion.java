@@ -31,7 +31,7 @@ import com.itemis.maven.plugins.unleash.util.functions.FileToRelativePath;
 import com.itemis.maven.plugins.unleash.util.scm.ScmPomVersionsMergeClient;
 import com.itemis.maven.plugins.unleash.util.scm.ScmProviderRegistry;
 
-@ProcessingStep(id = "setDevVersion", description = "Updates the projects with the next development versions")
+@ProcessingStep(id = "setDevVersion", description = "Updates the projects with the next development versions", requiresOnline = true)
 public class SetNextDevVersion implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;
@@ -66,12 +66,11 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
         setParentVersion(project, document);
         revertScmSettings(project, document);
         PomUtil.writePOM(document, project);
+        commitChanges();
       } catch (Throwable t) {
         throw new MojoFailureException("Could not update versions for next development cycle.", t);
       }
     }
-
-    commitChanges();
   }
 
   private void init() {

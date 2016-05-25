@@ -33,7 +33,7 @@ import com.itemis.maven.plugins.unleash.util.functions.PluginToString;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotPlugin;
 
-@ProcessingStep(id = "checkPlugins", description = "Checks that the projects do not use SNAPSHOT plugins")
+@ProcessingStep(id = "checkPlugins", description = "Checks that the projects do not use SNAPSHOT plugins", requiresOnline = false)
 public class CheckPluginVersions implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

@@ -26,7 +26,7 @@ import com.itemis.maven.plugins.unleash.util.functions.DependencyToString;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotDependency;
 
-@ProcessingStep(id = "checkDependencies", description = "Checks that the projects do not reference SNAPSHOT artifacts as dependencies")
+@ProcessingStep(id = "checkDependencies", description = "Checks that the projects do not reference SNAPSHOT artifacts as dependencies", requiresOnline = false)
 public class CheckDependencyVersions implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;

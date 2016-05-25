@@ -23,7 +23,7 @@ import com.itemis.maven.plugins.unleash.util.scm.ScmProviderRegistry;
  */
 // QUESTION: can we omit this step? revision is fetched from local working directory only so we could also just compare
 // local and remote revisions when it is time to commit!
-@ProcessingStep(id = "storeScmRevision", description = "Stores the checked out SCM revision in the release metadata for later usage.")
+@ProcessingStep(id = "storeScmRevision", description = "Stores the checked out SCM revision in the release metadata for later usage.", requiresOnline = false)
 public class StoreScmRevision implements CDIMojoProcessingStep {
   @Inject
   private MavenLogWrapper log;
