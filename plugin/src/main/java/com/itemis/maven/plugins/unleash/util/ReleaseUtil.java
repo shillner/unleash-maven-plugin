@@ -74,6 +74,6 @@ public final class ReleaseUtil {
   }
 
   public static boolean isIntegrationtest() {
-    return Boolean.valueOf(System.getenv("unleash.it"));
+    return Boolean.valueOf(System.getenv("UNLEASH_IT"));
   }
 }
