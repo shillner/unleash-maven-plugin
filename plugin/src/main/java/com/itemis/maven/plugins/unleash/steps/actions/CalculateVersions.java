@@ -53,12 +53,12 @@ public class CalculateVersions implements CDIMojoProcessingStep {
     this.log.info("Calculating versions for all modules.");
 
     for (MavenProject project : this.reactorProjects) {
-      this.log.debug("Versions of project " + ProjectToString.INSTANCE.apply(project) + ":");
+      this.log.info("Versions of project " + ProjectToString.INSTANCE.apply(project) + ":");
 
       ArtifactCoordinates coordinates = new ArtifactCoordinates(project.getGroupId(), project.getArtifactId(),
           project.getVersion(), PomUtil.ARTIFACT_TYPE_POM);
       this.metadata.addArtifactCoordinates(coordinates, ReleasePhase.PRE_RELEASE);
-      this.log.debug("\t" + ReleasePhase.PRE_RELEASE + " = " + coordinates.getVersion());
+      this.log.info("\t" + ReleasePhase.PRE_RELEASE + " = " + coordinates.getVersion());
 
       Optional<Prompter> prompterToUse = this.settings.isInteractiveMode() ? Optional.of(this.prompter)
           : Optional.<Prompter> absent();
@@ -70,8 +70,8 @@ public class CalculateVersions implements CDIMojoProcessingStep {
       this.metadata.addArtifactCoordinates(releaseCoordinates, ReleasePhase.RELEASE);
       this.log.info("\t" + ReleasePhase.RELEASE + " = " + releaseVersion);
 
-      String nextDevVersion = ReleaseUtil.getNextDevelopmentVersion(project.getVersion(),
-          this.defaultDevelopmentVersion, prompterToUse);
+      String nextDevVersion = ReleaseUtil.getNextDevelopmentVersion(releaseVersion, this.defaultDevelopmentVersion,
+          prompterToUse);
       ArtifactCoordinates postReleaseCoordinates = new ArtifactCoordinates(project.getGroupId(),
           project.getArtifactId(), nextDevVersion, PomUtil.ARTIFACT_TYPE_POM);
       this.metadata.addArtifactCoordinates(postReleaseCoordinates, ReleasePhase.POST_RELEASE);

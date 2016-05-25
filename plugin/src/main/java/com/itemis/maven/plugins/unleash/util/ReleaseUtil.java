@@ -10,13 +10,11 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 public final class ReleaseUtil {
-  // TODO need to handle reactors where modules have different versions!
   public static String getReleaseVersion(String version, String defaultReleaseVersion, Optional<Prompter> prompter) {
     if (!Strings.isNullOrEmpty(defaultReleaseVersion)) {
       return defaultReleaseVersion;
     }
 
-    // TODO calc for each project
     String releaseVersion = MavenVersionUtil.calculateReleaseVersion(version);
     if (prompter.isPresent()) {
       try {

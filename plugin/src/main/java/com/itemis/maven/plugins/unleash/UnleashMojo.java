@@ -75,12 +75,12 @@ public class UnleashMojo extends AbstractCDIMojo implements Extension {
   @MojoProduces
   private Settings settings;
 
-  @Parameter
+  @Parameter(property = "unleash.developmentVersion")
   @MojoProduces
   @Named("developmentVersion")
   private String developmentVersion;
 
-  @Parameter
+  @Parameter(property = "unleash.releaseVersion")
   @MojoProduces
   @Named("releaseVersion")
   private String releaseVersion;

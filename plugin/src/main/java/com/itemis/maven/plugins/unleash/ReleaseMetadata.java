@@ -54,8 +54,6 @@ public class ReleaseMetadata {
 
   @PostConstruct
   public void init() {
-    this.scmTagName = ReleaseUtil.getTagName(this.tagNamePattern, this.project);
-
     // setting the artifact version to a release version temporarily since the dist repository is checks for a snapshot
     // version of the artifact. Maybe this can be implemented in a different manner but then we would have to setup the
     // repository manually
@@ -100,6 +98,9 @@ public class ReleaseMetadata {
   }
 
   public String getScmTagName() {
+    if (this.scmTagName == null) {
+      this.scmTagName = ReleaseUtil.getTagName(this.tagNamePattern, this.project);
+    }
     return this.scmTagName;
   }
 
