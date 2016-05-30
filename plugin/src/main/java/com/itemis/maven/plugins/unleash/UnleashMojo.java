@@ -31,20 +31,6 @@ public class UnleashMojo extends AbstractCDIMojo implements Extension {
   @MojoProduces
   private RepositorySystem repoSystem;
 
-  @Parameter(readonly = true, defaultValue = "${repositorySystemSession}")
-  @MojoProduces
-  private RepositorySystemSession repoSession;
-
-  @Parameter(readonly = true, defaultValue = "${project.remotePluginRepositories}")
-  @MojoProduces
-  @Named("pluginRepositories")
-  private List<RemoteRepository> remotePluginRepos;
-
-  @Parameter(readonly = true, defaultValue = "${project.remoteProjectRepositories}")
-  @MojoProduces
-  @Named("projectRepositories")
-  private List<RemoteRepository> remoteProjectRepos;
-
   @Component
   @MojoProduces
   private RemoteRepositoryManager remoteRepositoryManager;
@@ -57,19 +43,33 @@ public class UnleashMojo extends AbstractCDIMojo implements Extension {
   @MojoProduces
   private Installer installer;
 
-  @Parameter(readonly = true, defaultValue = "${localRepository}")
+  @Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
+  @MojoProduces
+  private RepositorySystemSession repoSession;
+
+  @Parameter(defaultValue = "${project.remotePluginRepositories}", readonly = true, required = true)
+  @MojoProduces
+  @Named("pluginRepositories")
+  private List<RemoteRepository> remotePluginRepos;
+
+  @Parameter(defaultValue = "${project.remoteProjectRepositories}", readonly = true, required = true)
+  @MojoProduces
+  @Named("projectRepositories")
+  private List<RemoteRepository> remoteProjectRepos;
+
+  @Parameter(defaultValue = "${localRepository}", readonly = true, required = true)
   @MojoProduces
   @Named("local")
   private ArtifactRepository LocalRepository;
+
+  @Parameter(defaultValue = "${project}", readonly = true, required = true)
+  @MojoProduces
+  private MavenProject project;
 
   @Parameter(defaultValue = "${reactorProjects}", readonly = true, required = true)
   @MojoProduces
   @Named("reactorProjects")
   private List<MavenProject> reactorProjects;
-
-  @Parameter(defaultValue = "${project}", readonly = true, required = true)
-  @MojoProduces
-  private MavenProject project;
 
   @Parameter(defaultValue = "${settings}", readonly = true, required = true)
   @MojoProduces
@@ -116,8 +116,6 @@ public class UnleashMojo extends AbstractCDIMojo implements Extension {
   private boolean commitBeforeTagging;
 
   @Parameter(defaultValue = "", property = "unleash.scmMessagePrefix")
-  @MojoProduces
-  @Named("scmMessagePrefix")
   private String scmMessagePrefix;
 
   @MojoProduces
@@ -151,5 +149,14 @@ public class UnleashMojo extends AbstractCDIMojo implements Extension {
   @MojoProduces
   private PluginDescriptor getPluginDescriptor() {
     return (PluginDescriptor) getPluginContext().get("pluginDescriptor");
+  }
+
+  @MojoProduces
+  @Named("scmMessagePrefix")
+  private String getScmMessagePrefix() {
+    if (this.scmMessagePrefix != null && !this.scmMessagePrefix.endsWith(" ")) {
+      this.scmMessagePrefix = this.scmMessagePrefix + " ";
+    }
+    return this.scmMessagePrefix;
   }
 }

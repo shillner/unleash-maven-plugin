@@ -10,7 +10,6 @@ import com.google.common.base.Optional;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
-import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 import com.itemis.maven.plugins.unleash.util.scm.ScmProviderRegistry;
 
@@ -32,13 +31,10 @@ public class CheckScmChanges implements CDIMojoProcessingStep {
     }
 
     String latestRemoteRevision = provider.get().getLatestRemoteRevision();
-    this.metadata.setScmRevision(latestRemoteRevision, ReleasePhase.RELEASE);
-
-    if (!Objects.equal(latestRemoteRevision, this.metadata.getScmRevision(ReleasePhase.PRE_RELEASE))) {
+    if (!Objects.equal(latestRemoteRevision, this.metadata.getInitialScmRevision())) {
       throw new MojoFailureException(
           "The local working copy which has been built is out of sync with the remote repository. [Local revision: "
-              + this.metadata.getScmRevision(ReleasePhase.PRE_RELEASE) + "] [Latest remote revision: "
-              + latestRemoteRevision + "]");
+              + this.metadata.getInitialScmRevision() + "] [Latest remote revision: " + latestRemoteRevision + "]");
     }
   }
 }

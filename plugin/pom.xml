@@ -136,6 +136,11 @@
       <version>${version.plexus-interactivity-api}</version>
     </dependency>
     <dependency>
+      <groupId>com.itemis.maven.plugins</groupId>
+      <artifactId>unleash-maven-plugin-utils</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.jboss.weld.se</groupId>
       <artifactId>weld-se</artifactId>
       <version>${version.weld-se}</version>

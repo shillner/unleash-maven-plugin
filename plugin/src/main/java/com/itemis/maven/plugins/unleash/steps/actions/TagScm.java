@@ -67,7 +67,7 @@ public class TagScm implements CDIMojoProcessingStep {
     }
 
     StringBuilder message = new StringBuilder("Tag for release version ").append(this.globalReleaseVersion)
-        .append(" (base revision: ").append(this.metadata.getScmRevision(ReleasePhase.PRE_RELEASE)).append(")");
+        .append(" (base revision: ").append(this.metadata.getInitialScmRevision()).append(")");
     if (StringUtils.isNotBlank(this.scmMessagePrefix)) {
       message.insert(0, this.scmMessagePrefix);
     }

@@ -35,7 +35,7 @@ public class ReleaseMetadata {
   @Named("reactorProjects")
   private List<MavenProject> reactorProjects;
 
-  private Map<ReleasePhase, String> scmRevisions;
+  private String initialScmRevision;
   private Map<ReleasePhase, Set<ArtifactCoordinates>> artifactCoordinates;
   private String scmTagName;
   private RemoteRepository deploymentRepository;
@@ -45,7 +45,6 @@ public class ReleaseMetadata {
 
   private ReleaseMetadata() {
     int numPhases = ReleasePhase.values().length;
-    this.scmRevisions = Maps.newHashMapWithExpectedSize(numPhases);
     this.artifactCoordinates = Maps.newHashMapWithExpectedSize(numPhases);
     for (ReleasePhase phase : ReleasePhase.values()) {
       this.artifactCoordinates.put(phase, Sets.<ArtifactCoordinates> newHashSet());
@@ -71,12 +70,12 @@ public class ReleaseMetadata {
     this.cachedPomDocs = Maps.toMap(this.reactorProjects, ProjectToXmlDocument.INSTANCE);
   }
 
-  public void setScmRevision(String scmRevision, ReleasePhase phase) {
-    this.scmRevisions.put(phase, scmRevision);
+  public void setInitialScmRevision(String scmRevision) {
+    this.initialScmRevision = scmRevision;
   }
 
-  public String getScmRevision(ReleasePhase phase) {
-    return this.scmRevisions.get(phase);
+  public String getInitialScmRevision() {
+    return this.initialScmRevision;
   }
 
   public void addArtifactCoordinates(ArtifactCoordinates coordinates, ReleasePhase phase) {

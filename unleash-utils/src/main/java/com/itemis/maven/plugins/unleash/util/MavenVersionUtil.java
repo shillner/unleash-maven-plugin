@@ -1,5 +1,4 @@
 package com.itemis.maven.plugins.unleash.util;
-
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 
@@ -9,6 +8,9 @@ import com.google.common.base.Strings;
  * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
  */
 public final class MavenVersionUtil {
+  public static final String VERSION_QUALIFIER_SNAPSHOT = "-SNAPSHOT";
+  public static final String VERSION_LATEST = "LATEST";
+
   private MavenVersionUtil() {
     // static utility methods only
   }
@@ -21,8 +23,7 @@ public final class MavenVersionUtil {
    * @return {@code true} if the version String represents a SNAPSHOT version.
    */
   public static boolean isSnapshot(String version) {
-    return version.toUpperCase().endsWith(PomUtil.VERSION_QUALIFIER_SNAPSHOT)
-        || version.toUpperCase().equals(PomUtil.VERSION_LATEST);
+    return version.toUpperCase().endsWith(VERSION_QUALIFIER_SNAPSHOT) || version.toUpperCase().equals(VERSION_LATEST);
   }
 
   /**
@@ -65,8 +66,8 @@ public final class MavenVersionUtil {
    */
   public static String calculateNextSnapshotVersion(String version) {
     StringBuilder sb;
-    if (version.endsWith(PomUtil.VERSION_QUALIFIER_SNAPSHOT)) {
-      sb = new StringBuilder(version.substring(0, version.length() - PomUtil.VERSION_QUALIFIER_SNAPSHOT.length()));
+    if (version.endsWith(VERSION_QUALIFIER_SNAPSHOT)) {
+      sb = new StringBuilder(version.substring(0, version.length() - VERSION_QUALIFIER_SNAPSHOT.length()));
     } else {
       sb = new StringBuilder(version);
     }
@@ -93,7 +94,7 @@ public final class MavenVersionUtil {
 
     int versionSegmentToIncrease = Integer.parseInt(sb.substring(start, end + 1));
     sb.replace(start, end + 1, Integer.toString(versionSegmentToIncrease + 1));
-    sb.append(PomUtil.VERSION_QUALIFIER_SNAPSHOT);
+    sb.append(VERSION_QUALIFIER_SNAPSHOT);
 
     return sb.toString();
   }
@@ -125,8 +126,8 @@ public final class MavenVersionUtil {
    * @return the calculated release version which might be identical to the passed version.
    */
   public static String calculateReleaseVersion(String version) {
-    if (version.toUpperCase().endsWith(PomUtil.VERSION_QUALIFIER_SNAPSHOT)) {
-      return version.substring(0, version.length() - PomUtil.VERSION_QUALIFIER_SNAPSHOT.length());
+    if (version.toUpperCase().endsWith(VERSION_QUALIFIER_SNAPSHOT)) {
+      return version.substring(0, version.length() - VERSION_QUALIFIER_SNAPSHOT.length());
     }
     return version;
   }
@@ -148,9 +149,9 @@ public final class MavenVersionUtil {
       return false;
     } else if (v2 == null) {
       return true;
-    } else if (Objects.equal(PomUtil.VERSION_LATEST, v1)) {
+    } else if (Objects.equal(VERSION_LATEST, v1)) {
       return true;
-    } else if (Objects.equal(PomUtil.VERSION_LATEST, v2)) {
+    } else if (Objects.equal(VERSION_LATEST, v2)) {
       return false;
     }
 
@@ -162,15 +163,15 @@ public final class MavenVersionUtil {
     v2 = v2.substring(0, v2.length() - commonSuffix.length());
 
     if (v1.isEmpty()) {
-      if (Objects.equal(PomUtil.VERSION_QUALIFIER_SNAPSHOT, v2.toUpperCase())) {
+      if (Objects.equal(VERSION_QUALIFIER_SNAPSHOT, v2.toUpperCase())) {
         return true;
       } else {
         return false;
       }
-    } else if (Objects.equal(PomUtil.VERSION_QUALIFIER_SNAPSHOT, v1.toUpperCase())) {
+    } else if (Objects.equal(VERSION_QUALIFIER_SNAPSHOT, v1.toUpperCase())) {
       return false;
     } else {
-      if (Objects.equal(PomUtil.VERSION_QUALIFIER_SNAPSHOT, v2.toUpperCase())) {
+      if (Objects.equal(VERSION_QUALIFIER_SNAPSHOT, v2.toUpperCase())) {
         return true;
       } else {
         return v1.compareTo(v2) > 0;

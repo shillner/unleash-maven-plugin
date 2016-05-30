@@ -24,6 +24,7 @@
   <modules>
     <module>scm-provider-api</module>
     <module>plugin</module>
+    <module>unleash-utils</module>
   </modules>
 
   <properties>

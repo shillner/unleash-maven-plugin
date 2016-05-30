@@ -12,9 +12,9 @@ import com.tngtech.java.junit.dataprovider.UseDataProvider;
 public class MavenVersionUtilTest {
   @DataProvider
   public static Object[][] calculateReleaseVersion() {
-    return new Object[][] { { "3.8.1", "3.8.1" }, { "1.0.0" + PomUtil.VERSION_QUALIFIER_SNAPSHOT, "1.0.0" },
-        { "3.2" + PomUtil.VERSION_QUALIFIER_SNAPSHOT.toLowerCase(), "3.2" }, { "1.12", "1.12" },
-        { "1.3-SNAPSH", "1.3-SNAPSH" }, { "3", "3" }, { "5" + PomUtil.VERSION_QUALIFIER_SNAPSHOT, "5" } };
+    return new Object[][] { { "3.8.1", "3.8.1" }, { "1.0.0" + MavenVersionUtil.VERSION_QUALIFIER_SNAPSHOT, "1.0.0" },
+        { "3.2" + MavenVersionUtil.VERSION_QUALIFIER_SNAPSHOT.toLowerCase(), "3.2" }, { "1.12", "1.12" },
+        { "1.3-SNAPSH", "1.3-SNAPSH" }, { "3", "3" }, { "5" + MavenVersionUtil.VERSION_QUALIFIER_SNAPSHOT, "5" } };
   }
 
   @DataProvider
@@ -26,10 +26,11 @@ public class MavenVersionUtilTest {
 
   @DataProvider
   public static Object[][] isSnapshot() {
-    return new Object[][] { { "1.0.0" + PomUtil.VERSION_QUALIFIER_SNAPSHOT, true },
-        { "1.0.0" + PomUtil.VERSION_QUALIFIER_SNAPSHOT.toLowerCase(), true }, { "1.0.0", false },
-        { "3.1-Alpha", false }, { "1-SNAPSHOT-alpha", false }, { "1-alpha" + PomUtil.VERSION_QUALIFIER_SNAPSHOT, true },
-        { PomUtil.VERSION_LATEST, true }, { PomUtil.VERSION_LATEST.toLowerCase(), true } };
+    return new Object[][] { { "1.0.0" + MavenVersionUtil.VERSION_QUALIFIER_SNAPSHOT, true },
+        { "1.0.0" + MavenVersionUtil.VERSION_QUALIFIER_SNAPSHOT.toLowerCase(), true }, { "1.0.0", false },
+        { "3.1-Alpha", false }, { "1-SNAPSHOT-alpha", false },
+        { "1-alpha" + MavenVersionUtil.VERSION_QUALIFIER_SNAPSHOT, true }, { MavenVersionUtil.VERSION_LATEST, true },
+        { MavenVersionUtil.VERSION_LATEST.toLowerCase(), true } };
   }
 
   @DataProvider
@@ -37,9 +38,9 @@ public class MavenVersionUtilTest {
     return new Object[][] { { "1.0.0", "1.0.1", false }, { "1.0.0", "1.0.0", false }, { "1.0.1", "1.0.0", true },
         { "1-SNAPSHOT", "1.1-SNAPSHOT", false }, { "1.1-SNAPSHOT", "1.0-SNAPSHOT", true },
         { "1.0.1-SNAPSHOT", "1.0-SNAPSHOT", true }, { "3.Alpha1", "3.Alpha2", false }, { "3.Alpha2", "3.Alpha1", true },
-        { "1-Alpha", "1-Final", false }, { "1.2.Final", "1.2.Alpha", true }, { PomUtil.VERSION_LATEST, "1.2", true },
-        { "3.17.9-SNAPSHOT", PomUtil.VERSION_LATEST, false }, { "3", null, true }, { "1.0-SNAPSHOT", "", true },
-        { "", "1", false }, { null, "1-SNAPSHOT", false } };
+        { "1-Alpha", "1-Final", false }, { "1.2.Final", "1.2.Alpha", true },
+        { MavenVersionUtil.VERSION_LATEST, "1.2", true }, { "3.17.9-SNAPSHOT", MavenVersionUtil.VERSION_LATEST, false },
+        { "3", null, true }, { "1.0-SNAPSHOT", "", true }, { "", "1", false }, { null, "1-SNAPSHOT", false } };
   }
 
   @Test
