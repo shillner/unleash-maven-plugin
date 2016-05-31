@@ -173,6 +173,21 @@ public class CommitRequest {
     }
 
     /**
+     * Sets a specific merge strategy for merge conflicts during updates prior to the commit.
+     *
+     * @param mergeStrategy the requested merge strategy. {@code null} results in {@link MergeStrategy#DO_NOT_MERGE}.
+     * @return the builder itself.
+     */
+    public Builder mergeStrategy(MergeStrategy mergeStrategy) {
+      if (mergeStrategy != null) {
+        this.request.mergeStrategy = mergeStrategy;
+      } else {
+        noMerge();
+      }
+      return this;
+    }
+
+    /**
      * @param mergeClient the merge client to be used in case of merge conflicts and merge strategy
      *          {@link MergeStrategy#FULL_MERGE}.
      * @return the builder itself.

@@ -84,7 +84,8 @@ public interface ScmProvider {
   String update(UpdateRequest request) throws ScmException;
 
   /**
-   * Creates a tag on the local (and optionally the remote) repository.
+   * Creates a tag on the local (and optionally the remote) repository either from the working copy or from a specified
+   * remote repository location.
    *
    * @param request the request specifying all relevant information for the tag creation.
    * @return the new revision number after the tag has been created which is the remote revision or the new local
@@ -113,7 +114,8 @@ public interface ScmProvider {
   String deleteTag(DeleteTagRequest request) throws ScmException;
 
   /**
-   * Creates a branch from the local (and optionally the remote) repository.
+   * Creates a branch from the local (and optionally the remote) repository either from the working copy or from a
+   * specified remote repository location.
    *
    * @param request the request specifying all relevant information for the branch creation.
    * @return the new revision number after the branch has been created which is the remote revision or the new local
