@@ -2,16 +2,16 @@ package com.itemis.maven.plugins.unleash.scm.requests;
 
 import com.google.common.base.Optional;
 
-public class TagRequest {
+public class BranchRequest {
   private String remoteRepositoryUrl;
   private String revision;
   protected String message;
   protected boolean push;
-  protected String tagName;
-  protected boolean commitBeforeTagging;
-  protected String preTagCommitMessage;
+  protected String branchName;
+  protected boolean commitBeforeBranching;
+  protected String preBranchCommitMessage;
 
-  TagRequest() {
+  BranchRequest() {
     // use builder!
   }
 
@@ -35,24 +35,24 @@ public class TagRequest {
     return this.push;
   }
 
-  public String getTagName() {
-    return this.tagName;
+  public String getBranchName() {
+    return this.branchName;
   }
 
-  public boolean commitBeforeTagging() {
-    return this.commitBeforeTagging;
+  public boolean commitBeforeBranching() {
+    return this.commitBeforeBranching;
   }
 
-  public String getPreTagCommitMessage() {
-    return this.preTagCommitMessage;
+  public String getPreBranchCommitMessage() {
+    return this.preBranchCommitMessage;
   }
 
-  public boolean tagFromWorkingCopy() {
+  public boolean branchFromWorkingCopy() {
     return this.remoteRepositoryUrl == null;
   }
 
   public static class Builder {
-    private TagRequest request = new TagRequest();
+    private BranchRequest request = new BranchRequest();
 
     public Builder from(String remoteRepositoryUrl) {
       this.request.remoteRepositoryUrl = remoteRepositoryUrl;
@@ -74,22 +74,22 @@ public class TagRequest {
       return this;
     }
 
-    public Builder tagName(String tagName) {
-      this.request.tagName = tagName;
+    public Builder branchName(String branchName) {
+      this.request.branchName = branchName;
       return this;
     }
 
-    public Builder commitBeforeTagging() {
-      this.request.commitBeforeTagging = true;
+    public Builder commitBeforeBranching() {
+      this.request.commitBeforeBranching = true;
       return this;
     }
 
-    public Builder preTagCommitMessage(String message) {
-      this.request.preTagCommitMessage = message;
+    public Builder preBranchCommitMessage(String message) {
+      this.request.preBranchCommitMessage = message;
       return this;
     }
 
-    public TagRequest build() {
+    public BranchRequest build() {
       return this.request;
     }
   }

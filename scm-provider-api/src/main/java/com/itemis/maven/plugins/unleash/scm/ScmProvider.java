@@ -1,10 +1,14 @@
 package com.itemis.maven.plugins.unleash.scm;
 
 import java.io.File;
+import java.util.logging.Logger;
 
 import com.google.common.base.Optional;
 import com.itemis.maven.plugins.unleash.scm.annotations.ScmProviderType;
+import com.itemis.maven.plugins.unleash.scm.requests.BranchRequest;
+import com.itemis.maven.plugins.unleash.scm.requests.CheckoutRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.CommitRequest;
+import com.itemis.maven.plugins.unleash.scm.requests.DeleteBranchRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.DeleteTagRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.TagRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.UpdateRequest;
@@ -26,15 +30,28 @@ public interface ScmProvider {
    * Initializes the SCM provider with the working directory and some other optional parameters such as credentials.
    *
    * @param workingDirectory the working directory on which the scm provider has to do its work.
+   * @param logger the logger to be used with this provider. If not logger is set a standard logger bound to the
+   *          interface {@link ScmProvider} is used.
    * @param username the username for remote SCM access.
    * @param password the password for remote SCM access.
    */
-  void initialize(File workingDirectory, Optional<String> username, Optional<String> password);
+  void initialize(File workingDirectory, Optional<Logger> logger, Optional<String> username, Optional<String> password);
 
   /**
    * Closes the SCM provider and releases all bound resources.
    */
   void close();
+
+  /**
+   * Checks out a remote repository into the working directory which has been set during provider initialization.<br>
+   * The checkout can be performed from any branch or tag with optional specification of revision information.<br>
+   * <br>
+   * <b>Note that the working directory of this provider instance must be empty for checkout operations!</b>
+   *
+   * @param request the description of what to checkout from where.
+   * @throws ScmException if f.i. the working dir is not empty or anything else happens during checkout.
+   */
+  void checkout(CheckoutRequest request) throws ScmException;
 
   /**
    * Commits the specified paths or the whole working directory changes. For distributed SCMs a push to the remote
@@ -71,8 +88,7 @@ public interface ScmProvider {
    *
    * @param request the request specifying all relevant information for the tag creation.
    * @return the new revision number after the tag has been created which is the remote revision or the new local
-   *         revision for
-   *         distributed SCMs when pushing is not enabled.
+   *         revision for distributed SCMs when pushing is not enabled.
    * @throws ScmException if the tag could not be created.
    */
   String tag(TagRequest request) throws ScmException;
@@ -95,6 +111,37 @@ public interface ScmProvider {
    * @throws ScmException if the tag could not be deleted.
    */
   String deleteTag(DeleteTagRequest request) throws ScmException;
+
+  /**
+   * Creates a branch from the local (and optionally the remote) repository.
+   *
+   * @param request the request specifying all relevant information for the branch creation.
+   * @return the new revision number after the branch has been created which is the remote revision or the new local
+   *         revision for distributed SCMs when pushing is not enabled.
+   * @throws ScmException if the branch could not be created.
+   */
+  String branch(BranchRequest request) throws ScmException;
+
+  /**
+   * @param branchName the name of the branch which is searched.
+   * @return <code>true</code> if the repository contains a branch with the specified name.
+   * @throws ScmException if the repository access (local or remote) fails and no exact information about the presence
+   *           of the branch can be given.
+   */
+  boolean hasBranch(String branchName) throws ScmException;
+
+  /**
+   * Deletes a branch from the repository. In case of distributed SCMs the deletion can only happen locally or also on
+   * the
+   * remote repository if pushing is enabled.
+   *
+   * @param request the deletion request specifying all relevant information for branch deletion.
+   * @return the new revision number after the branch deletion which is the remote revision or the new local revision
+   *         for
+   *         distributed SCMs when pushing is not enabled.
+   * @throws ScmException if the branch could not be deleted.
+   */
+  String deleteBranch(DeleteBranchRequest request) throws ScmException;
 
   /**
    * @return the revision of the current working copy.

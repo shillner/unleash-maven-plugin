@@ -36,7 +36,7 @@ public class CommitRequest {
   }
 
   public boolean commitAllChanges() {
-    return this.pathsToCommit == null;
+    return this.pathsToCommit.isEmpty();
   }
 
   public MergeStrategy getMergeStrategy() {

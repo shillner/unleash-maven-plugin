@@ -27,7 +27,7 @@ public class UpdateRequest {
   }
 
   public boolean updateAllChanges() {
-    return this.pathsToUpdate == null;
+    return this.pathsToUpdate.isEmpty();
   }
 
   public Optional<String> getTargetRevision() {

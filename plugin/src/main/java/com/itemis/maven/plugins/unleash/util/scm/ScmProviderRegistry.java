@@ -1,5 +1,7 @@
 package com.itemis.maven.plugins.unleash.util.scm;
 
+import java.util.logging.Logger;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.inject.Any;
@@ -58,8 +60,8 @@ public class ScmProviderRegistry {
   public Optional<ScmProvider> getProvider() {
     try {
       this.provider = this.providers.select(new ScmProviderTypeLiteral(this.scmProviderName)).get();
-      this.provider.initialize(this.project.getBasedir(), Optional.fromNullable(this.scmUsername),
-          Optional.fromNullable(this.scmPassword));
+      this.provider.initialize(this.project.getBasedir(), Optional.<Logger> absent(),
+          Optional.fromNullable(this.scmUsername), Optional.fromNullable(this.scmPassword));
     } catch (Throwable t) {
       this.log.warn("No SCM provider found for SCM with name " + this.scmProviderName, t);
     }
