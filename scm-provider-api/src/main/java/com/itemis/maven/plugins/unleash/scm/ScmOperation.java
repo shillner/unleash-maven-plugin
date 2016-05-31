@@ -1,5 +1,11 @@
 package com.itemis.maven.plugins.unleash.scm;
 
+/**
+ * SCM operations indicators.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 0.1.0
+ */
 public enum ScmOperation {
   /**
    * Retrieving information about the local and/or remote repository. This includes also querying for the existence of
