@@ -31,12 +31,6 @@
 
   <dependencies>
   <dependency>
-    <groupId>com.itemis.maven.plugins</groupId>
-    <artifactId>unleash-scm-provider-svn</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
-  </dependency>
-
-  <dependency>
       <groupId>org.eclipse.aether</groupId>
       <artifactId>aether-api</artifactId>
       <version>${version.aether}</version>
@@ -143,7 +137,7 @@
     </dependency>
     <dependency>
       <groupId>com.itemis.maven.plugins</groupId>
-      <artifactId>unleash-maven-plugin-utils</artifactId>
+      <artifactId>unleash-utils</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -158,7 +152,7 @@
     </dependency>
     <dependency>
       <groupId>com.itemis.maven.plugins</groupId>
-      <artifactId>unleash-maven-plugin-scm-provider-api</artifactId>
+      <artifactId>unleash-scm-provider-api</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>
