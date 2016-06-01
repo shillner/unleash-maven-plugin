@@ -8,23 +8,19 @@
   </parent>
 
   <groupId>com.itemis.maven.plugins</groupId>
-  <artifactId>unleash-maven-plugin-parent</artifactId>
+  <artifactId>unleash-parent</artifactId>
   <version>0.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>Unleash Maven Plugin Parent</name>
+  <name>Unleash Parent</name>
   <description>An alternative release plugin for maven projects that tries to reduce the risk of failure during the release process as well as the number of builds and scm operations. This plugin shall provide a faster, more stable but also more customizable release process.</description>
   <url>https://github.com/shillner/unleash-maven-plugin</url>
   <inceptionYear>2016</inceptionYear>
 
-  <prerequisites>
-    <maven>${version.maven}</maven>
-  </prerequisites>
-
   <modules>
     <module>scm-provider-api</module>
     <module>plugin</module>
-    <module>unleash-utils</module>
+    <module>utils</module>
   </modules>
 
   <properties>

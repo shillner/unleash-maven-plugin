@@ -3,12 +3,12 @@
   
   <parent>
     <groupId>com.itemis.maven.plugins</groupId>
-    <artifactId>unleash-maven-plugin-parent</artifactId>
+    <artifactId>unleash-parent</artifactId>
     <version>0.1.0-SNAPSHOT</version>
   </parent>
   
-  <artifactId>unleash-maven-plugin-scm-provider-api</artifactId>
-  <name>Unleash Maven Plugin SCM Provider API</name>
+  <artifactId>unleash-scm-provider-api</artifactId>
+  <name>Unleash SCM Provider API</name>
   <description>The API used by the Unleash Maven Plugin to talk to different SCM providers.</description>
   
   <properties>

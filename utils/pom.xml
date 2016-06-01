@@ -3,12 +3,12 @@
   
   <parent>
     <groupId>com.itemis.maven.plugins</groupId>
-    <artifactId>unleash-maven-plugin-parent</artifactId>
+    <artifactId>unleash-parent</artifactId>
     <version>0.1.0-SNAPSHOT</version>
   </parent>
   
   <artifactId>unleash-maven-plugin-utils</artifactId>
-  <name>Unleash Maven Plugin Utilities</name>
+  <name>Unleash Utilities</name>
   <description>Common utility classes provided and used by the plugin. These utilities can f.i. be used by external tools, such as CI server integration plugins.</description>
   
   <properties>
