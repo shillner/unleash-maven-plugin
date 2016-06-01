@@ -146,8 +146,15 @@ public interface ScmProvider {
    */
   String deleteBranch(DeleteBranchRequest request) throws ScmException;
 
-  // TODO comment!
-  // returns latest remote revision!
+  /**
+   * Reverts a number of commits in local and remote repository. If the commits to revert are older than the actual HEAD
+   * the diff gets merged on top of the HEAD revision.
+   *
+   * @param request the request containing the revision range to be reverted and merge information.
+   * @return the latest remote revision on the current branch.
+   * @throws ScmException if f.i. the specified revisions are newer than the HEAD or FROM and TO are specified in the
+   *           wrong order or anything happens during the reversion.
+   */
   String revertCommits(RevertCommitsRequest request) throws ScmException;
 
   /**
