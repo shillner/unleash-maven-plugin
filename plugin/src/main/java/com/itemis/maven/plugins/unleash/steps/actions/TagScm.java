@@ -15,7 +15,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Optional;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
@@ -94,13 +93,7 @@ public class TagScm implements CDIMojoProcessingStep {
   }
 
   private void init() {
-    Optional<ScmProvider> provider = this.scmProviderRegistry.getProvider();
-    if (!provider.isPresent()) {
-      throw new IllegalStateException(
-          "Could not load the SCM provider, please check previous log entries. Maybe you need to add an appropriate provider implementation as a dependency to the plugin.");
-    }
-    this.scmProvider = provider.get();
-
+    this.scmProvider = this.scmProviderRegistry.getProvider();
     Map<ReleasePhase, ArtifactCoordinates> coordinates = this.metadata
         .getArtifactCoordinatesByPhase(this.project.getGroupId(), this.project.getArtifactId());
     ArtifactCoordinates postReleaseCoordinates = coordinates.get(ReleasePhase.RELEASE);

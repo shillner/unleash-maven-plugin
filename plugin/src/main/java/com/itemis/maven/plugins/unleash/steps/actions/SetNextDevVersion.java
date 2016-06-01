@@ -15,7 +15,6 @@ import org.apache.maven.project.MavenProject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
-import com.google.common.base.Optional;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
@@ -57,7 +56,7 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
 
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
-    init();
+    this.scmProvider = this.scmProviderRegistry.getProvider();
 
     for (MavenProject project : this.reactorProjects) {
       try {
@@ -71,15 +70,6 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
         throw new MojoFailureException("Could not update versions for next development cycle.", t);
       }
     }
-  }
-
-  private void init() {
-    Optional<ScmProvider> provider = this.scmProviderRegistry.getProvider();
-    if (!provider.isPresent()) {
-      throw new IllegalStateException(
-          "Could not load the SCM provider, please check previous log entries. Maybe you need to add an appropriate provider implementation as a dependency to the plugin.");
-    }
-    this.scmProvider = provider.get();
   }
 
   private void setProjectVersion(MavenProject project, Document document) {

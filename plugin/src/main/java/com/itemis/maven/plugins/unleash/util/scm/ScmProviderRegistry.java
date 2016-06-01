@@ -40,7 +40,7 @@ public class ScmProviderRegistry {
   private String scmProviderName;
   private ScmProvider provider;
 
-  ScmProviderRegistry() {
+  private ScmProviderRegistry() {
   }
 
   @PostConstruct
@@ -57,16 +57,16 @@ public class ScmProviderRegistry {
     this.scmProviderName = providerName.orNull();
   }
 
-  public Optional<ScmProvider> getProvider() {
+  public ScmProvider getProvider() throws IllegalStateException {
     try {
       this.provider = this.providers.select(new ScmProviderTypeLiteral(this.scmProviderName)).get();
       this.provider.initialize(this.project.getBasedir(), Optional.<Logger> absent(),
           Optional.fromNullable(this.scmUsername), Optional.fromNullable(this.scmPassword));
     } catch (Throwable t) {
-      this.log.warn("No SCM provider found for SCM with name " + this.scmProviderName, t);
+      throw new IllegalStateException("No SCM provider found for SCM with name " + this.scmProviderName
+          + ". Maybe you need to add an appropriate provider implementation as a dependency to the plugin.", t);
     }
-
-    return Optional.fromNullable(this.provider);
+    return this.provider;
   }
 
   @PreDestroy

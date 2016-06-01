@@ -6,7 +6,6 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Optional;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
@@ -24,13 +23,8 @@ public class CheckScmChanges implements CDIMojoProcessingStep {
 
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
-    Optional<ScmProvider> provider = this.scmProviderRegistry.getProvider();
-    if (!provider.isPresent()) {
-      throw new MojoFailureException(
-          "Could not load the SCM provider, please check previous log entries. Maybe you need to add an appropriate provider implementation as a dependency to the plugin.");
-    }
-
-    String latestRemoteRevision = provider.get().getLatestRemoteRevision();
+    ScmProvider provider = this.scmProviderRegistry.getProvider();
+    String latestRemoteRevision = provider.getLatestRemoteRevision();
     if (!Objects.equal(latestRemoteRevision, this.metadata.getInitialScmRevision())) {
       throw new MojoFailureException(
           "The local working copy which has been built is out of sync with the remote repository. [Local revision: "
