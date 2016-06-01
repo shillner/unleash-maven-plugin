@@ -14,6 +14,7 @@ import org.apache.maven.project.MavenProject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
@@ -74,6 +75,13 @@ public class TagScm implements CDIMojoProcessingStep {
 
     Builder requestBuilder = TagRequest.builder().message(message.toString()).tagName(scmTagName).push();
     if (this.commitBeforeTagging) {
+      String remoteRevision = this.scmProvider.getLatestRemoteRevision();
+      if (!Objects.equal(remoteRevision, this.metadata.getInitialScmRevision())) {
+        throw new MojoFailureException("Error creating the SCM tag! "
+            + "A commit before tag creation was requested but the remote repository changed since we started the release. "
+            + "Creating the tag with first committing the local changes would result in an invalid tag!");
+      }
+
       requestBuilder.commitBeforeTagging();
       StringBuilder preTagMessage = new StringBuilder("Preparation for tag ").append(scmTagName);
       if (StringUtils.isNotBlank(this.scmMessagePrefix)) {
