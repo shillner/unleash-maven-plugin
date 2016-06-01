@@ -42,6 +42,10 @@ public enum ScmOperation {
    */
   PUSH,
   /**
+   * Reversion of commits in the local and remote repositories.
+   */
+  REVERT_COMMITS,
+  /**
    * Retrieval of the repository status (changed, added, removed files and folders).
    */
   STATUS,

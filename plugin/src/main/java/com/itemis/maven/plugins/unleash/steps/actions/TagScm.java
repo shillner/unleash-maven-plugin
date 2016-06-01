@@ -23,10 +23,12 @@ import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 import com.itemis.maven.plugins.unleash.scm.requests.DeleteTagRequest;
+import com.itemis.maven.plugins.unleash.scm.requests.RevertCommitsRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.TagRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.TagRequest.Builder;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
+import com.itemis.maven.plugins.unleash.util.scm.ScmPomVersionsMergeClient;
 import com.itemis.maven.plugins.unleash.util.scm.ScmProviderRegistry;
 
 @ProcessingStep(id = "tagScm", description = "Creates an SCM Tag with the release setup.", requiresOnline = true)
@@ -74,6 +76,7 @@ public class TagScm implements CDIMojoProcessingStep {
 
     Builder requestBuilder = TagRequest.builder().message(message.toString()).tagName(scmTagName).push();
     if (this.commitBeforeTagging) {
+      this.metadata.setScmRevisionBeforeTag(this.scmProvider.getLatestRemoteRevision());
       String remoteRevision = this.scmProvider.getLatestRemoteRevision();
       if (!Objects.equal(remoteRevision, this.metadata.getInitialScmRevision())) {
         throw new MojoFailureException("Error creating the SCM tag! "
@@ -89,7 +92,8 @@ public class TagScm implements CDIMojoProcessingStep {
       requestBuilder.preTagCommitMessage(preTagMessage.toString());
     }
 
-    this.scmProvider.tag(requestBuilder.build());
+    String newRevision = this.scmProvider.tag(requestBuilder.build());
+    this.metadata.setScmRevisionAfterTag(newRevision);
   }
 
   private void init() {
@@ -151,6 +155,17 @@ public class TagScm implements CDIMojoProcessingStep {
     } else {
       this.log.debug("Skipping deletion of SCM tag '" + scmTagName
           + "' since the tag was already present before the release build was triggered.");
+    }
+
+    if (this.commitBeforeTagging) {
+      StringBuilder message = new StringBuilder("Reversion of failed release build (step: tag SCM).");
+      if (StringUtils.isNotBlank(this.scmMessagePrefix)) {
+        message.insert(0, this.scmMessagePrefix);
+      }
+      RevertCommitsRequest revertCommitsRequest = RevertCommitsRequest.builder()
+          .fromRevision(this.metadata.getScmRevisionAfterTag()).toRevision(this.metadata.getScmRevisionBeforeTag())
+          .message(message.toString()).merge().mergeClient(new ScmPomVersionsMergeClient()).build();
+      this.scmProvider.revertCommits(revertCommitsRequest);
     }
   }
 }

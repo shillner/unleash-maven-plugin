@@ -35,7 +35,7 @@ public class TagRequest {
   protected boolean commitBeforeTagging;
   protected String preTagCommitMessage;
 
-  TagRequest() {
+  private TagRequest() {
     // use builder!
   }
 

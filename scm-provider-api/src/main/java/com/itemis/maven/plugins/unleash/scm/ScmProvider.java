@@ -10,6 +10,7 @@ import com.itemis.maven.plugins.unleash.scm.requests.CheckoutRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.CommitRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.DeleteBranchRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.DeleteTagRequest;
+import com.itemis.maven.plugins.unleash.scm.requests.RevertCommitsRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.TagRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.UpdateRequest;
 
@@ -144,6 +145,10 @@ public interface ScmProvider {
    * @throws ScmException if the branch could not be deleted.
    */
   String deleteBranch(DeleteBranchRequest request) throws ScmException;
+
+  // TODO comment!
+  // returns latest remote revision!
+  String revertCommits(RevertCommitsRequest request) throws ScmException;
 
   /**
    * @return the revision of the current working copy.

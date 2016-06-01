@@ -1,35 +1,26 @@
 package com.itemis.maven.plugins.unleash.scm.requests;
 
-import java.util.Set;
-
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Sets;
+import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 import com.itemis.maven.plugins.unleash.scm.merge.MergeClient;
 import com.itemis.maven.plugins.unleash.scm.merge.MergeStrategy;
 
 /**
- * A Request for updating the local working copy from the remote repository.<br>
+ * A Request for reverting a number of commits either locally or remotely.<br>
  * <b>USE {@link #builder()} TO CREATE A REQUEST!</b><br>
- * <br>
- * The following configuration options are possible:
- * <ol>
- * <li>Update the whole working directory.</li>
- * <li>Update only specific files of the working directory.</li>
- * <li>Specify a merge strategy and optionally a {@link MergeClient} for update conflicts.</li>
- * </ol>
  *
  * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
  * @since 0.1.0
  */
-public class UpdateRequest {
-  private Set<String> pathsToUpdate;
-  private String targetRevision;
+public class RevertCommitsRequest {
+  private String fromRevision;
+  private String toRevision;
+  private String message;
   private MergeStrategy mergeStrategy = MergeStrategy.DO_NOT_MERGE;
   private MergeClient mergeClient;
 
-  private UpdateRequest() {
-    this.pathsToUpdate = Sets.newHashSet();
+  private RevertCommitsRequest() {
     // use builder!
   }
 
@@ -37,16 +28,16 @@ public class UpdateRequest {
     return new Builder();
   }
 
-  public Set<String> getPathsToUpdate() {
-    return this.pathsToUpdate;
+  public String getFromRevision() {
+    return this.fromRevision;
   }
 
-  public boolean updateAllChanges() {
-    return this.pathsToUpdate.isEmpty();
+  public String getToRevision() {
+    return this.toRevision;
   }
 
-  public Optional<String> getTargetRevision() {
-    return Optional.fromNullable(this.targetRevision);
+  public String getMessage() {
+    return this.message;
   }
 
   public MergeStrategy getMergeStrategy() {
@@ -58,59 +49,49 @@ public class UpdateRequest {
   }
 
   /**
-   * The builder for a {@link UpdateRequest}.
+   * The builder for a {@link RevertCommitsRequest}.
    *
    * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
    * @since 0.1.0
    */
   public static class Builder {
-    private UpdateRequest request = new UpdateRequest();
+    private RevertCommitsRequest request = new RevertCommitsRequest();
 
     /**
-     * Adds some working directory-relative paths of files or folders to the list of paths to update.<br>
-     * Once some paths are added only these files are updated, nothing else!<br>
-     * You can use {@link #paths(null)} to unset the list of files and update all changes of the working copy.
-     *
-     * @param paths some filepaths to update.
-     * @return the builder itself.
-     */
-    public Builder addPaths(String... paths) {
-      for (String path : paths) {
-        this.request.pathsToUpdate.add(path);
-      }
-      return this;
-    }
-
-    /**
-     * Sets the working directory-relative paths of files or folders to update. This method totally overrides all paths
-     * added previously!<br>
-     * Once some paths are added only these files are updated, nothing else!<br>
-     * Use {@link #paths(null)} to unset the list of files and update all changes of the working copy.
-     *
-     * @param paths the filepaths to update.
-     * @return the builder itself.
-     */
-    public Builder paths(Set<String> paths) {
-      if (paths != null) {
-        this.request.pathsToUpdate = paths;
-      } else {
-        this.request.pathsToUpdate = Sets.newHashSet();
-      }
-      return this;
-    }
-
-    /**
-     * @param revision the revision to which the working copy shall be updated. If this revision is omitted, HEAD is
-     *          assumed.
+     * @param revision the revision to which commits shall be reverted. The contents of this revision will be kept in
+     *          the repository.<br>
+     *          This revision must be older than the one specified in {@link #fromRevision(String)}. {@link ScmProvider}
+     *          implementations may throw an exception when violating this constraint.
      * @return the builder itself.
      */
     public Builder toRevision(String revision) {
-      this.request.targetRevision = revision;
+      this.request.toRevision = revision;
       return this;
     }
 
     /**
-     * Sets the merge strategy to {@link MergeStrategy#USE_LOCAL} for merge conflicts during the update.<br>
+     * @param revision the revision from which to start reverting commits. All commits are reverted starting from this
+     *          one until the revision specified in {@link #toRevision(String)}.<br>
+     *          This revision must be newer than the one specified in {@link #toRevision(String)}. {@link ScmProvider}
+     *          implementations may throw an exception when violating this constraint.
+     * @return the builder itself.
+     */
+    public Builder fromRevision(String revision) {
+      this.request.fromRevision = revision;
+      return this;
+    }
+
+    /**
+     * @param message the repository log message (mandatory).
+     * @return the builder itself.
+     */
+    public Builder message(String message) {
+      this.request.message = message;
+      return this;
+    }
+
+    /**
+     * Sets the merge strategy to {@link MergeStrategy#USE_LOCAL} for merge conflicts during the reversion.<br>
      * This will request overriding of all conflicting changes with the local versions.
      *
      * @return the builder itself.
@@ -121,7 +102,7 @@ public class UpdateRequest {
     }
 
     /**
-     * Sets the merge strategy to {@link MergeStrategy#USE_REMOTE} for merge conflicts during the update.<br>
+     * Sets the merge strategy to {@link MergeStrategy#USE_REMOTE} for merge conflicts during the reversion.<br>
      * This will request overriding of all conflicting changes with the remote versions.
      *
      * @return the builder itself.
@@ -132,7 +113,7 @@ public class UpdateRequest {
     }
 
     /**
-     * Sets the merge strategy to {@link MergeStrategy#FULL_MERGE} for merge conflicts during the update.<br>
+     * Sets the merge strategy to {@link MergeStrategy#FULL_MERGE} for merge conflicts during the reversion.<br>
      * This will request real merging of conflicts between local and remote changes. In case of such a conflict the
      * {@link MergeClient} is used to resolve the conflict.<br>
      * <br>
@@ -146,7 +127,7 @@ public class UpdateRequest {
     }
 
     /**
-     * Sets the merge strategy to {@link MergeStrategy#DO_NOT_MERGE} for merge conflicts during the update.<br>
+     * Sets the merge strategy to {@link MergeStrategy#DO_NOT_MERGE} for merge conflicts during the reversion.<br>
      * This will request to not merge local and remote changes which will likely result in failure messages or conflict
      * info being written.
      *
@@ -158,7 +139,7 @@ public class UpdateRequest {
     }
 
     /**
-     * Sets a specific merge strategy for merge conflicts during the update.
+     * Sets a specific merge strategy for merge conflicts during the reversion.
      *
      * @param mergeStrategy the requested merge strategy. {@code null} results in {@link MergeStrategy#DO_NOT_MERGE}.
      * @return the builder itself.
@@ -187,7 +168,12 @@ public class UpdateRequest {
      *
      * @return the request for updating the local working copy.
      */
-    public UpdateRequest build() {
+    public RevertCommitsRequest build() {
+      Preconditions.checkState(this.request.fromRevision != null,
+          "No from revision set (start revision of the reversion)!");
+      Preconditions.checkState(this.request.toRevision != null,
+          "No to revision set (end revision of the reversion that will be kept)!");
+      Preconditions.checkState(this.request.message != null, "No log message specified!");
       if (MergeStrategy.FULL_MERGE == this.request.mergeStrategy) {
         Preconditions.checkState(this.request.mergeClient != null,
             "Merge strategy " + this.request.mergeStrategy + " has been requested but no merge client is set!");

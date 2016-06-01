@@ -43,6 +43,10 @@ public class UnleashMojo extends AbstractCDIMojo implements Extension {
   @MojoProduces
   private Installer installer;
 
+  @MojoProduces
+  @Component
+  private Prompter prompter;
+
   @Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
   @MojoProduces
   private RepositorySystemSession repoSession;
@@ -133,9 +137,10 @@ public class UnleashMojo extends AbstractCDIMojo implements Extension {
   @Parameter(property = "unleash.scmPassword")
   private String scmPassword;
 
+  @Parameter(defaultValue = "", property = "unleash.releaseArgs")
   @MojoProduces
-  @Component
-  private Prompter prompter;
+  @Named("releaseArgs")
+  private String releaseArgs;
 
   @MojoProduces
   public MavenLogWrapper createLogWrapper() {

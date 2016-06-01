@@ -41,6 +41,10 @@ public class BuildProject implements CDIMojoProcessingStep {
   @Inject
   private Settings settings;
 
+  @Inject
+  @Named("releaseArgs")
+  private String releaseArgs;
+
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
     InvocationRequest request = new DefaultInvocationRequest();
@@ -48,6 +52,7 @@ public class BuildProject implements CDIMojoProcessingStep {
     // installation and deployment are performed in a later step. We first need to ensure that there are no changes in
     // the scm, ...
     request.setGoals(Lists.newArrayList("clean", "verify"));
+    request.setMavenOpts(this.releaseArgs);
     request.setProfiles(this.profiles);
     request.setShellEnvironmentInherited(true);
     request.setOffline(this.settings.isOffline());

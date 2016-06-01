@@ -18,12 +18,13 @@ import org.w3c.dom.Node;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
+import com.itemis.maven.plugins.cdi.annotations.RollbackOnError;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
-import com.itemis.maven.plugins.unleash.scm.merge.MergeClient;
 import com.itemis.maven.plugins.unleash.scm.requests.CommitRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.CommitRequest.Builder;
+import com.itemis.maven.plugins.unleash.scm.requests.RevertCommitsRequest;
 import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.functions.FileToRelativePath;
@@ -125,19 +126,36 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
   }
 
   private void commitChanges() {
+    this.metadata.setScmRevisionBeforeNextDevVersion(this.scmProvider.getLatestRemoteRevision());
+
     StringBuilder message = new StringBuilder("Preparation for next development cycle.");
     if (StringUtils.isNotBlank(this.scmMessagePrefix)) {
       message.insert(0, this.scmMessagePrefix);
     }
 
-    MergeClient mergeClient = new ScmPomVersionsMergeClient();
-    Builder requestBuilder = CommitRequest.builder().merge().mergeClient(mergeClient).message(message.toString())
-        .push();
+    Builder requestBuilder = CommitRequest.builder().merge().mergeClient(new ScmPomVersionsMergeClient())
+        .message(message.toString()).push();
     FileToRelativePath pathConverter = new FileToRelativePath(this.project.getBasedir());
     for (MavenProject p : this.reactorProjects) {
       requestBuilder.addPaths(pathConverter.apply(p.getFile()));
     }
 
-    this.scmProvider.commit(requestBuilder.build());
+    String newRevision = this.scmProvider.commit(requestBuilder.build());
+    this.metadata.setScmRevisionAfterNextDevVersion(newRevision);
+  }
+
+  @RollbackOnError
+  public void rollback() {
+    StringBuilder message = new StringBuilder(
+        "Reversion of failed release build (step: setting of next snapshot version).");
+    if (StringUtils.isNotBlank(this.scmMessagePrefix)) {
+      message.insert(0, this.scmMessagePrefix);
+    }
+
+    RevertCommitsRequest revertCommitsRequest = RevertCommitsRequest.builder()
+        .fromRevision(this.metadata.getScmRevisionAfterNextDevVersion())
+        .toRevision(this.metadata.getScmRevisionBeforeNextDevVersion()).message(message.toString()).merge()
+        .mergeClient(new ScmPomVersionsMergeClient()).build();
+    this.scmProvider.revertCommits(revertCommitsRequest);
   }
 }

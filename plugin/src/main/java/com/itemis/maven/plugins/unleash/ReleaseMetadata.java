@@ -36,6 +36,10 @@ public class ReleaseMetadata {
   private List<MavenProject> reactorProjects;
 
   private String initialScmRevision;
+  private String scmRevisionBeforeNextDevVersion;
+  private String scmRevisionAfterNextDevVersion;
+  private String scmRevisionBeforeTag;
+  private String scmRevisionAfterTag;
   private Map<ReleasePhase, Set<ArtifactCoordinates>> artifactCoordinates;
   private String scmTagName;
   private RemoteRepository deploymentRepository;
@@ -76,6 +80,38 @@ public class ReleaseMetadata {
 
   public String getInitialScmRevision() {
     return this.initialScmRevision;
+  }
+
+  public void setScmRevisionBeforeNextDevVersion(String scmRevisionBeforeNextDevVersion) {
+    this.scmRevisionBeforeNextDevVersion = scmRevisionBeforeNextDevVersion;
+  }
+
+  public String getScmRevisionBeforeNextDevVersion() {
+    return this.scmRevisionBeforeNextDevVersion;
+  }
+
+  public void setScmRevisionAfterNextDevVersion(String scmRevisionAfterNextDevVersion) {
+    this.scmRevisionAfterNextDevVersion = scmRevisionAfterNextDevVersion;
+  }
+
+  public String getScmRevisionAfterNextDevVersion() {
+    return this.scmRevisionAfterNextDevVersion;
+  }
+
+  public void setScmRevisionBeforeTag(String scmRevisionBeforeTag) {
+    this.scmRevisionBeforeTag = scmRevisionBeforeTag;
+  }
+
+  public String getScmRevisionBeforeTag() {
+    return this.scmRevisionBeforeTag;
+  }
+
+  public void setScmRevisionAfterTag(String scmRevisionAfterTag) {
+    this.scmRevisionAfterTag = scmRevisionAfterTag;
+  }
+
+  public String getScmRevisionAfterTag() {
+    return this.scmRevisionAfterTag;
   }
 
   public void addArtifactCoordinates(ArtifactCoordinates coordinates, ReleasePhase phase) {
