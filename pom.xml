@@ -16,6 +16,27 @@
   <description>An alternative release plugin for maven projects that tries to reduce the risk of failure during the release process as well as the number of builds and scm operations. This plugin shall provide a faster, more stable but also more customizable release process.</description>
   <url>https://github.com/shillner/unleash-maven-plugin</url>
   <inceptionYear>2016</inceptionYear>
+  
+  <developers>
+    <developer>
+      <id>shillner</id>
+      <name>Stanley Hillner</name>
+      <organization>itemis AG</organization>
+      <organizationUrl>https://itemis.com/</organizationUrl>
+      <timezone>1</timezone>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:https://github.com/shillner/unleash-maven-plugin.git</connection>
+    <url>https://github.com/shillner/unleash-maven-plugin</url>
+    <tag>HEAD</tag>
+  </scm>
+  
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/shillner/unleash-maven-plugin/issues</url>
+  </issueManagement>
 
   <modules>
     <module>scm-provider-api</module>
