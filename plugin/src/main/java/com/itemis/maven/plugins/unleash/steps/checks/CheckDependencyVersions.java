@@ -18,6 +18,7 @@ import org.apache.maven.project.MavenProject;
 import com.google.common.base.Objects;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
@@ -117,13 +118,17 @@ public class CheckDependencyVersions implements CDIMojoProcessingStep {
         ProjectToString.INCLUDE_PACKAGING);
 
     for (MavenProject p : snapshotByProject.keySet()) {
+      List<String> dependenciesToRemove = Lists.newArrayList();
       for (String dep : snapshotByProject.get(p)) {
         for (String moduleCoordinate : projectCoordinates) {
           if (Objects.equal(dep, moduleCoordinate)) {
-            snapshotByProject.remove(p, dep);
+            dependenciesToRemove.add(dep);
             break;
           }
         }
+      }
+      for (String dep : dependenciesToRemove) {
+        snapshotByProject.remove(p, dep);
       }
     }
   }
