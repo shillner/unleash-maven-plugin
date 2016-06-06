@@ -9,7 +9,7 @@
 
   <groupId>com.itemis.maven.plugins</groupId>
   <artifactId>unleash-parent</artifactId>
-  <version>0.2.0-SNAPSHOT</version>
+  <version>0.1.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Unleash Parent</name>
