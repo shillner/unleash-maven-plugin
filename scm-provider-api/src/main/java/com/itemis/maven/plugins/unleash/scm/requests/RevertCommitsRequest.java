@@ -17,6 +17,7 @@ public class RevertCommitsRequest {
   private String fromRevision;
   private String toRevision;
   private String message;
+  private boolean push;
   private MergeStrategy mergeStrategy = MergeStrategy.DO_NOT_MERGE;
   private MergeClient mergeClient;
 
@@ -38,6 +39,10 @@ public class RevertCommitsRequest {
 
   public String getMessage() {
     return this.message;
+  }
+
+  public boolean push() {
+    return this.push;
   }
 
   public MergeStrategy getMergeStrategy() {
@@ -87,6 +92,16 @@ public class RevertCommitsRequest {
      */
     public Builder message(String message) {
       this.request.message = message;
+      return this;
+    }
+
+    /**
+     * Request pushing to the remote repository in case of distributed SCMs.
+     *
+     * @return the builder itself.
+     */
+    public Builder push() {
+      this.request.push = true;
       return this;
     }
 

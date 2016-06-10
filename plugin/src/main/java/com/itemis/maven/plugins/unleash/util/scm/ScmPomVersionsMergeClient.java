@@ -1,7 +1,8 @@
 package com.itemis.maven.plugins.unleash.util.scm;
 
-import java.io.File;
-import java.io.FileReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.apache.maven.model.Model;
@@ -10,6 +11,7 @@ import org.w3c.dom.Document;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
+import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
 import com.itemis.maven.plugins.unleash.scm.ScmException;
 import com.itemis.maven.plugins.unleash.scm.ScmOperation;
@@ -20,22 +22,31 @@ import com.itemis.maven.plugins.unleash.util.PomUtil;
 public class ScmPomVersionsMergeClient implements MergeClient {
 
   @Override
-  public void merge(File local, File remote, File base, OutputStream result) throws ScmException {
+  public void merge(InputStream local, InputStream remote, InputStream base, OutputStream result) throws ScmException {
     Optional<Model> localModel = loadModel(local);
     if (!localModel.isPresent()) {
       // TODO implement merge of other files!
       throw new ScmException(ScmOperation.MERGE, "Unable to merge non-POM changes.");
     }
 
-    Optional<Model> remoteModel = loadModel(remote);
+    byte[] remoteData = null;
+    try {
+      remoteData = ByteStreams.toByteArray(remote);
+    } catch (IOException e) {
+      throw new ScmException(ScmOperation.MERGE, "Unable to read remote content!", e);
+    } finally {
+      Closeables.closeQuietly(remote);
+    }
+
+    Optional<Model> remoteModel = loadModel(new ByteArrayInputStream(remoteData));
     Optional<Model> baseModel = loadModel(base);
 
-    Model resultModel = loadModel(remote).get();
+    Model resultModel = loadModel(new ByteArrayInputStream(remoteData)).get();
     mergeVersions(localModel.get(), remoteModel.get(), baseModel.get(), resultModel);
     mergeParentVersions(localModel.get(), remoteModel.get(), baseModel.get(), resultModel);
 
     try {
-      Document document = PomUtil.parsePOM(remote);
+      Document document = PomUtil.parsePOM(new ByteArrayInputStream(remoteData));
       PomUtil.setProjectVersion(resultModel, document, resultModel.getVersion());
       if (resultModel.getParent() != null) {
         PomUtil.setParentVersion(resultModel, document, resultModel.getParent().getVersion());
@@ -119,17 +130,15 @@ public class ScmPomVersionsMergeClient implements MergeClient {
     }
   }
 
-  private Optional<Model> loadModel(File f) {
+  private Optional<Model> loadModel(InputStream in) {
     MavenXpp3Reader reader = new MavenXpp3Reader();
-    FileReader fr = null;
     try {
-      fr = new FileReader(f);
-      Model model = reader.read(fr);
+      Model model = reader.read(in);
       return Optional.of(model);
     } catch (Exception e) {
       return Optional.absent();
     } finally {
-      Closeables.closeQuietly(fr);
+      Closeables.closeQuietly(in);
     }
   }
 }

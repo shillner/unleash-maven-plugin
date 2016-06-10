@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -69,17 +70,23 @@ public final class PomUtil {
     }
   }
 
-  public static final Document parsePOM(File f) {
-    FileInputStream is = null;
+  public static final Document parsePOM(InputStream in) {
     try {
       DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-      is = new FileInputStream(f);
-      Document document = documentBuilder.parse(is);
+      Document document = documentBuilder.parse(in);
       return document;
     } catch (Exception e) {
-      throw new RuntimeException("Could not load the project object model from file: " + f.getAbsolutePath(), e);
+      throw new RuntimeException("Could not load the project object model from input stream.", e);
     } finally {
-      Closeables.closeQuietly(is);
+      Closeables.closeQuietly(in);
+    }
+  }
+
+  public static final Document parsePOM(File f) {
+    try {
+      return parsePOM(new FileInputStream(f));
+    } catch (Exception e) {
+      throw new RuntimeException("Could not load the project object model from file: " + f.getAbsolutePath(), e);
     }
   }
 

@@ -10,6 +10,7 @@ import com.itemis.maven.plugins.unleash.scm.requests.CheckoutRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.CommitRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.DeleteBranchRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.DeleteTagRequest;
+import com.itemis.maven.plugins.unleash.scm.requests.PushRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.RevertCommitsRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.TagRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.UpdateRequest;
@@ -69,17 +70,19 @@ public interface ScmProvider {
   /**
    * Pushes the local changes to the remote repository which is relevant for distributed SCMs only.
    *
+   * @param request the request containing all relevant settings for the push.
+   * @return the new remote revision after the push has been executed successfully.
    * @throws ScmException if the push encountered an error, f.i. if the remote repo is ahead, ...
    */
-  void push() throws ScmException;
+  String push(PushRequest request) throws ScmException;
 
   /**
    * Updates the local repository with changes of the remote repository which might fail due to conflicts. Merging can
    * also be required.
    *
    * @param request the request describing what to update to which revision and how to deal with conflicts.
-   * @return the remote revision to which the working directory was updated. This revision is also the new local
-   *         revision.
+   * @return the new revision after merging remote changes. This might be the requested remote revision which has been
+   *         merged or a newer one if a merge commit was necessary.
    * @throws ScmException if the update fails, f.i. due to unresolvable conflicts.
    */
   String update(UpdateRequest request) throws ScmException;
