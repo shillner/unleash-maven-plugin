@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.itemis.maven.plugins</groupId>
     <artifactId>unleash-parent</artifactId>
-  <version>0.2.0</version>
+  <version>0.3.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>unleash-maven-plugin</artifactId>
