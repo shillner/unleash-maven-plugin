@@ -104,7 +104,6 @@ public class TagScm implements CDIMojoProcessingStep {
     this.globalReleaseVersion = postReleaseCoordinates.getVersion();
   }
 
-  // FIXME outsource to extra step
   private void updateScmConnections(String scmTagName) throws MojoFailureException {
     for (MavenProject p : this.reactorProjects) {
       Scm scm = p.getModel().getScm();
