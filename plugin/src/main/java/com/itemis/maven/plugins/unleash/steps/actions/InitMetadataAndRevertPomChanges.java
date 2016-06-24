@@ -10,17 +10,18 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
+import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.cdi.annotations.RollbackOnError;
+import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
-import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 
 @ProcessingStep(id = "initMetadataAndRollbackPomChanges", description = "Initializes the release metadata and rolls back all POM changes in case of an error.", requiresOnline = false)
 public class InitMetadataAndRevertPomChanges implements CDIMojoProcessingStep {
   @Inject
-  private MavenLogWrapper log;
+  private Logger log;
 
   @Inject
   private ReleaseMetadata metadata;
@@ -30,7 +31,7 @@ public class InitMetadataAndRevertPomChanges implements CDIMojoProcessingStep {
   private List<MavenProject> reactorProjects;
 
   @Override
-  public void execute() throws MojoExecutionException, MojoFailureException {
+  public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     for (MavenProject p : this.reactorProjects) {
       this.metadata.cacheScmSettings(p.getGroupId() + ":" + p.getArtifactId(), p.getModel().getScm());
     }

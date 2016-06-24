@@ -17,8 +17,10 @@ import org.w3c.dom.Node;
 import com.google.common.base.Objects;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
+import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.cdi.annotations.RollbackOnError;
+import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
@@ -26,7 +28,6 @@ import com.itemis.maven.plugins.unleash.scm.requests.DeleteTagRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.RevertCommitsRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.TagRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.TagRequest.Builder;
-import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.scm.ScmPomVersionsMergeClient;
 import com.itemis.maven.plugins.unleash.util.scm.ScmProviderRegistry;
@@ -34,7 +35,7 @@ import com.itemis.maven.plugins.unleash.util.scm.ScmProviderRegistry;
 @ProcessingStep(id = "tagScm", description = "Creates an SCM Tag with the release setup.", requiresOnline = true)
 public class TagScm implements CDIMojoProcessingStep {
   @Inject
-  private MavenLogWrapper log;
+  private Logger log;
   @Inject
   private MavenProject project;
   @Inject
@@ -56,7 +57,7 @@ public class TagScm implements CDIMojoProcessingStep {
   private boolean tagWasPresent;
 
   @Override
-  public void execute() throws MojoExecutionException, MojoFailureException {
+  public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     init();
 
     String scmTagName = this.metadata.getScmTagName();

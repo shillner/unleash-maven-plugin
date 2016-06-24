@@ -6,10 +6,11 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
+import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
+import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
-import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.scm.ScmProviderRegistry;
 
 /**
@@ -22,14 +23,14 @@ import com.itemis.maven.plugins.unleash.util.scm.ScmProviderRegistry;
 @ProcessingStep(id = "storeScmRevision", description = "Stores the checked out SCM revision in the release metadata for later usage.", requiresOnline = false)
 public class StoreScmRevision implements CDIMojoProcessingStep {
   @Inject
-  private MavenLogWrapper log;
+  private Logger log;
   @Inject
   private ScmProviderRegistry scmProviderRegistry;
   @Inject
   private ReleaseMetadata metadata;
 
   @Override
-  public void execute() throws MojoExecutionException, MojoFailureException {
+  public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     ScmProvider provider = this.scmProviderRegistry.getProvider();
     String revision = provider.getLocalRevision();
     this.metadata.setInitialScmRevision(revision);

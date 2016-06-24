@@ -17,10 +17,11 @@ import com.google.common.collect.Lists;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.aether.ArtifactResolver;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
+import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
+import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
-import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProject;
@@ -28,7 +29,7 @@ import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProject;
 @ProcessingStep(id = "checkAether", description = "Checks the Aether for already released artifacts. The goal is to ensure that the artifacts produced by this release build can be deployed safely to the aether.", requiresOnline = true)
 public class CheckAether implements CDIMojoProcessingStep {
   @Inject
-  private MavenLogWrapper log;
+  private Logger log;
 
   @Inject
   private ReleaseMetadata metadata;
@@ -45,7 +46,7 @@ public class CheckAether implements CDIMojoProcessingStep {
   private boolean allowLocalReleaseArtifacts;
 
   @Override
-  public void execute() throws MojoExecutionException, MojoFailureException {
+  public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     Collection<MavenProject> snapshotProjects = Collections2.filter(this.reactorProjects, IsSnapshotProject.INSTANCE);
 
     List<MavenProject> alreadyReleasedProjects = Lists.newArrayList();

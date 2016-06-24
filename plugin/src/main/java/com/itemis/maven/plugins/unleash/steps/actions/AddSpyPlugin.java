@@ -11,15 +11,16 @@ import org.w3c.dom.Node;
 
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
+import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.cdi.annotations.RollbackOnError;
-import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
+import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 
 @ProcessingStep(id = "addSpyPlugin", description = "Adds the artifact-spy-plugin to the build configuration. This plugin determines the built artifacts for later installation and deployment.", requiresOnline = false)
 public class AddSpyPlugin implements CDIMojoProcessingStep {
   @Inject
-  private MavenLogWrapper log;
+  private Logger log;
   @Inject
   private MavenProject project;
   @Inject
@@ -27,7 +28,7 @@ public class AddSpyPlugin implements CDIMojoProcessingStep {
   private ArtifactCoordinates artifactSpyPluginCoordinates;
 
   @Override
-  public void execute() throws MojoExecutionException, MojoFailureException {
+  public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     this.log.info(
         "Adding artifact-spy-plugin to the build configuration. This plugin is required to determine the artifacts that are produced by the build for later installation and deployment.");
     try {

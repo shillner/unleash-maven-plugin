@@ -15,12 +15,11 @@ import org.apache.maven.project.MavenProject;
 import com.google.common.base.Optional;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 import com.itemis.maven.plugins.unleash.scm.annotations.ScmProviderTypeLiteral;
-import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 
 @Singleton
 public class ScmProviderRegistry {
   @Inject
-  private MavenLogWrapper log;
+  private com.itemis.maven.plugins.cdi.logging.Logger log;
 
   @Inject
   @Any

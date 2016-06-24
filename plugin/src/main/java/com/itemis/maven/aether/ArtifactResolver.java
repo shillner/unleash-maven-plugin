@@ -17,7 +17,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
-import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
+import com.itemis.maven.plugins.cdi.logging.Logger;
 
 @Singleton
 public class ArtifactResolver {
@@ -26,7 +26,7 @@ public class ArtifactResolver {
 
   @Inject
   public ArtifactResolver(RepositorySystem repoSystem, RepositorySystemSession repoSession,
-      @Named("projectRepositories") List<RemoteRepository> remoteProjectRepos, MavenLogWrapper log) {
+      @Named("projectRepositories") List<RemoteRepository> remoteProjectRepos, Logger log) {
     this.repoSession = repoSession;
     this.cache = CacheBuilder.newBuilder()
         .build(new ArtifactCacheLoader(repoSystem, repoSession, remoteProjectRepos, log));

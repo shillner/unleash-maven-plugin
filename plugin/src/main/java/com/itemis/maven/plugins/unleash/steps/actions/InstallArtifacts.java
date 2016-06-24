@@ -19,16 +19,17 @@ import org.eclipse.aether.installation.InstallationException;
 import com.google.common.collect.Collections2;
 import com.itemis.maven.aether.ArtifactInstaller;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
+import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.cdi.annotations.RollbackOnError;
+import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
-import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.functions.AetherToMavenArtifact;
 
 @ProcessingStep(id = "installArtifacts", description = "Installs the release artifacts into the local repository.", requiresOnline = false)
 public class InstallArtifacts implements CDIMojoProcessingStep {
   @Inject
-  private MavenLogWrapper log;
+  private Logger log;
 
   @Inject
   @Named("reactorProjects")
@@ -47,7 +48,7 @@ public class InstallArtifacts implements CDIMojoProcessingStep {
   private Collection<Artifact> installedArtifacts;
 
   @Override
-  public void execute() throws MojoExecutionException, MojoFailureException {
+  public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     this.log.info("Installing the release artifacts into the local repository");
 
     try {

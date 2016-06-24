@@ -18,15 +18,16 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 import com.google.common.base.Objects;
 import com.google.common.io.Files;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
+import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
+import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
-import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 
 @ProcessingStep(id = "determineReleaseArtifacts", description = "Determines all release artifacts based on the output of the artifact-spy-plugin and stores the data in the release metadata.", requiresOnline = false)
 public class DetermineReleaseArtifacts implements CDIMojoProcessingStep {
   @Inject
-  private MavenLogWrapper log;
+  private Logger log;
   @Inject
   @Named("reactorProjects")
   private List<MavenProject> reactorProjects;
@@ -34,7 +35,7 @@ public class DetermineReleaseArtifacts implements CDIMojoProcessingStep {
   private ReleaseMetadata metadata;
 
   @Override
-  public void execute() throws MojoExecutionException, MojoFailureException {
+  public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     this.log.info("Determining all project release artifacts for later installation and deployment.");
     for (MavenProject p : this.reactorProjects) {
       try {

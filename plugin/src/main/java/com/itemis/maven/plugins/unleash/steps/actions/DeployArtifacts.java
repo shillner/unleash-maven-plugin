@@ -12,14 +12,15 @@ import org.eclipse.aether.deployment.DeploymentException;
 
 import com.itemis.maven.aether.ArtifactDeployer;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
+import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
+import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
-import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 
 @ProcessingStep(id = "deployArtifacts", description = "Deploys the release artifacts to the remote repository.", requiresOnline = true)
 public class DeployArtifacts implements CDIMojoProcessingStep {
   @Inject
-  private MavenLogWrapper log;
+  private Logger log;
 
   @Inject
   @Named("reactorProjects")
@@ -32,7 +33,7 @@ public class DeployArtifacts implements CDIMojoProcessingStep {
   private ReleaseMetadata metadata;
 
   @Override
-  public void execute() throws MojoExecutionException, MojoFailureException {
+  public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     this.log.info("Deploying the release artifacts into the distribution repository");
 
     try {

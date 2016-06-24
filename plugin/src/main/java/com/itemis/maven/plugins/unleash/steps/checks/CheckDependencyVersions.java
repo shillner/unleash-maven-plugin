@@ -22,8 +22,9 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
+import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
-import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
+import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.util.functions.DependencyToString;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotDependency;
@@ -31,14 +32,14 @@ import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotDependency;
 @ProcessingStep(id = "checkDependencies", description = "Checks that the projects do not reference SNAPSHOT artifacts as dependencies", requiresOnline = false)
 public class CheckDependencyVersions implements CDIMojoProcessingStep {
   @Inject
-  private MavenLogWrapper log;
+  private Logger log;
 
   @Inject
   @Named("reactorProjects")
   private List<MavenProject> reactorProjects;
 
   @Override
-  public void execute() throws MojoExecutionException, MojoFailureException {
+  public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     this.log.debug("Checking that none of the reactor projects contain SNAPSHOT dependencies.");
 
     Multimap<MavenProject, String> snapshotByProject = HashMultimap.create();

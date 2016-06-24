@@ -11,14 +11,15 @@ import org.w3c.dom.Node;
 
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
+import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
-import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
+import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 
 @ProcessingStep(id = "removeSpyPlugin", description = "Removes the artifact-spy-plugin from the build configuration.", requiresOnline = false)
 public class RemoveSpyPlugin implements CDIMojoProcessingStep {
   @Inject
-  private MavenLogWrapper log;
+  private Logger log;
   @Inject
   private MavenProject project;
   @Inject
@@ -26,7 +27,7 @@ public class RemoveSpyPlugin implements CDIMojoProcessingStep {
   private ArtifactCoordinates artifactSpyPluginCoordinates;
 
   @Override
-  public void execute() throws MojoExecutionException, MojoFailureException {
+  public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     this.log.info("Removing artifact-spy-plugin from build configuration.");
     try {
       Document document = PomUtil.parsePOM(this.project);

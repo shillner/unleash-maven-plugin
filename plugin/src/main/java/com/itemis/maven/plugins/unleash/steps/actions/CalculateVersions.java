@@ -14,10 +14,11 @@ import org.codehaus.plexus.components.interactivity.Prompter;
 import com.google.common.base.Optional;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
+import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
+import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
-import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
@@ -25,7 +26,7 @@ import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 @ProcessingStep(id = "prepareVersions", description = "Calculates the required project versions (release versions and next development versions)", requiresOnline = false)
 public class CalculateVersions implements CDIMojoProcessingStep {
   @Inject
-  private MavenLogWrapper log;
+  private Logger log;
 
   @Inject
   @Named("reactorProjects")
@@ -49,7 +50,7 @@ public class CalculateVersions implements CDIMojoProcessingStep {
   private Prompter prompter;
 
   @Override
-  public void execute() throws MojoExecutionException, MojoFailureException {
+  public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     this.log.info("Calculating versions for all modules.");
 
     for (MavenProject project : this.reactorProjects) {

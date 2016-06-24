@@ -26,8 +26,9 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
+import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
-import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
+import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
 import com.itemis.maven.plugins.unleash.util.functions.DependencyToString;
 import com.itemis.maven.plugins.unleash.util.functions.PluginToString;
@@ -37,7 +38,7 @@ import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotDependency;
 @ProcessingStep(id = "checkPluginDependencies", description = "Checks that the plugins used by the projects do not reference SNAPSHOT dependencies.", requiresOnline = false)
 public class CheckPluginDependencyVersions implements CDIMojoProcessingStep {
   @Inject
-  private MavenLogWrapper log;
+  private Logger log;
 
   @Inject
   @Named("reactorProjects")
@@ -47,7 +48,7 @@ public class CheckPluginDependencyVersions implements CDIMojoProcessingStep {
   private PluginDescriptor pluginDescriptor;
 
   @Override
-  public void execute() throws MojoExecutionException, MojoFailureException {
+  public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     this.log.debug("Checking that none of the reactor project's plugins contain SNAPSHOT dependencies.");
 
     Map<MavenProject, Multimap<String, String>> snapshotsByProjectAndPlugin = Maps

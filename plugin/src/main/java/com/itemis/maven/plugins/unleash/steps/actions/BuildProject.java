@@ -19,13 +19,14 @@ import org.apache.maven.shared.invoker.MavenInvocationException;
 
 import com.google.common.collect.Lists;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
+import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
-import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
+import com.itemis.maven.plugins.cdi.logging.Logger;
 
 @ProcessingStep(id = "buildReleaseArtifacts", description = "Triggers the atual release build (clean verify) which produces the artifacts for later installation and deployment.", requiresOnline = true)
 public class BuildProject implements CDIMojoProcessingStep {
   @Inject
-  private MavenLogWrapper log;
+  private Logger log;
 
   @Inject
   private MavenProject project;
@@ -46,7 +47,7 @@ public class BuildProject implements CDIMojoProcessingStep {
   private String releaseArgs;
 
   @Override
-  public void execute() throws MojoExecutionException, MojoFailureException {
+  public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     InvocationRequest request = new DefaultInvocationRequest();
     request.setPomFile(this.project.getFile());
     // installation and deployment are performed in a later step. We first need to ensure that there are no changes in

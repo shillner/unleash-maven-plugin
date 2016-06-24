@@ -14,16 +14,17 @@ import org.w3c.dom.Document;
 
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
+import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
+import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
-import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 
 @ProcessingStep(id = "setReleaseVersions", description = "Updates all projects with their release versions calculated previously.", requiresOnline = false)
 public class SetReleaseVersions implements CDIMojoProcessingStep {
   @Inject
-  private MavenLogWrapper log;
+  private Logger log;
 
   @Inject
   private ReleaseMetadata metadata;
@@ -33,7 +34,7 @@ public class SetReleaseVersions implements CDIMojoProcessingStep {
   private List<MavenProject> reactorProjects;
 
   @Override
-  public void execute() throws MojoExecutionException, MojoFailureException {
+  public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     for (MavenProject project : this.reactorProjects) {
       try {
         Document document = PomUtil.parsePOM(project);

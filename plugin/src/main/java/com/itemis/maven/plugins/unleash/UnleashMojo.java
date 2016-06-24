@@ -23,7 +23,6 @@ import org.eclipse.aether.repository.RemoteRepository;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.AbstractCDIMojo;
 import com.itemis.maven.plugins.cdi.annotations.MojoProduces;
-import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 
 @Mojo(name = "perform", aggregator = true, requiresProject = true)
 public class UnleashMojo extends AbstractCDIMojo implements Extension {
@@ -89,11 +88,6 @@ public class UnleashMojo extends AbstractCDIMojo implements Extension {
   @Named("releaseVersion")
   private String releaseVersion;
 
-  @Parameter(defaultValue = "true", property = "unleash.logTimestamps")
-  @MojoProduces
-  @Named("enableLogTimestamps")
-  private boolean enableLogTimestamps;
-
   @Parameter(defaultValue = "true", property = "unleash.allowLocalReleaseArtifacts")
   @MojoProduces
   @Named("allowLocalReleaseArtifacts")
@@ -141,15 +135,6 @@ public class UnleashMojo extends AbstractCDIMojo implements Extension {
   @MojoProduces
   @Named("releaseArgs")
   private String releaseArgs;
-
-  @MojoProduces
-  public MavenLogWrapper createLogWrapper() {
-    MavenLogWrapper log = new MavenLogWrapper(getLog());
-    if (this.enableLogTimestamps) {
-      log.enableLogTimestamps();
-    }
-    return log;
-  }
 
   @MojoProduces
   private PluginDescriptor getPluginDescriptor() {

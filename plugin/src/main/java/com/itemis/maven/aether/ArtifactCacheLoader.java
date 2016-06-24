@@ -13,16 +13,16 @@ import org.eclipse.aether.resolution.ArtifactResult;
 
 import com.google.common.base.Optional;
 import com.google.common.cache.CacheLoader;
-import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
+import com.itemis.maven.plugins.cdi.logging.Logger;
 
 class ArtifactCacheLoader extends CacheLoader<ArtifactCoordinates, Optional<ArtifactResult>> {
   private RepositorySystem repoSystem;
   private RepositorySystemSession repoSession;
   private List<RemoteRepository> remoteProjectRepos;
-  private MavenLogWrapper log;
+  private Logger log;
 
   public ArtifactCacheLoader(RepositorySystem repoSystem, RepositorySystemSession repoSession,
-      List<RemoteRepository> remoteProjectRepos, MavenLogWrapper log) {
+      List<RemoteRepository> remoteProjectRepos, Logger log) {
     this.repoSystem = repoSystem;
     this.repoSession = repoSession;
     this.remoteProjectRepos = remoteProjectRepos;

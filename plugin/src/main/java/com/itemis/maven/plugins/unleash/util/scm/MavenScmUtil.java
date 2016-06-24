@@ -16,7 +16,7 @@ public class MavenScmUtil {
 
     Scm scm = project.getScm();
     if (scm != null) {
-      // takes the developer conncetion first or the connection url if devConnection is empty or null
+      // takes the developer connection first or the connection url if devConnection is empty or null
       String connection = StringUtils.trimToNull(scm.getDeveloperConnection());
       connection = connection != null ? connection : StringUtils.trimToNull(scm.getConnection());
 

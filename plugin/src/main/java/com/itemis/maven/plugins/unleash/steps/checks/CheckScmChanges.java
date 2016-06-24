@@ -8,16 +8,17 @@ import org.apache.maven.plugin.MojoFailureException;
 
 import com.google.common.base.Objects;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
+import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
+import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
-import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
 import com.itemis.maven.plugins.unleash.util.scm.ScmProviderRegistry;
 
 @ProcessingStep(id = "checkForScmChanges", description = "Checks the SCM for changes that would require stopping the release.", requiresOnline = true)
 public class CheckScmChanges implements CDIMojoProcessingStep {
   @Inject
-  private MavenLogWrapper log;
+  private Logger log;
   @Inject
   private ScmProviderRegistry scmProviderRegistry;
   @Inject
@@ -27,7 +28,7 @@ public class CheckScmChanges implements CDIMojoProcessingStep {
   private boolean commitBeforeTagging;
 
   @Override
-  public void execute() throws MojoExecutionException, MojoFailureException {
+  public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     if (!this.commitBeforeTagging) {
       this.log.debug("No commit before tagging requested. Checking for SCM changes at this point unnessecary!");
       return;

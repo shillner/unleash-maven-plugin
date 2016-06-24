@@ -26,8 +26,9 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
+import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
-import com.itemis.maven.plugins.unleash.util.MavenLogWrapper;
+import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
 import com.itemis.maven.plugins.unleash.util.functions.PluginToString;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
@@ -36,7 +37,7 @@ import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotPlugin;
 @ProcessingStep(id = "checkPlugins", description = "Checks that the projects do not use SNAPSHOT plugins", requiresOnline = false)
 public class CheckPluginVersions implements CDIMojoProcessingStep {
   @Inject
-  private MavenLogWrapper log;
+  private Logger log;
 
   @Inject
   @Named("reactorProjects")
@@ -46,7 +47,7 @@ public class CheckPluginVersions implements CDIMojoProcessingStep {
   private PluginDescriptor pluginDescriptor;
 
   @Override
-  public void execute() throws MojoExecutionException, MojoFailureException {
+  public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     this.log.debug("Checking that none of the reactor projects contain SNAPSHOT plugins.");
 
     Multimap<MavenProject, String> snapshotsByProject = HashMultimap.create();
