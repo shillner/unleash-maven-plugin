@@ -67,11 +67,11 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
         setParentVersion(project, document);
         revertScmSettings(project, document);
         PomUtil.writePOM(document, project);
-        commitChanges();
       } catch (Throwable t) {
         throw new MojoFailureException("Could not update versions for next development cycle.", t);
       }
     }
+    commitChanges();
   }
 
   private void setProjectVersion(MavenProject project, Document document) {
