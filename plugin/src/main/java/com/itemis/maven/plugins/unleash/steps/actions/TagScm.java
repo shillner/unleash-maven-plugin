@@ -124,6 +124,11 @@ public class TagScm implements CDIMojoProcessingStep {
                   this.scmProvider.calculateTagConnectionString(scm.getDeveloperConnection(), scmTagName), false);
             }
 
+            if (scm.getUrl() != null) {
+              PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_URL,
+                  this.scmProvider.calculateTagConnectionString(scm.getUrl(), scmTagName), false);
+            }
+
             if (!this.scmProvider.isTagInfoIncludedInConnection()) {
               PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_TAG, scmTagName, true);
             }

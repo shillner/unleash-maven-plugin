@@ -54,6 +54,7 @@ public final class PomUtil {
   public static final String NODE_NAME_SCM_CONNECTION = "connection";
   public static final String NODE_NAME_SCM_DEV_CONNECTION = "developerConnection";
   public static final String NODE_NAME_SCM_TAG = "tag";
+  public static final String NODE_NAME_SCM_URL = "url";
   public static final String NODE_NAME_VERSION = "version";
 
   private PomUtil() {

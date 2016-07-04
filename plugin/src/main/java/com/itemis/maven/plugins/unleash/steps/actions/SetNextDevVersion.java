@@ -117,6 +117,10 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
               false);
         }
 
+        if (scm.getUrl() != null) {
+          PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_URL, scm.getUrl(), false);
+        }
+
         if (scm.getTag() != null) {
           PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_TAG, scm.getTag(), false);
         } else {
