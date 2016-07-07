@@ -17,10 +17,12 @@ public enum ProjectToString implements Function<MavenProject, String> {
   public String apply(MavenProject p) {
     StringBuilder sb = new StringBuilder(p.getGroupId());
     sb.append(":").append(p.getArtifactId());
-    if (this.includePackaging) {
+    if (this.includePackaging && p.getPackaging() != null) {
       sb.append(":").append(p.getPackaging());
     }
-    sb.append(":").append(p.getVersion());
+    if (p.getVersion() != null) {
+      sb.append(":").append(p.getVersion());
+    }
     return sb.toString();
   }
 }

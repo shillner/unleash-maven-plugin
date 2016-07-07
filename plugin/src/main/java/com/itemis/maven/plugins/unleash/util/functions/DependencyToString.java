@@ -17,7 +17,9 @@ public enum DependencyToString implements Function<Dependency, String> {
     if (d.getClassifier() != null) {
       sb.append(":").append(d.getClassifier());
     }
-    sb.append(":").append(d.getVersion());
+    if (d.getVersion() != null) {
+      sb.append(":").append(d.getVersion());
+    }
     return sb.toString();
   }
 }

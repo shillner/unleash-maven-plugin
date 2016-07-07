@@ -10,7 +10,10 @@ public enum PluginToString implements Function<Plugin, String> {
   @Override
   public String apply(Plugin p) {
     StringBuilder sb = new StringBuilder(p.getGroupId());
-    sb.append(":").append(p.getArtifactId()).append(":").append(p.getVersion());
+    sb.append(":").append(p.getArtifactId());
+    if (p.getVersion() != null) {
+      sb.append(":").append(p.getVersion());
+    }
     return sb.toString();
   }
 }
