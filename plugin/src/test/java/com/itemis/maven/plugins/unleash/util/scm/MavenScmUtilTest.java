@@ -1,4 +1,4 @@
-package com.itemis.maven.plugins.unleash.scm;
+package com.itemis.maven.plugins.unleash.util.scm;
 
 import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;

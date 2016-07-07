@@ -9,6 +9,7 @@ import org.apache.maven.project.MavenProject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import com.google.common.base.Optional;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.ExecutionContext;
@@ -36,7 +37,7 @@ public class AddSpyPlugin implements CDIMojoProcessingStep {
 
       Node plugin = PomUtil.createPlugin(document, this.artifactSpyPluginCoordinates.getGroupId(),
           this.artifactSpyPluginCoordinates.getArtifactId(), this.artifactSpyPluginCoordinates.getVersion());
-      PomUtil.createPluginExecution(plugin, "spy", "verify", "spy");
+      PomUtil.createPluginExecution(plugin, "spy", Optional.of("verify"), "spy");
 
       PomUtil.writePOM(document, this.project);
     } catch (Throwable t) {

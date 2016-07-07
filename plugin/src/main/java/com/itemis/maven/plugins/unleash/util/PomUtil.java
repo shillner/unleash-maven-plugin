@@ -24,6 +24,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Optional;
 import com.google.common.io.Closeables;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 
@@ -156,7 +157,7 @@ public final class PomUtil {
     Node build = null;
     if (buildNodeList.getLength() == 0 && createOnDemand) {
       build = document.createElement(NODE_NAME_BUILD);
-      document.appendChild(build);
+      document.getDocumentElement().appendChild(build);
     } else {
       build = buildNodeList.item(0);
     }
@@ -219,25 +220,34 @@ public final class PomUtil {
   public static Node createPlugin(Document document, String groupId, String artifactId, String version) {
     Node plugins = getOrCreatePluginsNode(document, true);
 
-    Element plugin = document.createElement(NODE_NAME_PLUGIN);
-    plugins.appendChild(plugin);
+    Node existingPlugin = getPlugin(document, groupId, artifactId);
+    if (existingPlugin != null) {
+      if (!hasChildNode(existingPlugin, NODE_NAME_VERSION)) {
+        Element ver = document.createElement(NODE_NAME_VERSION);
+        ver.setTextContent(version);
+        existingPlugin.appendChild(ver);
+      }
+      return existingPlugin;
+    } else {
+      Element plugin = document.createElement(NODE_NAME_PLUGIN);
+      plugins.appendChild(plugin);
 
-    Element gid = document.createElement(NODE_NAME_GROUP_ID);
-    gid.setTextContent(groupId);
-    plugin.appendChild(gid);
+      Element gid = document.createElement(NODE_NAME_GROUP_ID);
+      gid.setTextContent(groupId);
+      plugin.appendChild(gid);
 
-    Element aid = document.createElement(NODE_NAME_ARTIFACT_ID);
-    aid.setTextContent(artifactId);
-    plugin.appendChild(aid);
+      Element aid = document.createElement(NODE_NAME_ARTIFACT_ID);
+      aid.setTextContent(artifactId);
+      plugin.appendChild(aid);
 
-    Element ver = document.createElement(NODE_NAME_VERSION);
-    ver.setTextContent(version);
-    plugin.appendChild(ver);
-
-    return plugin;
+      Element ver = document.createElement(NODE_NAME_VERSION);
+      ver.setTextContent(version);
+      plugin.appendChild(ver);
+      return plugin;
+    }
   }
 
-  public static Node createPluginExecution(Node plugin, String id, String phase, String... goals) {
+  public static Node createPluginExecution(Node plugin, String id, Optional<String> phase, String... goals) {
     Document document = plugin.getOwnerDocument();
 
     Node executions = null;
@@ -261,17 +271,21 @@ public final class PomUtil {
     idNode.setTextContent(id);
     execution.appendChild(idNode);
 
-    Element phaseNode = document.createElement(NODE_NAME_PHASE);
-    phaseNode.setTextContent(phase);
-    execution.appendChild(phaseNode);
+    if (phase.isPresent()) {
+      Element phaseNode = document.createElement(NODE_NAME_PHASE);
+      phaseNode.setTextContent(phase.get());
+      execution.appendChild(phaseNode);
+    }
 
-    Element goalsNode = document.createElement(NODE_NAME_GOALS);
-    execution.appendChild(goalsNode);
+    if (goals.length > 0) {
+      Element goalsNode = document.createElement(NODE_NAME_GOALS);
+      execution.appendChild(goalsNode);
 
-    for (String goal : goals) {
-      Element goalNode = document.createElement(NODE_NAME_GOAL);
-      goalNode.setTextContent(goal);
-      goalsNode.appendChild(goalNode);
+      for (String goal : goals) {
+        Element goalNode = document.createElement(NODE_NAME_GOAL);
+        goalNode.setTextContent(goal);
+        goalsNode.appendChild(goalNode);
+      }
     }
 
     return execution;
@@ -282,7 +296,7 @@ public final class PomUtil {
     Node scm = null;
     if (scmNodeList.getLength() == 0 && createOnDemand) {
       scm = document.createElement(NODE_NAME_SCM);
-      document.appendChild(scm);
+      document.getDocumentElement().appendChild(scm);
     } else {
       scm = scmNodeList.item(0);
     }
