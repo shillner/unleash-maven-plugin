@@ -64,15 +64,15 @@ public class CalculateVersions implements CDIMojoProcessingStep {
       Optional<Prompter> prompterToUse = this.settings.isInteractiveMode() ? Optional.of(this.prompter)
           : Optional.<Prompter> absent();
 
-      String releaseVersion = ReleaseUtil.getReleaseVersion(project.getVersion(), this.defaultReleaseVersion,
-          prompterToUse);
+      String releaseVersion = ReleaseUtil.getReleaseVersion(project.getVersion(),
+          Optional.fromNullable(this.defaultReleaseVersion), prompterToUse);
       ArtifactCoordinates releaseCoordinates = new ArtifactCoordinates(project.getGroupId(), project.getArtifactId(),
           releaseVersion, PomUtil.ARTIFACT_TYPE_POM);
       this.metadata.addArtifactCoordinates(releaseCoordinates, ReleasePhase.RELEASE);
       this.log.info("\t" + ReleasePhase.RELEASE + " = " + releaseVersion);
 
-      String nextDevVersion = ReleaseUtil.getNextDevelopmentVersion(releaseVersion, this.defaultDevelopmentVersion,
-          prompterToUse);
+      String nextDevVersion = ReleaseUtil.getNextDevelopmentVersion(releaseVersion,
+          Optional.fromNullable(this.defaultDevelopmentVersion), prompterToUse);
       ArtifactCoordinates postReleaseCoordinates = new ArtifactCoordinates(project.getGroupId(),
           project.getArtifactId(), nextDevVersion, PomUtil.ARTIFACT_TYPE_POM);
       this.metadata.addArtifactCoordinates(postReleaseCoordinates, ReleasePhase.POST_RELEASE);

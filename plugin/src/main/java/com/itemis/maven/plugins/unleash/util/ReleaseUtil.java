@@ -7,12 +7,12 @@ import org.codehaus.plexus.components.interactivity.PrompterException;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 
 public final class ReleaseUtil {
-  public static String getReleaseVersion(String version, String defaultReleaseVersion, Optional<Prompter> prompter) {
-    if (!Strings.isNullOrEmpty(defaultReleaseVersion)) {
-      return defaultReleaseVersion;
+  public static String getReleaseVersion(String version, Optional<String> defaultReleaseVersion,
+      Optional<Prompter> prompter) {
+    if (defaultReleaseVersion.isPresent()) {
+      return defaultReleaseVersion.get();
     }
 
     String releaseVersion = MavenVersionUtil.calculateReleaseVersion(version);
@@ -27,10 +27,10 @@ public final class ReleaseUtil {
     return releaseVersion;
   }
 
-  public static String getNextDevelopmentVersion(String version, String defaultDevelopmentVersion,
+  public static String getNextDevelopmentVersion(String version, Optional<String> defaultDevelopmentVersion,
       Optional<Prompter> prompter) {
-    if (!Strings.isNullOrEmpty(defaultDevelopmentVersion)) {
-      return defaultDevelopmentVersion;
+    if (defaultDevelopmentVersion.isPresent()) {
+      return defaultDevelopmentVersion.get();
     }
 
     String devVersion = MavenVersionUtil.calculateNextSnapshotVersion(version);
