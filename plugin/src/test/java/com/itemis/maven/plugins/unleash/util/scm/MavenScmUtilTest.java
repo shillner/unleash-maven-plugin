@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.google.common.base.Optional;
-import com.itemis.maven.plugins.unleash.util.scm.MavenScmUtil;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
@@ -15,7 +14,7 @@ import com.tngtech.java.junit.dataprovider.UseDataProvider;
 @RunWith(DataProviderRunner.class)
 public class MavenScmUtilTest {
   @DataProvider
-  public static Object[][] getScmProviderName() {
+  public static Object[][] calcProviderName() {
     return new Object[][] { { "scm:svn:svn://test/svn", "scm:svn:https://test/svn", "svn" },
         { "scm:git:git@test/xyz", null, "git" }, { "scm:svn:svn://test/svn", "", "svn" },
         { "scm:svn:svn://test/svn", " ", "svn" }, { "scm:git:git@test/xyz", "scm:svn:https://test/svn", "git" },
@@ -26,8 +25,8 @@ public class MavenScmUtilTest {
   }
 
   @Test
-  @UseDataProvider("getScmProviderName")
-  public void testGetScmProviderName(String devConnection, String connection, String expectedProviderName) {
+  @UseDataProvider("calcProviderName")
+  public void testCalcProviderName(String devConnection, String connection, String expectedProviderName) {
     MavenProject p = new MavenProject();
     p.setScm(new Scm());
     p.getScm().setDeveloperConnection(devConnection);
