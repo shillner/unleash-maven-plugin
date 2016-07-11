@@ -1,5 +1,6 @@
 package com.itemis.maven.plugins.unleash.util.scm;
 
+import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -12,6 +13,7 @@ import javax.inject.Singleton;
 
 import org.apache.maven.project.MavenProject;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 import com.itemis.maven.plugins.unleash.scm.annotations.ScmProviderTypeLiteral;
@@ -44,8 +46,6 @@ public class ScmProviderRegistry {
 
   @PostConstruct
   private void init() {
-    // TODO find a way to detect the API version the scmProvider is implementing! must match the version the plugin
-    // provides (bugfix version diffs are ok)
     Optional<String> providerName = MavenScmUtil.calcProviderName(this.project);
     if (!providerName.isPresent()) {
       this.log.error(
@@ -57,15 +57,35 @@ public class ScmProviderRegistry {
   }
 
   public ScmProvider getProvider() throws IllegalStateException {
-    try {
-      this.provider = this.providers.select(new ScmProviderTypeLiteral(this.scmProviderName)).get();
-      this.provider.initialize(this.project.getBasedir(), Optional.<Logger> absent(),
-          Optional.fromNullable(this.scmUsername), Optional.fromNullable(this.scmPassword));
-    } catch (Throwable t) {
-      throw new IllegalStateException("No SCM provider found for SCM with name " + this.scmProviderName
-          + ". Maybe you need to add an appropriate provider implementation as a dependency to the plugin.", t);
+    if (this.provider == null) {
+      try {
+        this.provider = this.providers.select(new ScmProviderTypeLiteral(this.scmProviderName)).get();
+        checkProviderAPI();
+        this.provider.initialize(this.project.getBasedir(), Optional.<Logger> absent(),
+            Optional.fromNullable(this.scmUsername), Optional.fromNullable(this.scmPassword));
+      } catch (Throwable t) {
+        throw new IllegalStateException("No SCM provider found for SCM with name " + this.scmProviderName
+            + ". Maybe you need to add an appropriate provider implementation as a dependency to the plugin.", t);
+      }
     }
     return this.provider;
+  }
+
+  private void checkProviderAPI() {
+    // compares all API methods against all implementation methods and fails on missing and/or wrong method signatures.
+    for (Method apiMethod : ScmProvider.class.getDeclaredMethods()) {
+      try {
+        Method implMethod = this.provider.getClass().getDeclaredMethod(apiMethod.getName(),
+            apiMethod.getParameterTypes());
+        if (!Objects.equal(implMethod.getReturnType(), apiMethod.getReturnType())) {
+          throw new IllegalStateException("Invalid API version for provider: " + this.scmProviderName);
+        }
+      } catch (NoSuchMethodException e) {
+        throw new IllegalStateException("Invalid API version for provider: " + this.scmProviderName, e);
+      } catch (SecurityException e) {
+        throw new IllegalStateException("Could not get enough information about the scm provider API version.", e);
+      }
+    }
   }
 
   @PreDestroy
