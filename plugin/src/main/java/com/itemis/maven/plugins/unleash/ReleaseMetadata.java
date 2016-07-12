@@ -14,13 +14,11 @@ import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.repository.RemoteRepository;
-import org.w3c.dom.Document;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.itemis.maven.aether.ArtifactCoordinates;
-import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
 
 @Singleton
@@ -43,9 +41,8 @@ public class ReleaseMetadata {
   private Map<ReleasePhase, Set<ArtifactCoordinates>> artifactCoordinates;
   private String scmTagName;
   private RemoteRepository deploymentRepository;
-  private Map<ArtifactCoordinates, Document> cachedPomDocs;
   private Set<Artifact> releaseArtifacts;
-  private Map<String, Scm> oldScmSettings;
+  private Map<ArtifactCoordinates, Scm> cachedScmSettings;
 
   private ReleaseMetadata() {
     int numPhases = ReleasePhase.values().length;
@@ -57,7 +54,7 @@ public class ReleaseMetadata {
 
   @PostConstruct
   public void init() {
-    // setting the artifact version to a release version temporarily since the dist repository is checks for a snapshot
+    // setting the artifact version to a release version temporarily since the dist repository checks for a snapshot
     // version of the artifact. Maybe this can be implemented in a different manner but then we would have to setup the
     // repository manually
     org.apache.maven.artifact.Artifact projectArtifact = this.project.getArtifact();
@@ -70,13 +67,11 @@ public class ReleaseMetadata {
     // resetting the artifact version
     projectArtifact.setVersion(oldVersion);
 
-    // caching of the parsed pom documents for later reversal in case of failure
-    this.cachedPomDocs = Maps.newHashMapWithExpectedSize(this.reactorProjects.size());
+    // caching of SCM settings of every POM in order to go back to it before setting next dev version
+    this.cachedScmSettings = Maps.newHashMap();
     for (MavenProject p : this.reactorProjects) {
-      // It is necessary to use the empty project version here and during document retrieval since the versions change
-      // during build which would otherwise result in a cache miss.
-      this.cachedPomDocs.put(new ArtifactCoordinates(p.getGroupId(), p.getArtifactId(),
-          MavenProject.EMPTY_PROJECT_VERSION, p.getPackaging()), PomUtil.parsePOM(p));
+      this.cachedScmSettings.put(new ArtifactCoordinates(p.getGroupId(), p.getArtifactId(),
+          MavenProject.EMPTY_PROJECT_VERSION, p.getPackaging()), p.getModel().getScm());
     }
   }
 
@@ -149,12 +144,6 @@ public class ReleaseMetadata {
     return this.deploymentRepository;
   }
 
-  public Document getCachedDocument(MavenProject p) {
-    ArtifactCoordinates coordinates = new ArtifactCoordinates(p.getGroupId(), p.getArtifactId(),
-        MavenProject.EMPTY_PROJECT_VERSION, p.getPackaging());
-    return this.cachedPomDocs.get(coordinates);
-  }
-
   public void addReleaseArtifact(Artifact artifact) {
     if (this.releaseArtifacts == null) {
       this.releaseArtifacts = Sets.newHashSet();
@@ -166,14 +155,9 @@ public class ReleaseMetadata {
     return this.releaseArtifacts;
   }
 
-  public void cacheScmSettings(String simpleCoordinates, Scm scm) {
-    if (this.oldScmSettings == null) {
-      this.oldScmSettings = Maps.newHashMap();
-    }
-    this.oldScmSettings.put(simpleCoordinates, scm);
-  }
-
-  public Scm getCachedScmSettings(String simpleProjectCoordinates) {
-    return this.oldScmSettings.get(simpleProjectCoordinates);
+  public Scm getCachedScmSettings(MavenProject p) {
+    ArtifactCoordinates coordinates = new ArtifactCoordinates(p.getGroupId(), p.getArtifactId(),
+        MavenProject.EMPTY_PROJECT_VERSION, p.getPackaging());
+    return this.cachedScmSettings.get(coordinates);
   }
 }

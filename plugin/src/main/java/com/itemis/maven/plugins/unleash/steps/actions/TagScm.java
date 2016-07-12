@@ -15,6 +15,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.Maps;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.ExecutionContext;
@@ -55,6 +56,7 @@ public class TagScm implements CDIMojoProcessingStep {
   private ScmProvider scmProvider;
   private String globalReleaseVersion;
   private boolean tagWasPresent;
+  private Map<ArtifactCoordinates, Document> cachedPOMs;
 
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
@@ -103,12 +105,16 @@ public class TagScm implements CDIMojoProcessingStep {
         .getArtifactCoordinatesByPhase(this.project.getGroupId(), this.project.getArtifactId());
     ArtifactCoordinates postReleaseCoordinates = coordinates.get(ReleasePhase.RELEASE);
     this.globalReleaseVersion = postReleaseCoordinates.getVersion();
+    this.cachedPOMs = Maps.newHashMap();
   }
 
   private void updateScmConnections(String scmTagName) throws MojoFailureException {
     for (MavenProject p : this.reactorProjects) {
       Scm scm = p.getModel().getScm();
       if (scm != null) {
+        this.cachedPOMs.put(new ArtifactCoordinates(this.project.getGroupId(), this.project.getArtifactId(),
+            MavenProject.EMPTY_PROJECT_VERSION, this.project.getPackaging()), PomUtil.parsePOM(this.project));
+
         try {
           Document document = PomUtil.parsePOM(p);
           Node scmNode = PomUtil.getOrCreateScmNode(document, false);
@@ -142,7 +148,7 @@ public class TagScm implements CDIMojoProcessingStep {
   }
 
   @RollbackOnError
-  private void rollback() {
+  private void rollback() throws MojoExecutionException {
     this.log.info("Rolling back SCM tagging due to a processing exception.");
     String scmTagName = this.metadata.getScmTagName();
     if (this.scmProvider.hasTag(scmTagName) && !this.tagWasPresent) {
@@ -171,6 +177,20 @@ public class TagScm implements CDIMojoProcessingStep {
           .fromRevision(this.metadata.getScmRevisionAfterTag()).toRevision(this.metadata.getScmRevisionBeforeTag())
           .message(message.toString()).merge().mergeClient(new ScmPomVersionsMergeClient()).build();
       this.scmProvider.revertCommits(revertCommitsRequest);
+    }
+
+    for (MavenProject project : this.reactorProjects) {
+      Document document = this.cachedPOMs.get(new ArtifactCoordinates(project.getGroupId(), project.getArtifactId(),
+          MavenProject.EMPTY_PROJECT_VERSION, project.getPackaging()));
+      if (document != null) {
+        try {
+          PomUtil.writePOM(document, this.project);
+        } catch (Throwable t) {
+          throw new MojoExecutionException(
+              "Could not revert SCM connection adaption after a failed release build. Tried to reset tag connection URL to initial state.",
+              t);
+        }
+      }
     }
   }
 }

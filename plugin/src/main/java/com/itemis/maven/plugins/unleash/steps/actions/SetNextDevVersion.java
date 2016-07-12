@@ -15,6 +15,7 @@ import org.apache.maven.project.MavenProject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import com.google.common.collect.Maps;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.ExecutionContext;
@@ -56,11 +57,17 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
 
   private ScmProvider scmProvider;
 
+  private Map<ArtifactCoordinates, Document> cachedPOMs;
+
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     this.scmProvider = this.scmProviderRegistry.getProvider();
+    this.cachedPOMs = Maps.newHashMap();
 
     for (MavenProject project : this.reactorProjects) {
+      this.cachedPOMs.put(new ArtifactCoordinates(project.getGroupId(), project.getArtifactId(),
+          MavenProject.EMPTY_PROJECT_VERSION, project.getPackaging()), PomUtil.parsePOM(project));
+
       try {
         Document document = PomUtil.parsePOM(project);
         setProjectVersion(project, document);
@@ -103,7 +110,7 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
   }
 
   private void revertScmSettings(MavenProject project, Document document) {
-    Scm scm = this.metadata.getCachedScmSettings(project.getGroupId() + ":" + project.getArtifactId());
+    Scm scm = this.metadata.getCachedScmSettings(project);
     if (scm != null) {
       Node scmNode = PomUtil.getOrCreateScmNode(document, false);
 
@@ -150,7 +157,7 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
   }
 
   @RollbackOnError
-  public void rollback() {
+  public void rollback() throws MojoExecutionException {
     StringBuilder message = new StringBuilder(
         "Reversion of failed release build (step: setting of next snapshot version).");
     if (StringUtils.isNotBlank(this.scmMessagePrefix)) {
@@ -162,5 +169,18 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
         .toRevision(this.metadata.getScmRevisionBeforeNextDevVersion()).message(message.toString()).merge()
         .mergeClient(new ScmPomVersionsMergeClient()).build();
     this.scmProvider.revertCommits(revertCommitsRequest);
+
+    for (MavenProject project : this.reactorProjects) {
+      Document document = this.cachedPOMs.get(new ArtifactCoordinates(project.getGroupId(), project.getArtifactId(),
+          MavenProject.EMPTY_PROJECT_VERSION, project.getPackaging()));
+      if (document != null) {
+        try {
+          PomUtil.writePOM(document, this.project);
+        } catch (Throwable t) {
+          throw new MojoExecutionException(
+              "Could not revert the setting of development versions after a failed release build.", t);
+        }
+      }
+    }
   }
 }
