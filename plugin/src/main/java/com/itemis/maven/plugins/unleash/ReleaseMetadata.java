@@ -20,8 +20,8 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.itemis.maven.aether.ArtifactCoordinates;
+import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
-import com.itemis.maven.plugins.unleash.util.functions.ProjectToXmlDocument;
 
 @Singleton
 // TODO add serialization of metadata as a reporting feature!
@@ -43,7 +43,7 @@ public class ReleaseMetadata {
   private Map<ReleasePhase, Set<ArtifactCoordinates>> artifactCoordinates;
   private String scmTagName;
   private RemoteRepository deploymentRepository;
-  private Map<MavenProject, Document> cachedPomDocs;
+  private Map<ArtifactCoordinates, Document> cachedPomDocs;
   private Set<Artifact> releaseArtifacts;
   private Map<String, Scm> oldScmSettings;
 
@@ -71,7 +71,13 @@ public class ReleaseMetadata {
     projectArtifact.setVersion(oldVersion);
 
     // caching of the parsed pom documents for later reversal in case of failure
-    this.cachedPomDocs = Maps.toMap(this.reactorProjects, ProjectToXmlDocument.INSTANCE);
+    this.cachedPomDocs = Maps.newHashMapWithExpectedSize(this.reactorProjects.size());
+    for (MavenProject p : this.reactorProjects) {
+      // It is necessary to use the empty project version here and during document retrieval since the versions change
+      // during build which would otherwise result in a cache miss.
+      this.cachedPomDocs.put(new ArtifactCoordinates(p.getGroupId(), p.getArtifactId(),
+          MavenProject.EMPTY_PROJECT_VERSION, p.getPackaging()), PomUtil.parsePOM(p));
+    }
   }
 
   public void setInitialScmRevision(String scmRevision) {
@@ -144,7 +150,9 @@ public class ReleaseMetadata {
   }
 
   public Document getCachedDocument(MavenProject p) {
-    return this.cachedPomDocs.get(p);
+    ArtifactCoordinates coordinates = new ArtifactCoordinates(p.getGroupId(), p.getArtifactId(),
+        MavenProject.EMPTY_PROJECT_VERSION, p.getPackaging());
+    return this.cachedPomDocs.get(coordinates);
   }
 
   public void addReleaseArtifact(Artifact artifact) {
