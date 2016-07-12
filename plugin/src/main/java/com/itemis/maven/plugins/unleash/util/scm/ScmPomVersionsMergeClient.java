@@ -64,8 +64,9 @@ public class ScmPomVersionsMergeClient implements MergeClient {
         if (MavenVersionUtil.isNewerVersion(local.getVersion(), remote.getVersion())) {
           result.setVersion(local.getVersion());
         } else {
-          throw new ScmException(ScmOperation.MERGE,
-              "Could not merge POM version changes since the new remote version is higher than the local one!");
+          result.setVersion(remote.getVersion());
+          // throw new ScmException(ScmOperation.MERGE,
+          // "Could not merge POM version changes since the new remote version is higher than the local one!");
         }
       }
     } else {
