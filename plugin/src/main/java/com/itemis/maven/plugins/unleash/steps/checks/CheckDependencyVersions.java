@@ -29,36 +29,42 @@ import com.itemis.maven.plugins.unleash.util.functions.DependencyToString;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotDependency;
 
-@ProcessingStep(id = "checkDependencies", description = "Checks that the projects do not reference SNAPSHOT artifacts as dependencies", requiresOnline = false)
+/**
+ * Checks that none of the project modules has SNAPSHOT dependencies since this would potentially lead to
+ * non-reproducible release artifacts.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
+ */
+@ProcessingStep(id = "checkDependencies", description = "Checks that the project modules do not reference SNAPSHOT dependencies to avoid unreproducible release aritfacts.", requiresOnline = false)
 public class CheckDependencyVersions implements CDIMojoProcessingStep {
   @Inject
   private Logger log;
-
   @Inject
   @Named("reactorProjects")
   private List<MavenProject> reactorProjects;
 
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
-    this.log.debug("Checking that none of the reactor projects contain SNAPSHOT dependencies.");
+    this.log.info("Checking that none of the reactor projects contain SNAPSHOT dependencies.");
 
-    Multimap<MavenProject, String> snapshotByProject = HashMultimap.create();
-
+    Multimap<MavenProject, String> snapshotsByProject = HashMultimap.create();
     for (MavenProject project : this.reactorProjects) {
-      snapshotByProject.putAll(project, getSnapshotsFromManagement(project));
-      snapshotByProject.putAll(project, getSnapshots(project));
-      snapshotByProject.putAll(project, getSnapshotsFromAllProfiles(project));
+      this.log.debug("\tChecking dependencies of reactor project '" + ProjectToString.INSTANCE.apply(project) + "':");
+      snapshotsByProject.putAll(project, getSnapshotsFromManagement(project));
+      snapshotsByProject.putAll(project, getSnapshots(project));
+      snapshotsByProject.putAll(project, getSnapshotsFromAllProfiles(project));
     }
 
-    if (!snapshotByProject.values().isEmpty()) {
-      this.log.debug(
-          "The following list contains all SNAPSHOT dependencies grouped by the reactor project where they are referenced:");
-      for (MavenProject p : snapshotByProject.keySet()) {
-        Collection<String> snapshots = snapshotByProject.get(p);
+    if (!snapshotsByProject.values().isEmpty()) {
+      this.log.error(
+          "\tThere are SNAPSHOT dependency references! The following list contains all SNAPSHOT dependencies grouped by module:");
+      for (MavenProject p : snapshotsByProject.keySet()) {
+        Collection<String> snapshots = snapshotsByProject.get(p);
         if (!snapshots.isEmpty()) {
-          this.log.debug("\t[PROJECT] " + ProjectToString.INSTANCE.apply(p));
+          this.log.error("\t\t[PROJECT] " + ProjectToString.INSTANCE.apply(p));
           for (String dependency : snapshots) {
-            this.log.debug("\t\t[DEPENDENCY] " + dependency);
+            this.log.error("\t\t\t[DEPENDENCY] " + dependency);
           }
         }
       }
@@ -67,6 +73,7 @@ public class CheckDependencyVersions implements CDIMojoProcessingStep {
   }
 
   private Set<String> getSnapshotsFromManagement(MavenProject project) {
+    this.log.debug("\t\tChecking managed dependencies");
     DependencyManagement dependencyManagement = project.getDependencyManagement();
     if (dependencyManagement != null) {
       Collection<Dependency> snapshots = Collections2.filter(dependencyManagement.getDependencies(),
@@ -80,6 +87,7 @@ public class CheckDependencyVersions implements CDIMojoProcessingStep {
   }
 
   private Set<String> getSnapshots(MavenProject project) {
+    this.log.debug("\t\tChecking direct dependencies");
     Collection<Dependency> snapshots = Collections2.filter(project.getDependencies(), IsSnapshotDependency.INSTANCE);
     HashSet<String> snapshotDependencies = Sets
         .newHashSet(Collections2.transform(snapshots, DependencyToString.INSTANCE));
@@ -101,6 +109,7 @@ public class CheckDependencyVersions implements CDIMojoProcessingStep {
   }
 
   private Set<String> getSnapshotsFromManagement(Profile profile) {
+    this.log.debug("\t\tChecking managed dependencies of profile '" + profile.getId() + "'");
     DependencyManagement dependencyManagement = profile.getDependencyManagement();
     if (dependencyManagement != null) {
       Collection<Dependency> snapshots = Collections2.filter(dependencyManagement.getDependencies(),
@@ -111,6 +120,7 @@ public class CheckDependencyVersions implements CDIMojoProcessingStep {
   }
 
   private Set<String> getSnapshots(Profile profile) {
+    this.log.debug("\t\tChecking direct dependencies of profile '" + profile.getId() + "'");
     Collection<Dependency> snapshots = Collections2.filter(profile.getDependencies(), IsSnapshotDependency.INSTANCE);
     return Sets.newHashSet(Collections2.transform(snapshots, DependencyToString.INSTANCE));
   }

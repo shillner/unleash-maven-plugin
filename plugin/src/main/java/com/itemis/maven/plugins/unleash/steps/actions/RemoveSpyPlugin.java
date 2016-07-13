@@ -16,7 +16,16 @@ import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 
-@ProcessingStep(id = "removeSpyPlugin", description = "Removes the artifact-spy-plugin from the build configuration.", requiresOnline = false)
+/**
+ * Removes the artifact-spy-plugin from the reactor pom of the project.<br>
+ * This plugin helps detecting all artifacts that are produced by the release build which enables us to shift the actual
+ * installation and deployment of the artifacts to the very end of the workflow. This is necessary since a
+ * deployment of artifacts cannot be undone programmatically.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
+ */
+@ProcessingStep(id = "removeSpyPlugin", description = "Removes the artifact-spy-plugin from the build configuration if one is configured.", requiresOnline = false)
 public class RemoveSpyPlugin implements CDIMojoProcessingStep {
   @Inject
   private Logger log;

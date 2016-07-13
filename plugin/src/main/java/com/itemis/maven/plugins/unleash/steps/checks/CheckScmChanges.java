@@ -15,7 +15,13 @@ import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 import com.itemis.maven.plugins.unleash.util.scm.ScmProviderRegistry;
 
-@ProcessingStep(id = "checkForScmChanges", description = "Checks the SCM for changes that would require stopping the release.", requiresOnline = true)
+/**
+ * Checks the remote SCM repository for changes in the case that a commit was requested before tagging the repository.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
+ */
+@ProcessingStep(id = "checkForScmChanges", description = "Checks the remote SCM repository for changes that would require stopping the release. This will only be executed if a commit was requested before tagging the repository.", requiresOnline = true)
 public class CheckScmChanges implements CDIMojoProcessingStep {
   @Inject
   private Logger log;
@@ -29,8 +35,10 @@ public class CheckScmChanges implements CDIMojoProcessingStep {
 
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
+    this.log.info(
+        "Checking remote SCM repository for changes. Initial revision was " + this.metadata.getInitialScmRevision());
     if (!this.commitBeforeTagging) {
-      this.log.debug("No commit before tagging requested. Checking for SCM changes at this point unnessecary!");
+      this.log.debug("\tNo commit before tagging requested. Checking for SCM changes at this point unnessecary!");
       return;
     }
 

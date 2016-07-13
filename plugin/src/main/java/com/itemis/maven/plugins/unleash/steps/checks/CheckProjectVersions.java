@@ -18,16 +18,16 @@ import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotProject;
 
 /**
- * Checks that at least one of the projects is releasable, which means that at least one of the projects must have
+ * Checks that at least one of the projects is releasable which means that at least one of the projects must have
  * a snapshot version assigned.
  *
  * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
  */
 @ProcessingStep(id = "checkProjectVersions", description = "Checks that at least one of the projects as a SNAPSHOT version assigned and is thus releasable.", requiresOnline = false)
 public class CheckProjectVersions implements CDIMojoProcessingStep {
   @Inject
   private Logger log;
-
   @Inject
   @Named("reactorProjects")
   private List<MavenProject> reactorProjects;
@@ -39,11 +39,11 @@ public class CheckProjectVersions implements CDIMojoProcessingStep {
 
     if (!hasSnapshotProjects) {
       String errorTitle = "There are no snapshot projects that could be released!";
-      for (MavenProject p : this.reactorProjects) {
-        this.log.info(ProjectToString.INSTANCE.apply(p));
-      }
       this.log.error(errorTitle);
-      this.log.error("The reactor project list must contain at least one project with a SNAPSHOT version assigned.");
+      this.log.error("\tThe reactor project list must contain at least one project with a SNAPSHOT version assigned.");
+      for (MavenProject p : this.reactorProjects) {
+        this.log.error("\t" + ProjectToString.INSTANCE.apply(p));
+      }
       throw new IllegalStateException(errorTitle);
     }
   }

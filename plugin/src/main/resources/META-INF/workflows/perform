@@ -1,6 +1,6 @@
 storeScmRevision
 checkProjectVersions
-checkParentVersion
+checkParentVersions
 checkDependencies
 checkPlugins
 checkPluginDependencies
@@ -12,7 +12,7 @@ buildReleaseArtifacts
 removeSpyPlugin
 checkForScmChanges
 tagScm
-determineReleaseArtifacts
+detectReleaseArtifacts
 setDevVersion
 installArtifacts
 deployArtifacts

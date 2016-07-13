@@ -24,8 +24,16 @@ import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 
-@ProcessingStep(id = "determineReleaseArtifacts", description = "Determines all release artifacts based on the output of the artifact-spy-plugin and stores the data in the release metadata.", requiresOnline = false)
-public class DetermineReleaseArtifacts implements CDIMojoProcessingStep {
+/**
+ * Detects all releaseArtifacts from the output of the artifact-spy-plugin that had been smuggled into the build
+ * process. This is necessary in order to install and deploy all artifacts after the actual build process instead of
+ * doing this during the build process. This ensures working rollback mechanisms in case of a failure.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
+ */
+@ProcessingStep(id = "detectReleaseArtifacts", description = "Detects all release artifacts based on the output of the artifact-spy-plugin and stores the data in the release metadata for later installation and deployment.", requiresOnline = false)
+public class DetectReleaseArtifacts implements CDIMojoProcessingStep {
   @Inject
   private Logger log;
   @Inject
@@ -36,7 +44,9 @@ public class DetermineReleaseArtifacts implements CDIMojoProcessingStep {
 
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
-    this.log.info("Determining all project release artifacts for later installation and deployment.");
+    this.log.info(
+        "Detecting all release artifacts that have been produced during the release build for later installation and deployment.");
+
     for (MavenProject p : this.reactorProjects) {
       try {
         Properties props = loadModuleArtifacts(p);
@@ -45,6 +55,8 @@ public class DetermineReleaseArtifacts implements CDIMojoProcessingStep {
           String relativePath = props.getProperty(name);
           File artifactFile = new File(p.getBasedir(), relativePath);
 
+          // in case of pom artifacts the poms are copied to a different location to ensure we upload the correct
+          // version of the pom since the pom evolves during the release build.
           if (Objects.equal(p.getFile().getName(), relativePath)) {
             artifactFile = new File(p.getBuild().getDirectory(), "unleash/" + relativePath);
             artifactFile.getParentFile().mkdirs();
@@ -54,7 +66,7 @@ public class DetermineReleaseArtifacts implements CDIMojoProcessingStep {
           a = a.setFile(artifactFile);
           this.metadata.addReleaseArtifact(a);
 
-          this.log.debug("The following artifact will be installed and deployed later: " + a);
+          this.log.debug("\t\tThe following artifact will be installed and deployed later: " + a);
         }
       } catch (IOException e) {
         throw new MojoExecutionException(
@@ -63,11 +75,25 @@ public class DetermineReleaseArtifacts implements CDIMojoProcessingStep {
     }
   }
 
-  private Properties loadModuleArtifacts(MavenProject p) throws IOException {
+  private Properties loadModuleArtifacts(MavenProject p) throws MojoExecutionException, MojoFailureException {
     Properties props = new Properties();
+    // TODO outsource name of file to metadata!
     File artifactsSpyProperties = new File(p.getBuild().getDirectory() + File.separatorChar + "artifact-spy"
         + File.separatorChar + "artifacts.properties");
-    props.load(new FileInputStream(artifactsSpyProperties));
+    if (artifactsSpyProperties.exists() && artifactsSpyProperties.isFile()) {
+      try {
+        this.log.debug("\tLoading artifact-spy output of module '" + ProjectToString.INSTANCE.apply(p) + "' from "
+            + artifactsSpyProperties.getAbsolutePath());
+        props.load(new FileInputStream(artifactsSpyProperties));
+      } catch (Exception e) {
+        throw new MojoExecutionException(
+            "Unable to load artifact-spy output file from " + artifactsSpyProperties.getAbsolutePath(), e);
+      }
+    } else {
+      throw new MojoFailureException(
+          "Could not find artifact-spy output file containing all project artifacts. File was expected at "
+              + artifactsSpyProperties.getAbsolutePath());
+    }
     return props;
   }
 }

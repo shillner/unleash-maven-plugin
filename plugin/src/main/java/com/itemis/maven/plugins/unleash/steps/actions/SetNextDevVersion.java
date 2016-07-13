@@ -30,41 +30,45 @@ import com.itemis.maven.plugins.unleash.scm.requests.CommitRequest.Builder;
 import com.itemis.maven.plugins.unleash.scm.requests.RevertCommitsRequest;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.functions.FileToRelativePath;
+import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 import com.itemis.maven.plugins.unleash.util.scm.ScmPomVersionsMergeClient;
 import com.itemis.maven.plugins.unleash.util.scm.ScmProviderRegistry;
 
-@ProcessingStep(id = "setDevVersion", description = "Updates the projects with the next development versions", requiresOnline = true)
+/**
+ * Updates the POMs of all modules of the project with the new development version, reverts all SCM changes so that the
+ * SCM paths match the current branch again and commits the changes finally.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
+ */
+@ProcessingStep(id = "setDevVersion", description = "Updates the projects with the next development versions, reverts previous SCM path changes and finally commits the changes to the current branch.", requiresOnline = true)
 public class SetNextDevVersion implements CDIMojoProcessingStep {
   @Inject
   private Logger log;
-
   @Inject
   private ReleaseMetadata metadata;
-
   @Inject
   MavenProject project;
-
   @Inject
   @Named("reactorProjects")
   private List<MavenProject> reactorProjects;
-
   @Inject
   private ScmProviderRegistry scmProviderRegistry;
-
   @Inject
   @Named("scmMessagePrefix")
   private String scmMessagePrefix;
-
   private ScmProvider scmProvider;
-
   private Map<ArtifactCoordinates, Document> cachedPOMs;
 
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
+    this.log.info("Preparing project modules for next development cycle.");
+
     this.scmProvider = this.scmProviderRegistry.getProvider();
     this.cachedPOMs = Maps.newHashMap();
 
     for (MavenProject project : this.reactorProjects) {
+      this.log.debug("\tPreparing module '" + ProjectToString.INSTANCE.apply(project) + "'.");
       this.cachedPOMs.put(new ArtifactCoordinates(project.getGroupId(), project.getArtifactId(),
           MavenProject.EMPTY_PROJECT_VERSION, project.getPackaging()), PomUtil.parsePOM(project));
 
@@ -78,6 +82,7 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
         throw new MojoFailureException("Could not update versions for next development cycle.", t);
       }
     }
+
     commitChanges();
   }
 
@@ -86,9 +91,9 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
         .getArtifactCoordinatesByPhase(project.getGroupId(), project.getArtifactId());
     String oldVerion = coordinatesByPhase.get(ReleasePhase.RELEASE).getVersion();
     String newVersion = coordinatesByPhase.get(ReleasePhase.POST_RELEASE).getVersion();
+    this.log.debug("\t\tUpdate of module version '" + project.getGroupId() + ":" + project.getArtifact() + "' ["
+        + oldVerion + " => " + newVersion + "]");
     PomUtil.setProjectVersion(project.getModel(), document, newVersion);
-    this.log.info("Update of module version '" + project.getGroupId() + ":" + project.getArtifact() + "' [" + oldVerion
-        + " => " + newVersion + "]");
   }
 
   private void setParentVersion(MavenProject project, Document document) {
@@ -102,9 +107,9 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
       // null indicates that the parent is not part of the reactor projects since no release version had been calculated
       // for it
       if (newCoordinates != null) {
-        PomUtil.setParentVersion(project.getModel(), document, newCoordinates.getVersion());
-        this.log.info("Update of parent version of module '" + project.getGroupId() + ":" + project.getArtifact()
+        this.log.debug("\t\tUpdate of parent version of module '" + project.getGroupId() + ":" + project.getArtifact()
             + "' [" + oldCoordinates.getVersion() + " => " + newCoordinates.getVersion() + "]");
+        PomUtil.setParentVersion(project.getModel(), document, newCoordinates.getVersion());
       }
     }
   }
@@ -112,6 +117,7 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
   private void revertScmSettings(MavenProject project, Document document) {
     Scm scm = this.metadata.getCachedScmSettings(project);
     if (scm != null) {
+      this.log.debug("\t\tReversion of SCM connection tags");
       Node scmNode = PomUtil.getOrCreateScmNode(document, false);
 
       if (scmNode != null) {
@@ -138,6 +144,8 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
   }
 
   private void commitChanges() {
+    this.log.debug(
+        "\tCommitting changed POMs of all modules and pushing to remote repository. Merging with remote changes if necessary.");
     this.metadata.setScmRevisionBeforeNextDevVersion(this.scmProvider.getLatestRemoteRevision());
 
     StringBuilder message = new StringBuilder("Preparation for next development cycle.");
@@ -158,6 +166,9 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
 
   @RollbackOnError
   public void rollback() throws MojoExecutionException {
+    this.log.info(
+        "Rollback of all pom changes necessary for setting of the development version as well as reverting any made SCM commits.");
+
     StringBuilder message = new StringBuilder(
         "Reversion of failed release build (step: setting of next snapshot version).");
     if (StringUtils.isNotBlank(this.scmMessagePrefix)) {

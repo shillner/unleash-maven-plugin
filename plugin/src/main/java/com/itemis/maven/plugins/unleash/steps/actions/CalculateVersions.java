@@ -23,43 +23,44 @@ import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 
-@ProcessingStep(id = "prepareVersions", description = "Calculates the required project versions (release versions and next development versions)", requiresOnline = false)
+/**
+ * Calculates the versions for all modules of the project used during the release build.<br>
+ * This step applies several strategies for version calculation such as prompting the user or checking globally defined
+ * versions.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
+ */
+@ProcessingStep(id = "prepareVersions", description = "Calculates all required versions for each module of the project such as release and development version (applies several strategies for version calculation such as user prompting).", requiresOnline = false)
 public class CalculateVersions implements CDIMojoProcessingStep {
   @Inject
   private Logger log;
-
   @Inject
   @Named("reactorProjects")
   private List<MavenProject> reactorProjects;
-
   @Inject
   private ReleaseMetadata metadata;
-
   @Inject
   @Named("releaseVersion")
   private String defaultReleaseVersion;
-
   @Inject
   @Named("developmentVersion")
   private String defaultDevelopmentVersion;
-
   @Inject
   private Settings settings;
-
   @Inject
   private Prompter prompter;
 
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
-    this.log.info("Calculating versions for all modules.");
+    this.log.info("Calculating required versions for all modules.");
 
     for (MavenProject project : this.reactorProjects) {
-      this.log.info("Versions of project " + ProjectToString.INSTANCE.apply(project) + ":");
+      this.log.debug("\tVersions of module " + ProjectToString.INSTANCE.apply(project) + ":");
 
-      ArtifactCoordinates coordinates = new ArtifactCoordinates(project.getGroupId(), project.getArtifactId(),
-          project.getVersion(), PomUtil.ARTIFACT_TYPE_POM);
-      this.metadata.addArtifactCoordinates(coordinates, ReleasePhase.PRE_RELEASE);
-      this.log.info("\t" + ReleasePhase.PRE_RELEASE + " = " + coordinates.getVersion());
+      ArtifactCoordinates preReleaseCoordinates = this.metadata
+          .getArtifactCoordinatesByPhase(project.getGroupId(), project.getArtifactId()).get(ReleasePhase.PRE_RELEASE);
+      this.log.debug("\t\t" + ReleasePhase.PRE_RELEASE + " = " + preReleaseCoordinates.getVersion());
 
       Optional<Prompter> prompterToUse = this.settings.isInteractiveMode() ? Optional.of(this.prompter)
           : Optional.<Prompter> absent();
@@ -69,14 +70,14 @@ public class CalculateVersions implements CDIMojoProcessingStep {
       ArtifactCoordinates releaseCoordinates = new ArtifactCoordinates(project.getGroupId(), project.getArtifactId(),
           releaseVersion, PomUtil.ARTIFACT_TYPE_POM);
       this.metadata.addArtifactCoordinates(releaseCoordinates, ReleasePhase.RELEASE);
-      this.log.info("\t" + ReleasePhase.RELEASE + " = " + releaseVersion);
+      this.log.debug("\t\t" + ReleasePhase.RELEASE + " = " + releaseVersion);
 
       String nextDevVersion = ReleaseUtil.getNextDevelopmentVersion(releaseVersion,
           Optional.fromNullable(this.defaultDevelopmentVersion), prompterToUse);
       ArtifactCoordinates postReleaseCoordinates = new ArtifactCoordinates(project.getGroupId(),
           project.getArtifactId(), nextDevVersion, PomUtil.ARTIFACT_TYPE_POM);
       this.metadata.addArtifactCoordinates(postReleaseCoordinates, ReleasePhase.POST_RELEASE);
-      this.log.info("\t" + ReleasePhase.POST_RELEASE + " = " + nextDevVersion);
+      this.log.debug("\t\t" + ReleasePhase.POST_RELEASE + " = " + nextDevVersion);
     }
   }
 }

@@ -30,10 +30,17 @@ import com.itemis.maven.plugins.unleash.scm.requests.RevertCommitsRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.TagRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.TagRequest.Builder;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
+import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 import com.itemis.maven.plugins.unleash.util.scm.ScmPomVersionsMergeClient;
 import com.itemis.maven.plugins.unleash.util.scm.ScmProviderRegistry;
 
-@ProcessingStep(id = "tagScm", description = "Creates an SCM Tag with the release setup.", requiresOnline = true)
+/**
+ * Creates an SCM tag on the local and remote repository using the appropriate SCM provider.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
+ */
+@ProcessingStep(id = "tagScm", description = "Creates an SCM tag in the local and remote repository using the appropriate SCM provider implementation. The user can either request a commit on the current working branch prior to the tag creation or tag from the local working copy.", requiresOnline = true)
 public class TagScm implements CDIMojoProcessingStep {
   @Inject
   private Logger log;
@@ -52,20 +59,28 @@ public class TagScm implements CDIMojoProcessingStep {
   @Inject
   @Named("commitBeforeTagging")
   private boolean commitBeforeTagging;
-
   private ScmProvider scmProvider;
   private String globalReleaseVersion;
   private boolean tagWasPresent;
   private Map<ArtifactCoordinates, Document> cachedPOMs;
 
+  private void init() {
+    this.scmProvider = this.scmProviderRegistry.getProvider();
+    Map<ReleasePhase, ArtifactCoordinates> coordinates = this.metadata
+        .getArtifactCoordinatesByPhase(this.project.getGroupId(), this.project.getArtifactId());
+    ArtifactCoordinates postReleaseCoordinates = coordinates.get(ReleasePhase.RELEASE);
+    this.globalReleaseVersion = postReleaseCoordinates.getVersion();
+    this.cachedPOMs = Maps.newHashMap();
+  }
+
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
+    this.log.info("Tagging local and remote SCM repositories.");
     init();
 
     String scmTagName = this.metadata.getScmTagName();
     updateScmConnections(scmTagName);
 
-    this.log.info("Tagging SCM, tag name: " + scmTagName);
     if (this.scmProvider.hasTag(scmTagName)) {
       this.tagWasPresent = true;
       throw new MojoFailureException("A tag with name " + scmTagName + " already exists.");
@@ -76,6 +91,9 @@ public class TagScm implements CDIMojoProcessingStep {
     if (StringUtils.isNotBlank(this.scmMessagePrefix)) {
       message.insert(0, this.scmMessagePrefix);
     }
+
+    this.log.debug("\tCreating SCM tag with name '" + scmTagName + "'." + (this.commitBeforeTagging
+        ? " User requested pre-tag committing." : " Tag will be created from local working copy."));
 
     Builder requestBuilder = TagRequest.builder().message(message.toString()).tagName(scmTagName).push();
     if (this.commitBeforeTagging) {
@@ -99,19 +117,12 @@ public class TagScm implements CDIMojoProcessingStep {
     this.metadata.setScmRevisionAfterTag(newRevision);
   }
 
-  private void init() {
-    this.scmProvider = this.scmProviderRegistry.getProvider();
-    Map<ReleasePhase, ArtifactCoordinates> coordinates = this.metadata
-        .getArtifactCoordinatesByPhase(this.project.getGroupId(), this.project.getArtifactId());
-    ArtifactCoordinates postReleaseCoordinates = coordinates.get(ReleasePhase.RELEASE);
-    this.globalReleaseVersion = postReleaseCoordinates.getVersion();
-    this.cachedPOMs = Maps.newHashMap();
-  }
-
   private void updateScmConnections(String scmTagName) throws MojoFailureException {
     for (MavenProject p : this.reactorProjects) {
       Scm scm = p.getModel().getScm();
       if (scm != null) {
+        this.log.debug("\tUpdating SCM connection tags in POM of module '" + ProjectToString.INSTANCE.apply(p) + "'");
+
         this.cachedPOMs.put(new ArtifactCoordinates(this.project.getGroupId(), this.project.getArtifactId(),
             MavenProject.EMPTY_PROJECT_VERSION, this.project.getPackaging()), PomUtil.parsePOM(this.project));
 
@@ -149,10 +160,11 @@ public class TagScm implements CDIMojoProcessingStep {
 
   @RollbackOnError
   private void rollback() throws MojoExecutionException {
-    this.log.info("Rolling back SCM tagging due to a processing exception.");
+    this.log.info("Rollback of SCM tag creation and POM modifications due to a processing exception.");
+
     String scmTagName = this.metadata.getScmTagName();
     if (this.scmProvider.hasTag(scmTagName) && !this.tagWasPresent) {
-      this.log.debug("Deleting scm tag '" + scmTagName + "' since the release build failed.");
+      this.log.debug("\tDeleting scm tag '" + scmTagName + "' since the release build failed.");
 
       StringBuilder message = new StringBuilder("Deletion of tag '").append(scmTagName)
           .append("' due to release rollback.");
@@ -164,7 +176,7 @@ public class TagScm implements CDIMojoProcessingStep {
           .build();
       this.scmProvider.deleteTag(request);
     } else {
-      this.log.debug("Skipping deletion of SCM tag '" + scmTagName
+      this.log.debug("\tSkipping deletion of SCM tag '" + scmTagName
           + "' since the tag was already present before the release build was triggered.");
     }
 

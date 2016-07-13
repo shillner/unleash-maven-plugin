@@ -14,8 +14,8 @@ import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 import com.itemis.maven.plugins.unleash.util.scm.ScmProviderRegistry;
 
 /**
- * A Mojo that just stores the local SCM revision information in the release metadata. This information is needed in a
- * later step to ensure that no other commits where done while releasing the artifact.
+ * A Mojo that just stores the local SCM revision information in the release metadata.<br>
+ * This information is needed in a later step to ensure that no other commits where done while releasing the artifact.
  *
  * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
  * @since 1.0.0
@@ -34,6 +34,6 @@ public class StoreScmRevision implements CDIMojoProcessingStep {
     ScmProvider provider = this.scmProviderRegistry.getProvider();
     String revision = provider.getLocalRevision();
     this.metadata.setInitialScmRevision(revision);
-    this.log.info("SCM Revision before releasing the artifacts: " + revision);
+    this.log.info("Stored SCM revision before project release: " + revision);
   }
 }

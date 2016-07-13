@@ -35,27 +35,34 @@ import com.itemis.maven.plugins.unleash.util.functions.PluginToString;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotDependency;
 
-@ProcessingStep(id = "checkPluginDependencies", description = "Checks that the plugins used by the projects do not reference SNAPSHOT dependencies.", requiresOnline = false)
+/**
+ * Checks that none of the project modules contains plugins that have SNAPSHOT dependencies since this would potentially
+ * lead to
+ * non-reproducible release artifacts.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
+ */
+@ProcessingStep(id = "checkPluginDependencies", description = "Checks that the plugins used by the projects do not reference SNAPSHOT dependencies to avoid unreproducible release aritfacts.", requiresOnline = false)
 public class CheckPluginDependencyVersions implements CDIMojoProcessingStep {
   @Inject
   private Logger log;
-
   @Inject
   @Named("reactorProjects")
   private List<MavenProject> reactorProjects;
-
   @Inject
   private PluginDescriptor pluginDescriptor;
 
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
-    this.log.debug("Checking that none of the reactor project's plugins contain SNAPSHOT dependencies.");
+    this.log.info("Checking that none of the reactor project's plugins contain SNAPSHOT dependencies.");
 
     Map<MavenProject, Multimap<String, String>> snapshotsByProjectAndPlugin = Maps
         .newHashMapWithExpectedSize(this.reactorProjects.size());
-
     boolean hasSnapshots = false;
     for (MavenProject project : this.reactorProjects) {
+      this.log.debug(
+          "\tChecking plugin dependencies of reactor project '" + ProjectToString.INSTANCE.apply(project) + "':");
       Multimap<String, String> snapshots = HashMultimap.<String, String> create();
       snapshots.putAll(getSnapshotsFromManagement(project));
       snapshots.putAll(getSnapshots(project));
@@ -70,16 +77,16 @@ public class CheckPluginDependencyVersions implements CDIMojoProcessingStep {
     }
 
     if (hasSnapshots) {
-      this.log.debug(
-          "The following list contains all SNAPSHOT plugin-dependencies grouped by the reactor project where they are referenced:");
+      this.log.error(
+          "\tThere are plugins with SNAPSHOT dependencies! The following list contains all SNAPSHOT dependencies grouped by plugin and module:");
       for (MavenProject p : snapshotsByProjectAndPlugin.keySet()) {
         Multimap<String, String> snapshots = snapshotsByProjectAndPlugin.get(p);
         if (!snapshots.isEmpty()) {
-          this.log.debug("\t[PROJECT] " + ProjectToString.INSTANCE.apply(p));
+          this.log.error("\t\t[PROJECT] " + ProjectToString.INSTANCE.apply(p));
           for (String plugin : snapshots.keySet()) {
-            this.log.debug("\t\t[PLUGIN] " + plugin);
+            this.log.error("\t\t\t[PLUGIN] " + plugin);
             for (String dependency : snapshots.get(plugin)) {
-              this.log.debug("\t\t\t[DEPENDENCY] " + dependency);
+              this.log.error("\t\t\t\t[DEPENDENCY] " + dependency);
             }
           }
         }
@@ -89,6 +96,7 @@ public class CheckPluginDependencyVersions implements CDIMojoProcessingStep {
   }
 
   private Multimap<String, String> getSnapshotsFromManagement(MavenProject project) {
+    this.log.debug("\t\tChecking managed plugins");
     Multimap<String, String> result = HashMultimap.create();
     Build build = project.getBuild();
     if (build != null) {
@@ -108,6 +116,7 @@ public class CheckPluginDependencyVersions implements CDIMojoProcessingStep {
   }
 
   private Multimap<String, String> getSnapshots(MavenProject project) {
+    this.log.debug("\t\tChecking direct plugin references");
     Multimap<String, String> result = HashMultimap.create();
     Build build = project.getBuild();
     if (build != null) {
@@ -136,6 +145,7 @@ public class CheckPluginDependencyVersions implements CDIMojoProcessingStep {
   }
 
   private Multimap<String, String> getSnapshotsFromManagement(Profile profile) {
+    this.log.debug("\t\tChecking managed plugins of profile '" + profile.getId() + "'");
     Multimap<String, String> result = HashMultimap.create();
     BuildBase build = profile.getBuild();
     if (build != null) {
@@ -155,6 +165,7 @@ public class CheckPluginDependencyVersions implements CDIMojoProcessingStep {
   }
 
   private Multimap<String, String> getSnapshots(Profile profile) {
+    this.log.debug("\t\tChecking direct plugin references of profile '" + profile.getId() + "'");
     Multimap<String, String> result = HashMultimap.create();
     BuildBase build = profile.getBuild();
     if (build != null) {
@@ -169,6 +180,7 @@ public class CheckPluginDependencyVersions implements CDIMojoProcessingStep {
     return result;
   }
 
+  // Removes the unleash plugin itself from the list of violating dependencies if the integration test mode is enabled.
   private void removePluginForIntegrationTests(Multimap<String, String> snapshots) {
     if (ReleaseUtil.isIntegrationtest()) {
       for (Iterator<Entry<String, String>> i = snapshots.entries().iterator(); i.hasNext();) {

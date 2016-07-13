@@ -34,25 +34,30 @@ import com.itemis.maven.plugins.unleash.util.functions.PluginToString;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotPlugin;
 
-@ProcessingStep(id = "checkPlugins", description = "Checks that the projects do not use SNAPSHOT plugins", requiresOnline = false)
+/**
+ * Checks that none of the project modules references SNAPSHOT plugins since this would potentially lead to
+ * non-reproducible release artifacts.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
+ */
+@ProcessingStep(id = "checkPlugins", description = "Checks that the projects do not use SNAPSHOT plugins to avoid unreproducible release aritfacts.", requiresOnline = false)
 public class CheckPluginVersions implements CDIMojoProcessingStep {
   @Inject
   private Logger log;
-
   @Inject
   @Named("reactorProjects")
   private List<MavenProject> reactorProjects;
-
   @Inject
   private PluginDescriptor pluginDescriptor;
 
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
-    this.log.debug("Checking that none of the reactor projects contain SNAPSHOT plugins.");
+    this.log.info("Checking that none of the reactor projects contains SNAPSHOT plugins.");
 
     Multimap<MavenProject, String> snapshotsByProject = HashMultimap.create();
-
     for (MavenProject project : this.reactorProjects) {
+      this.log.debug("\tChecking plugins of reactor project '" + ProjectToString.INSTANCE.apply(project) + "':");
       snapshotsByProject.putAll(project, getSnapshotsFromManagement(project));
       snapshotsByProject.putAll(project, getSnapshots(project));
       snapshotsByProject.putAll(project, getSnapshotsFromAllProfiles(project));
@@ -61,14 +66,14 @@ public class CheckPluginVersions implements CDIMojoProcessingStep {
     }
 
     if (!snapshotsByProject.values().isEmpty()) {
-      this.log.debug(
-          "The following list contains all SNAPSHOT plugins grouped by the reactor project where they are referenced:");
+      this.log.error(
+          "\tThere are references to SNAPSHOT plugins! The following list contains all SNAPSHOT plugins grouped by module:");
       for (MavenProject project : snapshotsByProject.keySet()) {
         Collection<String> snapshots = snapshotsByProject.get(project);
         if (!snapshots.isEmpty()) {
-          this.log.debug("\t[PROJECT] " + ProjectToString.INSTANCE.apply(project));
+          this.log.error("\t\t[PROJECT] " + ProjectToString.INSTANCE.apply(project));
           for (String plugin : snapshots) {
-            this.log.debug("\t\t[PLUGIN] " + plugin);
+            this.log.error("\t\t\t[PLUGIN] " + plugin);
           }
         }
       }
@@ -77,6 +82,7 @@ public class CheckPluginVersions implements CDIMojoProcessingStep {
   }
 
   private Set<String> getSnapshotsFromManagement(MavenProject project) {
+    this.log.debug("\t\tChecking managed plugins");
     Build build = project.getBuild();
     if (build != null) {
       PluginManagement pluginManagement = build.getPluginManagement();
@@ -89,6 +95,7 @@ public class CheckPluginVersions implements CDIMojoProcessingStep {
   }
 
   private Set<String> getSnapshots(MavenProject project) {
+    this.log.debug("\t\tChecking direct plugin references");
     Build build = project.getBuild();
     if (build != null) {
       Collection<Plugin> snapshots = Collections2.filter(build.getPlugins(), IsSnapshotPlugin.INSTANCE);
@@ -110,6 +117,7 @@ public class CheckPluginVersions implements CDIMojoProcessingStep {
   }
 
   private Set<String> getSnapshotsFromManagement(Profile profile) {
+    this.log.debug("\t\tChecking managed plugins of profile '" + profile.getId() + "'");
     BuildBase build = profile.getBuild();
     if (build != null) {
       PluginManagement pluginManagement = build.getPluginManagement();
@@ -122,6 +130,7 @@ public class CheckPluginVersions implements CDIMojoProcessingStep {
   }
 
   private Set<String> getSnapshots(Profile profile) {
+    this.log.debug("\t\tChecking direct plugin references of profile '" + profile.getId() + "'");
     BuildBase build = profile.getBuild();
     if (build != null) {
       Collection<Plugin> snapshots = Collections2.filter(build.getPlugins(), IsSnapshotPlugin.INSTANCE);
@@ -130,6 +139,7 @@ public class CheckPluginVersions implements CDIMojoProcessingStep {
     return Collections.emptySet();
   }
 
+  // Removes the unleash plugin itself from the list of violating dependencies if the integration test mode is enabled.
   private void removePluginForIntegrationTests(Multimap<MavenProject, String> snapshotsByProject) {
     if (ReleaseUtil.isIntegrationtest()) {
       for (Iterator<Entry<MavenProject, String>> i = snapshotsByProject.entries().iterator(); i.hasNext();) {

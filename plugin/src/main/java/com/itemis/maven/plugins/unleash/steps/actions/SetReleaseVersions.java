@@ -22,15 +22,21 @@ import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
+import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 
-@ProcessingStep(id = "setReleaseVersions", description = "Updates all projects with their release versions calculated previously.", requiresOnline = false)
+/**
+ * Updates the POMs of all project modules with the previously calculated release versions. This step updates project
+ * versions as well as parent versions.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
+ */
+@ProcessingStep(id = "setReleaseVersions", description = "Updates the POMs of all project modules with their release versions calculated previously.", requiresOnline = false)
 public class SetReleaseVersions implements CDIMojoProcessingStep {
   @Inject
   private Logger log;
-
   @Inject
   private ReleaseMetadata metadata;
-
   @Inject
   @Named("reactorProjects")
   private List<MavenProject> reactorProjects;
@@ -38,7 +44,9 @@ public class SetReleaseVersions implements CDIMojoProcessingStep {
 
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
+    this.log.info("Updating project modules with release versions");
     this.cachedPOMs = Maps.newHashMap();
+
     for (MavenProject project : this.reactorProjects) {
       this.cachedPOMs.put(new ArtifactCoordinates(project.getGroupId(), project.getArtifactId(),
           MavenProject.EMPTY_PROJECT_VERSION, project.getPackaging()), PomUtil.parsePOM(project));
@@ -59,9 +67,9 @@ public class SetReleaseVersions implements CDIMojoProcessingStep {
         .getArtifactCoordinatesByPhase(project.getGroupId(), project.getArtifactId());
     String oldVerion = coordinatesByPhase.get(ReleasePhase.PRE_RELEASE).getVersion();
     String newVersion = coordinatesByPhase.get(ReleasePhase.RELEASE).getVersion();
+    this.log.debug("\tUpdate of module version '" + project.getGroupId() + ":" + project.getArtifact() + "' ["
+        + oldVerion + " => " + newVersion + "]");
     PomUtil.setProjectVersion(project.getModel(), document, newVersion);
-    this.log.info("Update of module version '" + project.getGroupId() + ":" + project.getArtifact() + "' [" + oldVerion
-        + " => " + newVersion + "]");
   }
 
   private void setParentVersion(MavenProject project, Document document) {
@@ -75,16 +83,20 @@ public class SetReleaseVersions implements CDIMojoProcessingStep {
       // null indicates that the parent is not part of the reactor projects since no release version had been calculated
       // for it
       if (newCoordinates != null) {
-        PomUtil.setParentVersion(project.getModel(), document, newCoordinates.getVersion());
-        this.log.info("Update of parent version of module '" + project.getGroupId() + ":" + project.getArtifact()
+        this.log.debug("\tUpdate of parent version of module '" + project.getGroupId() + ":" + project.getArtifact()
             + "' [" + oldCoordinates.getVersion() + " => " + newCoordinates.getVersion() + "]");
+        PomUtil.setParentVersion(project.getModel(), document, newCoordinates.getVersion());
       }
     }
   }
 
   @RollbackOnError
   public void rollback() throws MojoExecutionException {
+    this.log.info("Rollback of release version updating for all project modules");
+
     for (MavenProject project : this.reactorProjects) {
+      this.log.debug("\tRolling back modifications on POM of module '" + ProjectToString.INSTANCE.apply(project) + "'");
+
       Document document = this.cachedPOMs.get(new ArtifactCoordinates(project.getGroupId(), project.getArtifactId(),
           MavenProject.EMPTY_PROJECT_VERSION, project.getPackaging()));
       if (document != null) {

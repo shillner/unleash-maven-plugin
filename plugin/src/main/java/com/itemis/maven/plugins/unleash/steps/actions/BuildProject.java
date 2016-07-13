@@ -23,31 +23,35 @@ import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.cdi.logging.Logger;
 
-@ProcessingStep(id = "buildReleaseArtifacts", description = "Triggers the atual release build (clean verify) which produces the artifacts for later installation and deployment.", requiresOnline = true)
+/**
+ * Performs the actual release build but does not install or deploy artifacts to the repositories. These steps are
+ * performed later after all other steps, such as SCM tagging aso. have finished.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
+ */
+@ProcessingStep(id = "buildReleaseArtifacts", description = "Triggers the atual release build which produces the release artifacts but does not install or deploy them.", requiresOnline = true)
 public class BuildProject implements CDIMojoProcessingStep {
   @Inject
   private Logger log;
-
   @Inject
   private MavenProject project;
-
   @Inject
   @Named("profiles")
   private List<String> profiles;
-
   @Inject
   @Named("maven.home")
   private String mavenHome;
-
   @Inject
   private Settings settings;
-
   @Inject
   @Named("releaseArgs")
   private String releaseArgs;
 
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
+    this.log.info("Starting release build.");
+
     InvocationRequest request = new DefaultInvocationRequest();
     request.setPomFile(this.project.getFile());
     // installation and deployment are performed in a later step. We first need to ensure that there are no changes in
@@ -89,7 +93,7 @@ public class BuildProject implements CDIMojoProcessingStep {
     }
 
     if (path != null) {
-      this.log.debug("Using maven home: " + path);
+      this.log.debug("\tUsing maven home: " + path);
       invoker.setMavenHome(new File(path));
     }
   }
