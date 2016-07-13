@@ -13,8 +13,18 @@ import org.eclipse.aether.resolution.ArtifactResult;
 
 import com.google.common.base.Optional;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.itemis.maven.plugins.cdi.logging.Logger;
 
+/**
+ * A loader strategy that can be used by a {@link LoadingCache} which caches {@link ArtifactResult ArtifactResults}
+ * identified by {@link ArtifactCoordinates} during a resolution process.<br>
+ * This loader retrieves the results by explicitly querying the repositories for an artifact with the specified
+ * coordinates.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
+ */
 class ArtifactCacheLoader extends CacheLoader<ArtifactCoordinates, Optional<ArtifactResult>> {
   private RepositorySystem repoSystem;
   private RepositorySystemSession repoSession;

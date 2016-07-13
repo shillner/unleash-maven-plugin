@@ -30,6 +30,7 @@ import com.itemis.maven.plugins.unleash.scm.requests.RevertCommitsRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.TagRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.TagRequest.Builder;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
+import com.itemis.maven.plugins.unleash.util.functions.ProjectToCoordinates;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 import com.itemis.maven.plugins.unleash.util.scm.ScmPomVersionsMergeClient;
 import com.itemis.maven.plugins.unleash.util.scm.ScmProviderRegistry;
@@ -123,8 +124,7 @@ public class TagScm implements CDIMojoProcessingStep {
       if (scm != null) {
         this.log.debug("\tUpdating SCM connection tags in POM of module '" + ProjectToString.INSTANCE.apply(p) + "'");
 
-        this.cachedPOMs.put(new ArtifactCoordinates(this.project.getGroupId(), this.project.getArtifactId(),
-            MavenProject.EMPTY_PROJECT_VERSION, this.project.getPackaging()), PomUtil.parsePOM(this.project));
+        this.cachedPOMs.put(ProjectToCoordinates.EMPTY_VERSION.apply(p), PomUtil.parsePOM(p));
 
         try {
           Document document = PomUtil.parsePOM(p);
@@ -192,11 +192,10 @@ public class TagScm implements CDIMojoProcessingStep {
     }
 
     for (MavenProject project : this.reactorProjects) {
-      Document document = this.cachedPOMs.get(new ArtifactCoordinates(project.getGroupId(), project.getArtifactId(),
-          MavenProject.EMPTY_PROJECT_VERSION, project.getPackaging()));
+      Document document = this.cachedPOMs.get(ProjectToCoordinates.EMPTY_VERSION.apply(project));
       if (document != null) {
         try {
-          PomUtil.writePOM(document, this.project);
+          PomUtil.writePOM(document, project);
         } catch (Throwable t) {
           throw new MojoExecutionException(
               "Could not revert SCM connection adaption after a failed release build. Tried to reset tag connection URL to initial state.",

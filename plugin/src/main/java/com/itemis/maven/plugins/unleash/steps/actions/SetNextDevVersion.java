@@ -30,6 +30,7 @@ import com.itemis.maven.plugins.unleash.scm.requests.CommitRequest.Builder;
 import com.itemis.maven.plugins.unleash.scm.requests.RevertCommitsRequest;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.functions.FileToRelativePath;
+import com.itemis.maven.plugins.unleash.util.functions.ProjectToCoordinates;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 import com.itemis.maven.plugins.unleash.util.scm.ScmPomVersionsMergeClient;
 import com.itemis.maven.plugins.unleash.util.scm.ScmProviderRegistry;
@@ -69,8 +70,7 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
 
     for (MavenProject project : this.reactorProjects) {
       this.log.debug("\tPreparing module '" + ProjectToString.INSTANCE.apply(project) + "'.");
-      this.cachedPOMs.put(new ArtifactCoordinates(project.getGroupId(), project.getArtifactId(),
-          MavenProject.EMPTY_PROJECT_VERSION, project.getPackaging()), PomUtil.parsePOM(project));
+      this.cachedPOMs.put(ProjectToCoordinates.EMPTY_VERSION.apply(project), PomUtil.parsePOM(project));
 
       try {
         Document document = PomUtil.parsePOM(project);
@@ -182,8 +182,7 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
     this.scmProvider.revertCommits(revertCommitsRequest);
 
     for (MavenProject project : this.reactorProjects) {
-      Document document = this.cachedPOMs.get(new ArtifactCoordinates(project.getGroupId(), project.getArtifactId(),
-          MavenProject.EMPTY_PROJECT_VERSION, project.getPackaging()));
+      Document document = this.cachedPOMs.get(ProjectToCoordinates.EMPTY_VERSION.apply(project));
       if (document != null) {
         try {
           PomUtil.writePOM(document, this.project);

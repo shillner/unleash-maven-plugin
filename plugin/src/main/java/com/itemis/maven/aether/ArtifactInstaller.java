@@ -12,6 +12,12 @@ import org.eclipse.aether.installation.InstallRequest;
 import org.eclipse.aether.installation.InstallResult;
 import org.eclipse.aether.installation.InstallationException;
 
+/**
+ * Installs artifacts into the local Maven repository.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
+ */
 @Singleton
 public class ArtifactInstaller {
   @Inject
@@ -20,6 +26,13 @@ public class ArtifactInstaller {
   @Inject
   private Installer installer;
 
+  /**
+   * Installs the given artifacts into the local Maven repository.
+   * 
+   * @param artifacts the artifacts to install.
+   * @return the artifacts that have been installed successfully.
+   * @throws InstallationException if anything goes wrong during the installation process.
+   */
   public Collection<Artifact> installArtifacts(Collection<Artifact> artifacts) throws InstallationException {
     InstallRequest request = new InstallRequest();
     request.setArtifacts(artifacts);

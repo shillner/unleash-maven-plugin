@@ -14,6 +14,12 @@ import org.eclipse.aether.impl.Deployer;
 
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 
+/**
+ * Deploys artifacts into the remote Maven repositories.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
+ */
 @Singleton
 public class ArtifactDeployer {
   @Inject
@@ -25,6 +31,13 @@ public class ArtifactDeployer {
   @Inject
   private ReleaseMetadata metadata;
 
+  /**
+   * Deploys the given artifacts to the configured remote Maven repositories.
+   *
+   * @param artifacts the artifacts to deploy.
+   * @return the artifacts that have been deployed successfully.
+   * @throws DeploymentException if anything goes wrong during the deployment process.
+   */
   public Collection<Artifact> deployArtifacts(Collection<Artifact> artifacts) throws DeploymentException {
     DeployRequest request = new DeployRequest();
     request.setArtifacts(artifacts);

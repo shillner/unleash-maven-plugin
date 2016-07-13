@@ -2,6 +2,12 @@ package com.itemis.maven.aether;
 
 import com.google.common.base.Objects;
 
+/**
+ * Coordinates that identify an artifact uniquely. Coordinates are f.i. used in aether repositories.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
+ */
 public class ArtifactCoordinates {
   private String groupId;
   private String artifactId;

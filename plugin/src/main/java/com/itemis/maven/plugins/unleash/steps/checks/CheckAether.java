@@ -78,8 +78,8 @@ public class CheckAether implements CDIMojoProcessingStep {
   }
 
   private boolean isReleased(String groupId, String artifactId, String version) {
-    Optional<File> pom = this.artifactResolver.resolve(groupId, artifactId, version,
-        Optional.of(PomUtil.ARTIFACT_TYPE_POM), Optional.<String> absent(), this.allowLocalReleaseArtifacts);
+    ArtifactCoordinates coordinates = new ArtifactCoordinates(groupId, artifactId, version, PomUtil.ARTIFACT_TYPE_POM);
+    Optional<File> pom = this.artifactResolver.resolve(coordinates, this.allowLocalReleaseArtifacts);
     return pom.isPresent();
   }
 }

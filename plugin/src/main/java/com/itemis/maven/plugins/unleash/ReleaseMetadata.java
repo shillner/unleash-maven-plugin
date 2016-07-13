@@ -19,9 +19,15 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.itemis.maven.aether.ArtifactCoordinates;
-import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
+import com.itemis.maven.plugins.unleash.util.functions.ProjectToCoordinates;
 
+/**
+ * Provides global metadata used during the release process. These metadata evolve during the release process.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
+ */
 @Singleton
 // TODO add serialization of metadata as a reporting feature!
 public class ReleaseMetadata {
@@ -33,7 +39,6 @@ public class ReleaseMetadata {
   @Inject
   @Named("reactorProjects")
   private List<MavenProject> reactorProjects;
-
   private String initialScmRevision;
   private String scmRevisionBeforeNextDevVersion;
   private String scmRevisionAfterNextDevVersion;
@@ -71,13 +76,10 @@ public class ReleaseMetadata {
 
     for (MavenProject p : this.reactorProjects) {
       // puts the initial module artifact coordinates into the cache
-      ArtifactCoordinates coordinates = new ArtifactCoordinates(p.getGroupId(), p.getArtifactId(), p.getVersion(),
-          PomUtil.ARTIFACT_TYPE_POM);
-      addArtifactCoordinates(coordinates, ReleasePhase.PRE_RELEASE);
+      addArtifactCoordinates(ProjectToCoordinates.POM.apply(p), ReleasePhase.PRE_RELEASE);
 
       // caching of SCM settings of every POM in order to go back to it before setting next dev version
-      this.cachedScmSettings.put(new ArtifactCoordinates(p.getGroupId(), p.getArtifactId(),
-          MavenProject.EMPTY_PROJECT_VERSION, p.getPackaging()), p.getModel().getScm());
+      this.cachedScmSettings.put(ProjectToCoordinates.EMPTY_VERSION.apply(p), p.getModel().getScm());
     }
   }
 
@@ -162,9 +164,6 @@ public class ReleaseMetadata {
   }
 
   public Scm getCachedScmSettings(MavenProject p) {
-    // TODO outsource to function
-    ArtifactCoordinates coordinates = new ArtifactCoordinates(p.getGroupId(), p.getArtifactId(),
-        MavenProject.EMPTY_PROJECT_VERSION, p.getPackaging());
-    return this.cachedScmSettings.get(coordinates);
+    return this.cachedScmSettings.get(ProjectToCoordinates.EMPTY_VERSION.apply(p));
   }
 }
