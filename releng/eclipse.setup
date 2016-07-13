@@ -1705,7 +1705,7 @@
     <setupTask
         xsi:type="git:GitCloneTask"
         id="shillner.dev.ump.git.clone"
-        location="plugin"
+        location="${installation.location/maven-plugin}"
         remoteURI="shillner/unleash-maven-plugin"
         pushURI="">
       <annotation
@@ -1716,14 +1716,83 @@
         </detail>
         <detail
             key="label">
-          <value>${scope.project.label} Github repository</value>
+          <value>Unleash Maven Plugin Github repository</value>
         </detail>
         <detail
             key="target">
           <value>remoteURI</value>
         </detail>
       </annotation>
-      <description>${scope.project.label}</description>
+      <description>Unleash Maven Plugin</description>
+    </setupTask>
+    <setupTask
+        xsi:type="git:GitCloneTask"
+        id="shillner.dev.ujp.git.clone"
+        location="${installation.location/jenkins-plugin}"
+        remoteURI="shillner/unleash-jenkins-plugin"
+        pushURI="">
+      <annotation
+          source="http://www.eclipse.org/oomph/setup/InducedChoices">
+        <detail
+            key="inherit">
+          <value>github.remoteURIs</value>
+        </detail>
+        <detail
+            key="label">
+          <value>Unleash Jenkins Plugin Github repository</value>
+        </detail>
+        <detail
+            key="target">
+          <value>remoteURI</value>
+        </detail>
+      </annotation>
+      <description>Unleash Jenkins Plugin</description>
+    </setupTask>
+    <setupTask
+        xsi:type="git:GitCloneTask"
+        id="shillner.dev.scm.svn.git.clone"
+        location="${installation.location/scm-providers/svn}"
+        remoteURI="shillner/unleash-scm-provider-svn"
+        pushURI="">
+      <annotation
+          source="http://www.eclipse.org/oomph/setup/InducedChoices">
+        <detail
+            key="inherit">
+          <value>github.remoteURIs</value>
+        </detail>
+        <detail
+            key="label">
+          <value>SCM Provider SVN Github repository</value>
+        </detail>
+        <detail
+            key="target">
+          <value>remoteURI</value>
+        </detail>
+      </annotation>
+      <description>SCM Provider SVN</description>
+    </setupTask>
+    <setupTask
+        xsi:type="git:GitCloneTask"
+        id="shillner.dev.scm.git.git.clone"
+        location="${installation.location/scm-providers/git}"
+        remoteURI="shillner/unleash-scm-provider-git"
+        pushURI="">
+      <annotation
+          source="http://www.eclipse.org/oomph/setup/InducedChoices">
+        <detail
+            key="inherit">
+          <value>github.remoteURIs</value>
+        </detail>
+        <detail
+            key="label">
+          <value>SCM Provider Git Github repository</value>
+        </detail>
+        <detail
+            key="target">
+          <value>remoteURI</value>
+        </detail>
+      </annotation>
+      <description>SCM Provider Git</description>
     </setupTask>
     <setupTask
         xsi:type="maven:MavenImportTask"
@@ -1732,6 +1801,15 @@
       <sourceLocator
           rootFolder="${shillner.dev.ump.git.clone.location}"
           locateNestedProjects="true"/>
+      <sourceLocator
+          rootFolder="${shillner.dev.ujp.git.clone.location}"
+          locateNestedProjects="true"/>
+      <sourceLocator
+          rootFolder="${shillner.dev.scm.svn.git.clone.location}"
+          locateNestedProjects="true"/>
+      <sourceLocator
+          rootFolder="${shillner.dev.scm.git.git.clone.location}"
+          locateNestedProjects="true"/>
     </setupTask>
     <description>Groups all git-related actions.</description>
   </setupTask>
@@ -1739,18 +1817,28 @@
       xsi:type="setup.workingsets:WorkingSetTask"
       id="shillner.dev.ump.workingsets">
     <workingSet
-        name="Unleash-Plugin"
-        id="shillner.dev.ump.workingsets.unleash-plugin">
+        name="Maven Plugin"
+        id="shillner.dev.ump.workingsets.maven-plugin">
       <predicate
-          xsi:type="predicates:RepositoryPredicate"
-          project="unleash-maven-plugin-parent"/>
+          xsi:type="predicates:LocationPredicate"
+          pattern="${shillner.dev.ump.git.clone.location}/**"/>
+    </workingSet>
+    <workingSet
+        name="Jenkins Plugin"
+        id="shillner.dev.ump.workingsets.jenkins-plugin">
+      <predicate
+          xsi:type="predicates:LocationPredicate"
+          pattern="${shillner.dev.ujp.git.clone.location}/**"/>
     </workingSet>
     <workingSet
         name="Unleash-SCM-Providers"
         id="shillner.dev.ump.workingsets.unleash-scm-providers">
       <predicate
-          xsi:type="predicates:NamePredicate"
-          pattern="unleash-scm-provider-*"/>
+          xsi:type="predicates:LocationPredicate"
+          pattern="${shillner.dev.scm.svn.git.clone.location}/**"/>
+      <predicate
+          xsi:type="predicates:LocationPredicate"
+          pattern="${shillner.dev.scm.git.git.clone.location}/**"/>
     </workingSet>
     <description>The dynamic working sets for ${scope.project.label}</description>
   </setupTask>
