@@ -90,11 +90,7 @@ public class PomUtilTest {
 
       @Override
       public boolean matches(Object item) {
-        if (item instanceof Exception) {
-          Throwable cause = ((Exception) item).getCause();
-          return cause instanceof SAXParseException;
-        }
-        return false;
+        return item instanceof SAXParseException;
       }
 
       @Override

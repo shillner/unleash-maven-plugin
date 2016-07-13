@@ -19,6 +19,14 @@ import com.itemis.maven.plugins.unleash.scm.merge.MergeClient;
 import com.itemis.maven.plugins.unleash.util.MavenVersionUtil;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 
+/**
+ * An implementation of the {@link MergeClient} used while committing changes during the release process.<br>
+ * This merge client is only able to merge versions and parent versions if conflicting POM files. This is sufficient at
+ * this point as in the release process other conflicts should not arise.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
+ */
 public class ScmPomVersionsMergeClient implements MergeClient {
 
   @Override

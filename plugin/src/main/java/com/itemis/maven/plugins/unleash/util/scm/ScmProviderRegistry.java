@@ -18,26 +18,29 @@ import com.google.common.base.Optional;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 import com.itemis.maven.plugins.unleash.scm.annotations.ScmProviderTypeLiteral;
 
+/**
+ * A singleton registry determining the correct {@link ScmProvider} implementation which is derived from the
+ * {@link MavenProject} on which the release is started.<br>
+ * The provider can be retrieved using {@link #getProvider()} and will be initialized previously.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
+ */
 @Singleton
 public class ScmProviderRegistry {
   @Inject
   private com.itemis.maven.plugins.cdi.logging.Logger log;
-
   @Inject
   @Any
   private Instance<ScmProvider> providers;
-
   @Inject
   private MavenProject project;
-
   @Inject
   @Named("scmUsername")
   private String scmUsername;
-
   @Inject
   @Named("scmPassword")
   private String scmPassword;
-
   private String scmProviderName;
   private ScmProvider provider;
 

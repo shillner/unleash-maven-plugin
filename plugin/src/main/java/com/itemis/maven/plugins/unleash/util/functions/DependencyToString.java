@@ -4,6 +4,12 @@ import org.apache.maven.model.Dependency;
 
 import com.google.common.base.Function;
 
+/**
+ * A function to convert a {@link Dependency} to its String representation in coordinates format.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
+ */
 public enum DependencyToString implements Function<Dependency, String> {
   INSTANCE;
 

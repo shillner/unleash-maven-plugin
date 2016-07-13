@@ -5,6 +5,13 @@ import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 
 import com.google.common.base.Function;
 
+/**
+ * A function to convert an {@link org.eclipse.aether.artifact.Artifact} to an
+ * {@link org.apache.maven.artifact.Artifact}.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
+ */
 public enum AetherToMavenArtifact
     implements Function<org.eclipse.aether.artifact.Artifact, org.apache.maven.artifact.Artifact> {
   INSTANCE;

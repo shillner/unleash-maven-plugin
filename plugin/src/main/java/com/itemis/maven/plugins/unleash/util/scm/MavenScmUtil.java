@@ -6,11 +6,24 @@ import org.apache.maven.project.MavenProject;
 
 import com.google.common.base.Optional;
 
+/**
+ * Provides utility methods for SCM provider access.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 1.0.0
+ */
 public class MavenScmUtil {
   private MavenScmUtil() {
     // no instanciation of this utility class!
   }
 
+  /**
+   * Derives the name of the required SCM provider from the given Maven project by analyzing the scm connection strings
+   * of the project.
+   * 
+   * @param project the project from which the SCM provider is retrieved.
+   * @return the name of the required SCM provider.
+   */
   public static Optional<String> calcProviderName(MavenProject project) {
     String providerName = null;
 
