@@ -1709,7 +1709,7 @@
     <setupTask
         xsi:type="git:GitCloneTask"
         id="shillner.dev.ump.git.clone"
-        location="${installation.location/maven-plugin}"
+        location="${installation.location/repos/maven-plugin}"
         remoteURI="shillner/unleash-maven-plugin"
         pushURI="">
       <annotation
@@ -1732,7 +1732,7 @@
     <setupTask
         xsi:type="git:GitCloneTask"
         id="shillner.dev.ujp.git.clone"
-        location="${installation.location/jenkins-plugin}"
+        location="${installation.location/repos/jenkins-plugin}"
         remoteURI="shillner/unleash-jenkins-plugin"
         pushURI="">
       <annotation
@@ -1755,7 +1755,7 @@
     <setupTask
         xsi:type="git:GitCloneTask"
         id="shillner.dev.scm.svn.git.clone"
-        location="${installation.location/scm-providers/svn}"
+        location="${installation.location/repos/scm-providers/svn}"
         remoteURI="shillner/unleash-scm-provider-svn"
         pushURI="">
       <annotation
@@ -1778,7 +1778,7 @@
     <setupTask
         xsi:type="git:GitCloneTask"
         id="shillner.dev.scm.git.git.clone"
-        location="${installation.location/scm-providers/git}"
+        location="${installation.location/repos/scm-providers/git}"
         remoteURI="shillner/unleash-scm-provider-git"
         pushURI="">
       <annotation
@@ -1799,6 +1799,52 @@
       <description>SCM Provider Git</description>
     </setupTask>
     <setupTask
+        xsi:type="git:GitCloneTask"
+        id="shillner.dev.cdi.utils.git.clone"
+        location="${installation.location/repos/cdi-plugin-utils}"
+        remoteURI="shillner/maven-cdi-plugin-utils"
+        pushURI="">
+      <annotation
+          source="http://www.eclipse.org/oomph/setup/InducedChoices">
+        <detail
+            key="inherit">
+          <value>github.remoteURIs</value>
+        </detail>
+        <detail
+            key="label">
+          <value>CDI Plugin Utils Github repository</value>
+        </detail>
+        <detail
+            key="target">
+          <value>remoteURI</value>
+        </detail>
+      </annotation>
+      <description>CDI Plugin Utils</description>
+    </setupTask>
+    <setupTask
+        xsi:type="git:GitCloneTask"
+        id="shillner.dev.cdi.hooks.git.clone"
+        location="${installation.location/repos/cdi-plugin-hooks}"
+        remoteURI="shillner/maven-cdi-plugin-hooks"
+        pushURI="">
+      <annotation
+          source="http://www.eclipse.org/oomph/setup/InducedChoices">
+        <detail
+            key="inherit">
+          <value>github.remoteURIs</value>
+        </detail>
+        <detail
+            key="label">
+          <value>CDI Plugin Hooks Github repository</value>
+        </detail>
+        <detail
+            key="target">
+          <value>remoteURI</value>
+        </detail>
+      </annotation>
+      <description>CDI Plugin Hooks</description>
+    </setupTask>
+    <setupTask
         xsi:type="maven:MavenImportTask"
         id="shillner.dev.ump.git.import-projects"
         projectNameTemplate="">
@@ -1813,6 +1859,12 @@
           locateNestedProjects="true"/>
       <sourceLocator
           rootFolder="${shillner.dev.scm.git.git.clone.location}"
+          locateNestedProjects="true"/>
+      <sourceLocator
+          rootFolder="${shillner.dev.cdi.utils.git.clone.location}"
+          locateNestedProjects="true"/>
+      <sourceLocator
+          rootFolder="${shillner.dev.cdi.hooks.git.clone.location}"
           locateNestedProjects="true"/>
     </setupTask>
     <description>Groups all git-related actions.</description>
@@ -1845,6 +1897,19 @@
         <operand
             xsi:type="predicates:RepositoryPredicate"
             project="unleash-scm-provider-git"/>
+      </predicate>
+    </workingSet>
+    <workingSet
+        name="CDI"
+        id="shillner.dev.ump.workingsets.cdi">
+      <predicate
+          xsi:type="predicates:OrPredicate">
+        <operand
+            xsi:type="predicates:RepositoryPredicate"
+            project="cdi-plugin-hooks"/>
+        <operand
+            xsi:type="predicates:RepositoryPredicate"
+            project="cdi-plugin-utils"/>
       </predicate>
     </workingSet>
     <description>The dynamic working sets for ${scope.project.label}</description>
@@ -1955,6 +2020,45 @@
         password="${github.user.password}">
       <query
           summary="Git [all open issues]">
+        <attribute
+            key="state"
+            value="open::"/>
+      </query>
+      <description>All Mylyn Queries</description>
+    </setupTask>
+    <setupTask
+        xsi:type="mylyn:MylynQueriesTask"
+        id="shillner.dev.cdi.utils.mylyn.queries"
+        connectorKind="github"
+        repositoryURL="https://github.com/shillner/maven-cdi-plugin-utils"
+        userID="${github.user.id}"
+        password="${github.user.password}">
+      <query
+          summary="CDI-Utils [all open issues]">
+        <attribute
+            key="state"
+            value="open::"/>
+      </query>
+      <query
+          summary="CDI-Utils [all open bugs]">
+        <attribute
+            key="state"
+            value="open::"/>
+        <attribute
+            key="label"
+            value="bug"/>
+      </query>
+      <description>All Mylyn Queries</description>
+    </setupTask>
+    <setupTask
+        xsi:type="mylyn:MylynQueriesTask"
+        id="shillner.dev.cdi.hooks.mylyn.queries"
+        connectorKind="github"
+        repositoryURL="https://github.com/shillner/maven-cdi-plugin-hooks"
+        userID="${github.user.id}"
+        password="${github.user.password}">
+      <query
+          summary="CDI-Hooks [all open issues]">
         <attribute
             key="state"
             value="open::"/>
