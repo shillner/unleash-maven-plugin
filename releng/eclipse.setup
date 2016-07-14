@@ -1707,6 +1707,46 @@
       id="shillner.dev.ump.git"
       name="Git">
     <setupTask
+        xsi:type="setup:VariableTask"
+        id="shillner.dev.cdi.utils.git.branch"
+        name="cdi-utils.branch"
+        defaultValue="master"
+        label="CDI Utils Branch">
+      <description>The name of the branch to be checked out when cloning maven-cdi-plugin-utils</description>
+    </setupTask>
+    <setupTask
+        xsi:type="setup:VariableTask"
+        id="shillner.dev.cdi.hooks.git.branch"
+        name="cdi-hooks.branch"
+        defaultValue="master"
+        label="CDI Hooks Branch">
+      <description>The name of the branch to be checked out when cloning maven-cdi-plugin-hooks</description>
+    </setupTask>
+    <setupTask
+        xsi:type="setup:VariableTask"
+        id="shillner.dev.scm.svn.git.branch"
+        name="scm-svn.branch"
+        defaultValue="master"
+        label="SCM Provider SVN Branch">
+      <description>The name of the branch to be checked out when cloning the SCM provider for SVN</description>
+    </setupTask>
+    <setupTask
+        xsi:type="setup:VariableTask"
+        id="shillner.dev.scm.git.git.branch"
+        name="scm-git.branch"
+        defaultValue="master"
+        label="SCM Provider Git Branch">
+      <description>The name of the branch to be checked out when cloning the SCM provider for Git</description>
+    </setupTask>
+    <setupTask
+        xsi:type="setup:VariableTask"
+        id="shillner.dev.ujp.git.branch"
+        name="ujp.branch"
+        defaultValue="master"
+        label="Jenkins Plugin Branch">
+      <description>The name of the branch to be checked out when cloning the Jenkins plugin</description>
+    </setupTask>
+    <setupTask
         xsi:type="git:GitCloneTask"
         id="shillner.dev.ump.git.clone"
         location="${installation.location/repos/maven-plugin}"
@@ -1734,7 +1774,8 @@
         id="shillner.dev.ujp.git.clone"
         location="${installation.location/repos/jenkins-plugin}"
         remoteURI="shillner/unleash-jenkins-plugin"
-        pushURI="">
+        pushURI=""
+        checkoutBranch="${ujp.branch}">
       <annotation
           source="http://www.eclipse.org/oomph/setup/InducedChoices">
         <detail
@@ -1757,7 +1798,8 @@
         id="shillner.dev.scm.svn.git.clone"
         location="${installation.location/repos/scm-providers/svn}"
         remoteURI="shillner/unleash-scm-provider-svn"
-        pushURI="">
+        pushURI=""
+        checkoutBranch="${scm-svn.branch}">
       <annotation
           source="http://www.eclipse.org/oomph/setup/InducedChoices">
         <detail
@@ -1780,7 +1822,8 @@
         id="shillner.dev.scm.git.git.clone"
         location="${installation.location/repos/scm-providers/git}"
         remoteURI="shillner/unleash-scm-provider-git"
-        pushURI="">
+        pushURI=""
+        checkoutBranch="${scm-git.branch}">
       <annotation
           source="http://www.eclipse.org/oomph/setup/InducedChoices">
         <detail
@@ -1803,7 +1846,8 @@
         id="shillner.dev.cdi.utils.git.clone"
         location="${installation.location/repos/cdi-plugin-utils}"
         remoteURI="shillner/maven-cdi-plugin-utils"
-        pushURI="">
+        pushURI=""
+        checkoutBranch="${cdi-utils.branch}">
       <annotation
           source="http://www.eclipse.org/oomph/setup/InducedChoices">
         <detail
@@ -1826,7 +1870,8 @@
         id="shillner.dev.cdi.hooks.git.clone"
         location="${installation.location/repos/cdi-plugin-hooks}"
         remoteURI="shillner/maven-cdi-plugin-hooks"
-        pushURI="">
+        pushURI=""
+        checkoutBranch="${cdi-hooks.branch}">
       <annotation
           source="http://www.eclipse.org/oomph/setup/InducedChoices">
         <detail
@@ -1943,6 +1988,18 @@
         launcher="build_scm-provider-git [clean install]">
       <description>Initially builds the scm provider for Git for a clean development environment.</description>
     </setupTask>
+    <setupTask
+        xsi:type="launching:LaunchTask"
+        id="shillner.dev.cdi.utils.launch.build"
+        launcher="build_cdi-utils [clean install]">
+      <description>Initially builds the CDI utils for a clean development environment.</description>
+    </setupTask>
+    <setupTask
+        xsi:type="launching:LaunchTask"
+        id="shillner.dev.cdi.hooks.launch.build"
+        launcher="build_cdi-hooks [clean install]">
+      <description>Initially builds the CDI hooks for a clean development environment.</description>
+    </setupTask>
   </setupTask>
   <setupTask
       xsi:type="setup:CompoundTask"
@@ -1961,15 +2018,6 @@
             key="state"
             value="open::"/>
       </query>
-      <query
-          summary="Maven-Plugin [all open bugs]">
-        <attribute
-            key="state"
-            value="open::"/>
-        <attribute
-            key="label"
-            value="bug"/>
-      </query>
       <description>All Mylyn Queries</description>
     </setupTask>
     <setupTask
@@ -1984,15 +2032,6 @@
         <attribute
             key="state"
             value="open::"/>
-      </query>
-      <query
-          summary="Jenkins-Plugin [all open bugs]">
-        <attribute
-            key="state"
-            value="open::"/>
-        <attribute
-            key="label"
-            value="bug"/>
       </query>
       <description>All Mylyn Queries</description>
     </setupTask>
@@ -2038,15 +2077,6 @@
         <attribute
             key="state"
             value="open::"/>
-      </query>
-      <query
-          summary="CDI-Utils [all open bugs]">
-        <attribute
-            key="state"
-            value="open::"/>
-        <attribute
-            key="label"
-            value="bug"/>
       </query>
       <description>All Mylyn Queries</description>
     </setupTask>
