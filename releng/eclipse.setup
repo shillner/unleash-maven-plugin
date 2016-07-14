@@ -1635,6 +1635,10 @@
           value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?>&lt;templates>&lt;template autoinsert=&quot;false&quot; context=&quot;gettercomment_context&quot; deleted=&quot;false&quot; description=&quot;Comment for getter method&quot; enabled=&quot;true&quot; id=&quot;org.eclipse.jdt.ui.text.codetemplates.gettercomment&quot; name=&quot;gettercomment&quot;>/**&#xA; * @return &#xA; */&lt;/template>&#xA;&lt;template autoinsert=&quot;false&quot; context=&quot;settercomment_context&quot; deleted=&quot;false&quot; description=&quot;Comment for setter method&quot; enabled=&quot;true&quot; id=&quot;org.eclipse.jdt.ui.text.codetemplates.settercomment&quot; name=&quot;settercomment&quot;>/**&#xA; * @param $${param} &#xA; */&lt;/template>&#xA;&lt;template autoinsert=&quot;false&quot; context=&quot;typecomment_context&quot; deleted=&quot;false&quot; description=&quot;Comment for created types&quot; enabled=&quot;true&quot; id=&quot;org.eclipse.jdt.ui.text.codetemplates.typecomment&quot; name=&quot;typecomment&quot;>/**&#xA; *&#xA; * @author &amp;lt;a href=&quot;mailto:stanley.hillner@itemis.de&quot;&amp;gt;Stanley Hillner&amp;lt;/a&amp;gt;&#xA; *&#xA; * $${tags}&#xA; */&lt;/template>&lt;/templates>"/>
       <setupTask
           xsi:type="setup:PreferenceTask"
+          key="/instance/org.eclipse.jdt.ui/org.eclipse.jdt.ui.text.custom_templates"
+          value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?>&lt;templates>&lt;template autoinsert=&quot;true&quot; context=&quot;javadoc&quot; deleted=&quot;true&quot; description=&quot;&amp;lt;code&amp;gt;&amp;lt;/code&amp;gt;&quot; enabled=&quot;true&quot; id=&quot;org.eclipse.jdt.ui.templates.code_tag&quot; name=&quot;&amp;lt;code&amp;gt;&quot;>&amp;lt;code&amp;gt;$${word_selection}${}&amp;lt;/code&amp;gt;$${cursor}&lt;/template>&lt;template autoinsert=&quot;true&quot; context=&quot;javadoc&quot; deleted=&quot;false&quot; description=&quot;{@code null}&quot; enabled=&quot;true&quot; id=&quot;org.eclipse.jdt.ui.templates.code_tag_null&quot; name=&quot;null&quot;>{@code null}&lt;/template>&lt;template autoinsert=&quot;true&quot; context=&quot;javadoc&quot; deleted=&quot;false&quot; description=&quot;{@code true}&quot; enabled=&quot;true&quot; id=&quot;org.eclipse.jdt.ui.templates.code_tag_true&quot; name=&quot;true&quot;>{@code true}&lt;/template>&lt;template autoinsert=&quot;true&quot; context=&quot;javadoc&quot; deleted=&quot;false&quot; description=&quot;{@code false}&quot; enabled=&quot;true&quot; id=&quot;org.eclipse.jdt.ui.templates.code_tag_false&quot; name=&quot;false&quot;>{@code false}&lt;/template>&lt;template autoinsert=&quot;true&quot; context=&quot;javadoc&quot; deleted=&quot;false&quot; description=&quot;{@code}&quot; enabled=&quot;true&quot; name=&quot;code&quot;>{@code $${word_selection}$${cursor}}&lt;/template>&lt;/templates>"/>
+      <setupTask
+          xsi:type="setup:PreferenceTask"
           key="/instance/org.eclipse.jdt.ui/Refactoring.savealleditors"
           value="true"/>
       <setupTask
@@ -1820,25 +1824,28 @@
         name="Maven Plugin"
         id="shillner.dev.ump.workingsets.maven-plugin">
       <predicate
-          xsi:type="predicates:LocationPredicate"
-          pattern="${shillner.dev.ump.git.clone.location}/**"/>
+          xsi:type="predicates:RepositoryPredicate"
+          project="unleash-parent"/>
     </workingSet>
     <workingSet
         name="Jenkins Plugin"
         id="shillner.dev.ump.workingsets.jenkins-plugin">
       <predicate
-          xsi:type="predicates:LocationPredicate"
-          pattern="${shillner.dev.ujp.git.clone.location}/**"/>
+          xsi:type="predicates:RepositoryPredicate"
+          project="unleash"/>
     </workingSet>
     <workingSet
         name="Unleash-SCM-Providers"
         id="shillner.dev.ump.workingsets.unleash-scm-providers">
       <predicate
-          xsi:type="predicates:LocationPredicate"
-          pattern="${shillner.dev.scm.svn.git.clone.location}/**"/>
-      <predicate
-          xsi:type="predicates:LocationPredicate"
-          pattern="${shillner.dev.scm.git.git.clone.location}/**"/>
+          xsi:type="predicates:OrPredicate">
+        <operand
+            xsi:type="predicates:RepositoryPredicate"
+            project="unleash-scm-provider-svn"/>
+        <operand
+            xsi:type="predicates:RepositoryPredicate"
+            project="unleash-scm-provider-git"/>
+      </predicate>
     </workingSet>
     <description>The dynamic working sets for ${scope.project.label}</description>
   </setupTask>
@@ -1849,9 +1856,27 @@
       name="Launch Configurations">
     <setupTask
         xsi:type="launching:LaunchTask"
-        id="shillner.dev.ump.launch.build-ump"
-        launcher="build-plugin">
+        id="shillner.dev.ump.launch.build"
+        launcher="build_maven-plugin [clean install]">
       <description>Initially builds the unleash-maven-plugin for a clean development environment.</description>
+    </setupTask>
+    <setupTask
+        xsi:type="launching:LaunchTask"
+        id="shillner.dev.ujp.launch.build"
+        launcher="build_jenkins-plugin [clean install]">
+      <description>Initially builds the unleash-jenkins-plugin for a clean development environment.</description>
+    </setupTask>
+    <setupTask
+        xsi:type="launching:LaunchTask"
+        id="shillner.dev.scm.svn.launch.build"
+        launcher="build_scm-provider-svn [clean install]">
+      <description>Initially builds the scm provider for SVN for a clean development environment.</description>
+    </setupTask>
+    <setupTask
+        xsi:type="launching:LaunchTask"
+        id="shillner.dev.scm.git.launch.build"
+        launcher="build_scm-provider-git [clean install]">
+      <description>Initially builds the scm provider for Git for a clean development environment.</description>
     </setupTask>
   </setupTask>
   <setupTask
@@ -1866,19 +1891,73 @@
         userID="${github.user.id}"
         password="${github.user.password}">
       <query
-          summary="${scope.project.label} - all open issues">
+          summary="Maven-Plugin [all open issues]">
         <attribute
             key="state"
             value="open::"/>
       </query>
       <query
-          summary="${scope.project.label} - all open bugs">
+          summary="Maven-Plugin [all open bugs]">
         <attribute
             key="state"
             value="open::"/>
         <attribute
             key="label"
             value="bug"/>
+      </query>
+      <description>All Mylyn Queries</description>
+    </setupTask>
+    <setupTask
+        xsi:type="mylyn:MylynQueriesTask"
+        id="shillner.dev.ujp.mylyn.queries"
+        connectorKind="github"
+        repositoryURL="https://github.com/shillner/unleash-jenkins-plugin"
+        userID="${github.user.id}"
+        password="${github.user.password}">
+      <query
+          summary="Jenkins-Plugin [all open issues]">
+        <attribute
+            key="state"
+            value="open::"/>
+      </query>
+      <query
+          summary="Jenkins-Plugin [all open bugs]">
+        <attribute
+            key="state"
+            value="open::"/>
+        <attribute
+            key="label"
+            value="bug"/>
+      </query>
+      <description>All Mylyn Queries</description>
+    </setupTask>
+    <setupTask
+        xsi:type="mylyn:MylynQueriesTask"
+        id="shillner.dev.scm.svn.mylyn.queries"
+        connectorKind="github"
+        repositoryURL="https://github.com/shillner/unleash-scm-provider-svn"
+        userID="${github.user.id}"
+        password="${github.user.password}">
+      <query
+          summary="SVN [all open issues]">
+        <attribute
+            key="state"
+            value="open::"/>
+      </query>
+      <description>All Mylyn Queries</description>
+    </setupTask>
+    <setupTask
+        xsi:type="mylyn:MylynQueriesTask"
+        id="shillner.dev.scm.git.mylyn.queries"
+        connectorKind="github"
+        repositoryURL="https://github.com/shillner/unleash-scm-provider-git"
+        userID="${github.user.id}"
+        password="${github.user.password}">
+      <query
+          summary="Git [all open issues]">
+        <attribute
+            key="state"
+            value="open::"/>
       </query>
       <description>All Mylyn Queries</description>
     </setupTask>
