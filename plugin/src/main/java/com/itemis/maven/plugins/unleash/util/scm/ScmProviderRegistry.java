@@ -17,6 +17,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 import com.itemis.maven.plugins.unleash.scm.annotations.ScmProviderTypeLiteral;
+import com.itemis.maven.plugins.unleash.util.logging.JavaLoggerAdapter;
 
 /**
  * A singleton registry determining the correct {@link ScmProvider} implementation which is derived from the
@@ -64,7 +65,8 @@ public class ScmProviderRegistry {
       try {
         this.provider = this.providers.select(new ScmProviderTypeLiteral(this.scmProviderName)).get();
         checkProviderAPI();
-        this.provider.initialize(this.project.getBasedir(), Optional.<Logger> absent(),
+        this.provider.initialize(this.project.getBasedir(),
+            Optional.<Logger> of(new JavaLoggerAdapter(this.provider.getClass().getName(), this.log)),
             Optional.fromNullable(this.scmUsername), Optional.fromNullable(this.scmPassword));
       } catch (Throwable t) {
         throw new IllegalStateException("No SCM provider found for SCM with name " + this.scmProviderName

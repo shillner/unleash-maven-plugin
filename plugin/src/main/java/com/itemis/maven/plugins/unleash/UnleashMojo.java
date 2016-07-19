@@ -2,7 +2,6 @@ package com.itemis.maven.plugins.unleash;
 
 import java.util.List;
 
-import javax.enterprise.inject.spi.Extension;
 import javax.inject.Named;
 
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -48,7 +47,7 @@ import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
  * @since 1.0.0
  */
 @Mojo(name = "perform", aggregator = true, requiresProject = true)
-public class UnleashMojo extends AbstractCDIMojo implements Extension {
+public class UnleashMojo extends AbstractCDIMojo {
   @Component
   @MojoProduces
   private RepositorySystem repoSystem;
