@@ -38,7 +38,7 @@
     <setupTask
         xsi:type="setup:EclipseIniTask"
         id="shillner.dev.ump.ini.redirect-setup"
-        option="-Doomph.redirection.mppDev"
+        option="-Doomph.redirection.ump"
         value="=https://raw.githubusercontent.com/shillner/unleash-maven-plugin/master/releng/eclipse.setup->${shillner.dev.ump.git.clone.location|uri}/releng/eclipse.setup"
         vm="true">
       <description>Specifies a redirection for the setup file. This enables us to use the github URI to include the setup file in the eclipse installer but when locally editing the setup (opened through Navigate-Setup...) the changes are made in our local copy of the setup for committing them.</description>
