@@ -38,7 +38,7 @@ public class TagRequest {
   protected String preTagCommitMessage;
   private MergeStrategy mergeStrategy = MergeStrategy.DO_NOT_MERGE;
   private MergeClient mergeClient;
-  private boolean includeUnstagedFiles;
+  private boolean includeUntrackedFiles;
 
   private TagRequest() {
     // use builder!
@@ -88,8 +88,8 @@ public class TagRequest {
     return Optional.fromNullable(this.mergeClient);
   }
 
-  public boolean includeUnstagedFiles() {
-    return this.includeUnstagedFiles;
+  public boolean includeUntrackedFiles() {
+    return this.includeUntrackedFiles;
   }
 
   /**
@@ -242,13 +242,13 @@ public class TagRequest {
     }
 
     /**
-     * The SCM provider shall include all unstaged local files into the tag by adding them to version control
+     * The SCM provider shall include all untracked local files into the tag by adding them to version control
      * previously.
      *
      * @return the builder itself.
      */
-    public Builder includeUnstagedFiles() {
-      this.request.includeUnstagedFiles = true;
+    public Builder includeUntrackedFiles() {
+      this.request.includeUntrackedFiles = true;
       return this;
     }
 

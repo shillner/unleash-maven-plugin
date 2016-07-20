@@ -29,7 +29,7 @@ public class CommitRequest {
   private Set<String> pathsToCommit;
   private MergeStrategy mergeStrategy = MergeStrategy.DO_NOT_MERGE;
   private MergeClient mergeClient;
-  private boolean includeUnstagedFiles;
+  private boolean includeUntrackedFiles;
 
   private CommitRequest() {
     this.pathsToCommit = Sets.newHashSet();
@@ -64,8 +64,8 @@ public class CommitRequest {
     return Optional.fromNullable(this.mergeClient);
   }
 
-  public boolean includeUnstagedFiles() {
-    return this.includeUnstagedFiles;
+  public boolean includeUntrackedFiles() {
+    return this.includeUntrackedFiles;
   }
 
   /**
@@ -203,13 +203,13 @@ public class CommitRequest {
     }
 
     /**
-     * The SCM provider shall include all unstaged local files into the tag by adding them to version control
+     * The SCM provider shall include all untracked local files into the tag by adding them to version control
      * previously.
      *
      * @return the builder itself.
      */
-    public Builder includeUnstagedFiles() {
-      this.request.includeUnstagedFiles = true;
+    public Builder includeUntrackedFiles() {
+      this.request.includeUntrackedFiles = true;
       return this;
     }
 
