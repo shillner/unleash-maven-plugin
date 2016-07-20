@@ -29,6 +29,7 @@ public class CommitRequest {
   private Set<String> pathsToCommit;
   private MergeStrategy mergeStrategy = MergeStrategy.DO_NOT_MERGE;
   private MergeClient mergeClient;
+  private boolean includeUnstagedFiles;
 
   private CommitRequest() {
     this.pathsToCommit = Sets.newHashSet();
@@ -61,6 +62,10 @@ public class CommitRequest {
 
   public Optional<MergeClient> getMergeClient() {
     return Optional.fromNullable(this.mergeClient);
+  }
+
+  public boolean includeUnstagedFiles() {
+    return this.includeUnstagedFiles;
   }
 
   /**
@@ -194,6 +199,17 @@ public class CommitRequest {
      */
     public Builder mergeClient(MergeClient mergeClient) {
       this.request.mergeClient = mergeClient;
+      return this;
+    }
+
+    /**
+     * The SCM provider shall include all unstaged local files into the tag by adding them to version control
+     * previously.
+     *
+     * @return the builder itself.
+     */
+    public Builder includeUnstagedFiles() {
+      this.request.includeUnstagedFiles = true;
       return this;
     }
 
