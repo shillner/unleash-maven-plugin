@@ -1,2 +1,3 @@
-# Unleash Maven Plugin
-This plugin provides a generic alternative to the error-prone default release plugin provided by Maven. It is designed to require a minimal effort of work for releasing modules and being extensible to integrate in every project setup.
+Unleash Maven Plugin - More Efficient and Reliable Maven Releases
+=================================================================
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.itemis.maven.plugins/unleash-maven-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.itemis.maven.plugins/unleash-maven-plugin)
