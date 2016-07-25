@@ -79,7 +79,7 @@ public class CheckDependencyVersions implements CDIMojoProcessingStep {
       Collection<Dependency> snapshots = Collections2.filter(dependencyManagement.getDependencies(),
           IsSnapshotDependency.INSTANCE);
       HashSet<String> snapshotDependencies = Sets
-          .newHashSet(Collections2.transform(snapshots, DependencyToString.INSTANCE));
+          .newHashSet(Collections2.transform(snapshots, DependencyToString.NO_TYPE));
       filterMultiModuleDependencies(snapshotDependencies);
       return snapshotDependencies;
     }
@@ -90,7 +90,7 @@ public class CheckDependencyVersions implements CDIMojoProcessingStep {
     this.log.debug("\t\tChecking direct dependencies");
     Collection<Dependency> snapshots = Collections2.filter(project.getDependencies(), IsSnapshotDependency.INSTANCE);
     HashSet<String> snapshotDependencies = Sets
-        .newHashSet(Collections2.transform(snapshots, DependencyToString.INSTANCE));
+        .newHashSet(Collections2.transform(snapshots, DependencyToString.NO_TYPE));
     filterMultiModuleDependencies(snapshotDependencies);
     return snapshotDependencies;
   }
@@ -114,7 +114,7 @@ public class CheckDependencyVersions implements CDIMojoProcessingStep {
     if (dependencyManagement != null) {
       Collection<Dependency> snapshots = Collections2.filter(dependencyManagement.getDependencies(),
           IsSnapshotDependency.INSTANCE);
-      return Sets.newHashSet(Collections2.transform(snapshots, DependencyToString.INSTANCE));
+      return Sets.newHashSet(Collections2.transform(snapshots, DependencyToString.NO_TYPE));
     }
     return Collections.emptySet();
   }
@@ -122,12 +122,12 @@ public class CheckDependencyVersions implements CDIMojoProcessingStep {
   private Set<String> getSnapshots(Profile profile) {
     this.log.debug("\t\tChecking direct dependencies of profile '" + profile.getId() + "'");
     Collection<Dependency> snapshots = Collections2.filter(profile.getDependencies(), IsSnapshotDependency.INSTANCE);
-    return Sets.newHashSet(Collections2.transform(snapshots, DependencyToString.INSTANCE));
+    return Sets.newHashSet(Collections2.transform(snapshots, DependencyToString.NO_TYPE));
   }
 
   private void filterMultiModuleDependencies(Set<String> snapshotDependencies) {
     Collection<String> projectCoordinates = Collections2.transform(this.reactorProjects,
-        ProjectToString.INCLUDE_PACKAGING);
+        ProjectToString.INSTANCE);
     for (Iterator<String> i = snapshotDependencies.iterator(); i.hasNext();) {
       String dep = i.next();
       if (projectCoordinates.contains(dep)) {
