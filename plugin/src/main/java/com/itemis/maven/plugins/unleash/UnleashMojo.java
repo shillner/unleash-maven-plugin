@@ -19,6 +19,7 @@ import org.eclipse.aether.impl.Installer;
 import org.eclipse.aether.impl.RemoteRepositoryManager;
 import org.eclipse.aether.repository.RemoteRepository;
 
+import com.google.common.base.Strings;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.AbstractCDIMojo;
 import com.itemis.maven.plugins.cdi.annotations.MojoProduces;
@@ -64,8 +65,8 @@ public class UnleashMojo extends AbstractCDIMojo {
   @MojoProduces
   private Installer installer;
 
-  @MojoProduces
   @Component
+  @MojoProduces
   private Prompter prompter;
 
   @Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
@@ -100,63 +101,66 @@ public class UnleashMojo extends AbstractCDIMojo {
   @MojoProduces
   private Settings settings;
 
-  @Parameter(property = "unleash.developmentVersion")
-  @MojoProduces
-  @Named("developmentVersion")
-  private String developmentVersion;
-
-  @Parameter(property = "unleash.releaseVersion")
-  @MojoProduces
-  @Named("releaseVersion")
-  private String releaseVersion;
-
-  @Parameter(defaultValue = "true", property = "unleash.allowLocalReleaseArtifacts")
+  ////////////////////////////// configuration parameters //////////////////////////////
+  ////////////////////////////// required
+  @Parameter(defaultValue = "true", property = "unleash.allowLocalReleaseArtifacts", required = true)
   @MojoProduces
   @Named("allowLocalReleaseArtifacts")
   private boolean allowLocalReleaseArtifacts;
 
-  @Parameter(property = "unleash.profiles")
-  @MojoProduces
-  @Named("profiles")
-  private List<String> profiles;
-
-  @Parameter(defaultValue = "${maven.home}", property = "unleash.mavenHome")
-  @MojoProduces
-  @Named("maven.home")
-  private String mavenHome;
-
-  @Parameter(defaultValue = "@{project.version}", property = "unleash.tagNamePattern")
-  @MojoProduces
-  @Named("tagNamePattern")
-  private String tagNamePattern;
-
-  @Parameter(defaultValue = "false", property = "unleash.commitBeforeTagging")
+  @Parameter(defaultValue = "false", property = "unleash.commitBeforeTagging", required = true)
   @MojoProduces
   @Named("commitBeforeTagging")
   private boolean commitBeforeTagging;
 
-  @Parameter(defaultValue = "", property = "unleash.scmMessagePrefix")
+  @Parameter(defaultValue = "${maven.home}", property = "unleash.mavenHome", required = true)
+  @MojoProduces
+  @Named("maven.home")
+  private String mavenHome;
+
+  @Parameter(defaultValue = "@{project.version}", property = "unleash.tagNamePattern", required = true)
+  @MojoProduces
+  @Named("tagNamePattern")
+  private String tagNamePattern;
+
+  //////////////////////////// optional
+  @Parameter(property = "unleash.developmentVersion", required = false)
+  @MojoProduces
+  @Named("developmentVersion")
+  private String developmentVersion;
+
+  @Parameter(property = "unleash.profiles", required = false)
+  @MojoProduces
+  @Named("profiles")
+  private List<String> profiles;
+
+  @Parameter(defaultValue = "", property = "unleash.releaseArgs", required = false)
+  @MojoProduces
+  @Named("releaseArgs")
+  private String releaseArgs;
+
+  @Parameter(property = "unleash.releaseVersion", required = false)
+  @MojoProduces
+  @Named("releaseVersion")
+  private String releaseVersion;
+
+  @Parameter(defaultValue = "[unleash-maven-plugin]", property = "unleash.scmMessagePrefix", required = false)
   private String scmMessagePrefix;
+
+  @MojoProduces
+  @Named("scmPassword")
+  @Parameter(property = "unleash.scmPassword", required = false)
+  private String scmPassword;
+
+  @MojoProduces
+  @Named("scmUsername")
+  @Parameter(property = "unleash.scmUsername", required = false)
+  private String scmUsername;
 
   @MojoProduces
   @Named("artifactSpyPlugin")
   private ArtifactCoordinates artifactSpyPluginCoordinates = new ArtifactCoordinates("com.itemis.maven.plugins",
       "artifact-spy-plugin", "1.0.3", "maven-plugin");
-
-  @MojoProduces
-  @Named("scmUsername")
-  @Parameter(property = "unleash.scmUsername")
-  private String scmUsername;
-
-  @MojoProduces
-  @Named("scmPassword")
-  @Parameter(property = "unleash.scmPassword")
-  private String scmPassword;
-
-  @Parameter(defaultValue = "", property = "unleash.releaseArgs")
-  @MojoProduces
-  @Named("releaseArgs")
-  private String releaseArgs;
 
   @MojoProduces
   private PluginDescriptor getPluginDescriptor() {
@@ -169,6 +173,6 @@ public class UnleashMojo extends AbstractCDIMojo {
     if (this.scmMessagePrefix != null && !this.scmMessagePrefix.endsWith(" ")) {
       this.scmMessagePrefix = this.scmMessagePrefix + " ";
     }
-    return this.scmMessagePrefix;
+    return Strings.nullToEmpty(this.scmMessagePrefix);
   }
 }
