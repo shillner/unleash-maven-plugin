@@ -99,11 +99,13 @@
       <requirement
           name="org.eclipse.mylyn.github.feature.feature.group"/>
       <requirement
-          name="com.tasktop.client.pro.feature.group"/>
+          name="com.atlassian.connector.eclipse.jira.feature.group"/>
       <repository
           url="http://download.eclipse.org/releases/luna"/>
       <repository
           url="http://download.eclipse.org/egit/updates"/>
+      <repository
+          url="http://update.atlassian.com/atlassian-eclipse-plugin/rest/e3.7"/>
       <description>Task and build connector</description>
     </setupTask>
     <description>Groups all plugin and feature installations.</description>
@@ -2008,6 +2010,21 @@
       id="shillner.dev.ump.mylyn"
       name="Mylyn">
     <setupTask
+        xsi:type="setup:VariableTask"
+        id="shillner.dev.jenkinsci.user.id"
+        name="jenkinsci.user.id"
+        label="JenkinsCI Username">
+      <description>The username for the jenkinsCI issue tracker</description>
+    </setupTask>
+    <setupTask
+        xsi:type="setup:VariableTask"
+        id="shillner.dev.jenkinsci.user.password"
+        type="PASSWORD"
+        name="jenkinsci.user.password"
+        label="JenkinsCI Password">
+      <description>The password for the jenkinsCI issue tracker</description>
+    </setupTask>
+    <setupTask
         xsi:type="mylyn:MylynQueriesTask"
         id="shillner.dev.ump.mylyn.queries"
         connectorKind="github"
@@ -2026,15 +2043,19 @@
         xsi:type="mylyn:MylynQueriesTask"
         id="shillner.dev.ujp.mylyn.queries"
         disabled="true"
-        connectorKind="github"
-        repositoryURL="https://github.com/jenkinsci/unleash-plugin"
-        userID="${github.user.id}"
-        password="${github.user.password}">
+        connectorKind="jira"
+        repositoryURL="https://issues.jenkins-ci.org"
+        userID="${jenkinsci.user.id}"
+        password="${jenkinsci.user.password}">
       <query
-          summary="Jenkins-Plugin [all open issues]">
+          summary="Jenkins-Plugin [all open issues]"
+          url="https://issues.jenkins-ci.org/issues/?jql=project+in+%28%22JENKINS%22%29+AND+component+in+%2821681%29+">
         <attribute
-            key="state"
-            value="open::"/>
+            key="FilterCustomUrl"
+            value="https://issues.jenkins-ci.org/secure/IssueNavigator.jspa?mode=hide&amp;amp;reset=true&amp;amp;pid=10172&amp;amp;component=21681&amp;amp;query=&amp;amp;summary=true&amp;amp;description=true"/>
+        <attribute
+            key="FilterCustomJqlUrl"
+            value="https://issues.jenkins-ci.org/issues/?jql=project+in+%28%22JENKINS%22%29+AND+component+in+%2821681%29+"/>
       </query>
       <description>All Mylyn Queries</description>
     </setupTask>
