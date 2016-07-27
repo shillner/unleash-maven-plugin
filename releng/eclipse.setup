@@ -1773,7 +1773,7 @@
         xsi:type="git:GitCloneTask"
         id="shillner.dev.ujp.git.clone"
         location="${installation.location/repos/jenkins-plugin}"
-        remoteURI="shillner/unleash-jenkins-plugin"
+        remoteURI="jenkinsci/unleash-plugin"
         pushURI=""
         checkoutBranch="${ujp.branch}">
       <annotation
