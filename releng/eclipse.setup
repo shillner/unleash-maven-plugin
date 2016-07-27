@@ -2024,7 +2024,7 @@
         xsi:type="mylyn:MylynQueriesTask"
         id="shillner.dev.ujp.mylyn.queries"
         connectorKind="github"
-        repositoryURL="https://github.com/shillner/unleash-jenkins-plugin"
+        repositoryURL="https://github.com/jenkinsci/unleash-plugin"
         userID="${github.user.id}"
         password="${github.user.password}">
       <query
