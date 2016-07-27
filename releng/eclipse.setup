@@ -98,6 +98,8 @@
           name="org.eclipse.mylyn.java_feature.feature.group"/>
       <requirement
           name="org.eclipse.mylyn.github.feature.feature.group"/>
+      <requirement
+          name="com.tasktop.client.pro.feature.group"/>
       <repository
           url="http://download.eclipse.org/releases/luna"/>
       <repository
@@ -2023,6 +2025,7 @@
     <setupTask
         xsi:type="mylyn:MylynQueriesTask"
         id="shillner.dev.ujp.mylyn.queries"
+        disabled="true"
         connectorKind="github"
         repositoryURL="https://github.com/jenkinsci/unleash-plugin"
         userID="${github.user.id}"
