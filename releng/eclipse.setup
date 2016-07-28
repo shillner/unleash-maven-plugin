@@ -2042,20 +2042,19 @@
     <setupTask
         xsi:type="mylyn:MylynQueriesTask"
         id="shillner.dev.ujp.mylyn.queries"
-        disabled="true"
         connectorKind="jira"
         repositoryURL="https://issues.jenkins-ci.org"
         userID="${jenkinsci.user.id}"
         password="${jenkinsci.user.password}">
       <query
           summary="Jenkins-Plugin [all open issues]"
-          url="https://issues.jenkins-ci.org/issues/?jql=project+in+%28%22JENKINS%22%29+AND+component+in+%2821681%29+">
+          url="https://issues.jenkins-ci.org/issues/?jql=project+in+%28%22JENKINS%22%29+AND+component+in+%2821681%29+AND+status+in+%281%2C3%2C4%29+">
         <attribute
             key="FilterCustomUrl"
-            value="https://issues.jenkins-ci.org/secure/IssueNavigator.jspa?mode=hide&amp;amp;reset=true&amp;amp;pid=10172&amp;amp;component=21681&amp;amp;query=&amp;amp;summary=true&amp;amp;description=true"/>
+            value="https://issues.jenkins-ci.org/secure/IssueNavigator.jspa?mode=hide&amp;reset=true&amp;pid=10172&amp;component=21681&amp;status=1&amp;status=3&amp;status=4&amp;query=&amp;summary=true&amp;description=true"/>
         <attribute
             key="FilterCustomJqlUrl"
-            value="https://issues.jenkins-ci.org/issues/?jql=project+in+%28%22JENKINS%22%29+AND+component+in+%2821681%29+"/>
+            value="https://issues.jenkins-ci.org/issues/?jql=project+in+%28%22JENKINS%22%29+AND+component+in+%2821681%29+AND+status+in+%281%2C3%2C4%29+"/>
       </query>
       <description>All Mylyn Queries</description>
     </setupTask>
