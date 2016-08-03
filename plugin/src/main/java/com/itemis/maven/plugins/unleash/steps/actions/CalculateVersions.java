@@ -56,7 +56,7 @@ public class CalculateVersions implements CDIMojoProcessingStep {
     this.log.info("Calculating required versions for all modules.");
 
     for (MavenProject project : this.reactorProjects) {
-      this.log.debug("\tVersions of module " + ProjectToString.INSTANCE.apply(project) + ":");
+      this.log.info("\tVersions of module " + ProjectToString.INSTANCE.apply(project) + ":");
 
       ArtifactCoordinates preReleaseCoordinates = this.metadata
           .getArtifactCoordinatesByPhase(project.getGroupId(), project.getArtifactId()).get(ReleasePhase.PRE_RELEASE);

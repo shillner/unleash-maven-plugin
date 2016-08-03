@@ -8,12 +8,10 @@ import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.model.Parent;
-import org.apache.maven.model.Scm;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 
 import com.google.common.collect.Maps;
 import com.itemis.maven.aether.ArtifactCoordinates;
@@ -25,11 +23,9 @@ import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
-import com.itemis.maven.plugins.unleash.scm.requests.CommitRequest;
-import com.itemis.maven.plugins.unleash.scm.requests.CommitRequest.Builder;
 import com.itemis.maven.plugins.unleash.scm.requests.RevertCommitsRequest;
+import com.itemis.maven.plugins.unleash.util.DevVersionUtil;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
-import com.itemis.maven.plugins.unleash.util.functions.FileToRelativePath;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToCoordinates;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 import com.itemis.maven.plugins.unleash.util.scm.ScmPomVersionsMergeClient;
@@ -58,6 +54,8 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
   @Inject
   @Named("scmMessagePrefix")
   private String scmMessagePrefix;
+  @Inject
+  private DevVersionUtil util;
   private ScmProvider scmProvider;
   private Map<ArtifactCoordinates, Document> cachedPOMs;
 
@@ -76,14 +74,14 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
         Document document = PomUtil.parsePOM(project);
         setProjectVersion(project, document);
         setParentVersion(project, document);
-        revertScmSettings(project, document);
+        this.util.revertScmSettings(project, document);
         PomUtil.writePOM(document, project);
       } catch (Throwable t) {
         throw new MojoFailureException("Could not update versions for next development cycle.", t);
       }
     }
 
-    commitChanges();
+    this.util.commitChanges(true);
   }
 
   private void setProjectVersion(MavenProject project, Document document) {
@@ -114,56 +112,6 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
     }
   }
 
-  private void revertScmSettings(MavenProject project, Document document) {
-    Scm scm = this.metadata.getCachedScmSettings(project);
-    if (scm != null) {
-      this.log.debug("\t\tReversion of SCM connection tags");
-      Node scmNode = PomUtil.getOrCreateScmNode(document, false);
-
-      if (scmNode != null) {
-        if (scm.getConnection() != null) {
-          PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_CONNECTION, scm.getConnection(), false);
-        }
-
-        if (scm.getDeveloperConnection() != null) {
-          PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_DEV_CONNECTION, scm.getDeveloperConnection(),
-              false);
-        }
-
-        if (scm.getUrl() != null) {
-          PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_URL, scm.getUrl(), false);
-        }
-
-        if (scm.getTag() != null) {
-          PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_TAG, scm.getTag(), false);
-        } else {
-          PomUtil.deleteNode(scmNode, PomUtil.NODE_NAME_SCM_TAG);
-        }
-      }
-    }
-  }
-
-  private void commitChanges() {
-    this.log.debug(
-        "\tCommitting changed POMs of all modules and pushing to remote repository. Merging with remote changes if necessary.");
-    this.metadata.setScmRevisionBeforeNextDevVersion(this.scmProvider.getLatestRemoteRevision());
-
-    StringBuilder message = new StringBuilder("Preparation for next development cycle.");
-    if (StringUtils.isNotBlank(this.scmMessagePrefix)) {
-      message.insert(0, this.scmMessagePrefix);
-    }
-
-    Builder requestBuilder = CommitRequest.builder().merge().mergeClient(new ScmPomVersionsMergeClient())
-        .message(message.toString()).push();
-    FileToRelativePath pathConverter = new FileToRelativePath(this.project.getBasedir());
-    for (MavenProject p : this.reactorProjects) {
-      requestBuilder.addPaths(pathConverter.apply(p.getFile()));
-    }
-
-    String newRevision = this.scmProvider.commit(requestBuilder.build());
-    this.metadata.setScmRevisionAfterNextDevVersion(newRevision);
-  }
-
   @RollbackOnError
   public void rollback() throws MojoExecutionException {
     this.log.info(
@@ -178,7 +126,7 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
     RevertCommitsRequest revertCommitsRequest = RevertCommitsRequest.builder()
         .fromRevision(this.metadata.getScmRevisionAfterNextDevVersion())
         .toRevision(this.metadata.getScmRevisionBeforeNextDevVersion()).message(message.toString()).merge()
-        .mergeClient(new ScmPomVersionsMergeClient()).build();
+        .mergeClient(new ScmPomVersionsMergeClient()).push().build();
     this.scmProvider.revertCommits(revertCommitsRequest);
 
     for (MavenProject project : this.reactorProjects) {
