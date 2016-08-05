@@ -16,6 +16,7 @@ import org.apache.maven.shared.invoker.InvocationRequest;
 import org.apache.maven.shared.invoker.InvocationResult;
 import org.apache.maven.shared.invoker.Invoker;
 import org.apache.maven.shared.invoker.MavenInvocationException;
+import org.codehaus.plexus.util.cli.CommandLineException;
 
 import com.google.common.collect.Lists;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
@@ -69,7 +70,13 @@ public class BuildProject implements CDIMojoProcessingStep {
     try {
       InvocationResult result = invoker.execute(request);
       if (result.getExitCode() != 0) {
-        throw new MojoFailureException("Error during project build: " + result.getExecutionException().getMessage());
+        CommandLineException executionException = result.getExecutionException();
+        if (executionException != null) {
+          throw new MojoFailureException("Error during project build: " + executionException.getMessage(),
+              executionException);
+        } else {
+          throw new MojoFailureException("Error during project build: " + result.getExitCode());
+        }
       }
     } catch (MavenInvocationException e) {
       throw new MojoFailureException(e.getMessage(), e);
