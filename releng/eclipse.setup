@@ -124,6 +124,10 @@
           key="/instance/org.eclipse.ui/SHOW_MEMORY_MONITOR"
           value="true"/>
       <setupTask
+          xsi:type="setup:PreferenceTask"
+          key="/instance/org.eclipse.core.resources/encoding"
+          value="UTF-8"/>
+      <setupTask
           xsi:type="setup:CompoundTask"
           id="shillner.dev.ump.preferences.general.editors"
           name="Editors">
