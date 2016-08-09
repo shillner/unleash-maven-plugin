@@ -9,7 +9,7 @@
 
   <groupId>com.itemis.maven.plugins</groupId>
   <artifactId>unleash-parent</artifactId>
-  <version>1.2.0</version>
+  <version>1.2.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Unleash Parent</name>
@@ -30,7 +30,7 @@
   <scm>
     <connection>scm:git:https://github.com/shillner/unleash-maven-plugin.git</connection>
     <url>https://github.com/shillner/unleash-maven-plugin</url>
-    <tag>1.2.0</tag>
+    <tag>HEAD</tag>
   </scm>
   
   <issueManagement>
