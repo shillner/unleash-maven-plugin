@@ -10,10 +10,12 @@ import com.itemis.maven.plugins.unleash.scm.requests.CheckoutRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.CommitRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.DeleteBranchRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.DeleteTagRequest;
+import com.itemis.maven.plugins.unleash.scm.requests.HistoryRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.PushRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.RevertCommitsRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.TagRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.UpdateRequest;
+import com.itemis.maven.plugins.unleash.scm.results.HistoryResult;
 
 /**
  * SCM providers for the unleash-maven-plugin must implement this interface to provide SCM-specific access for the
@@ -197,4 +199,15 @@ public interface ScmProvider {
    * @return <code>true</code> if the SCM connection URL comprises also the tag name (and path).
    */
   boolean isTagInfoIncludedInConnection();
+
+  /**
+   * Calculates the history of the repository which can happen locally only remote-only or combined. Through the request
+   * a variety of query conditions can be specified for smaller history results and faster queries, such as a commit
+   * range or the maximum number of results.
+   *
+   * @param request the history request for specifying the history conditions.
+   * @return the history produced by the query.
+   * @throws ScmException if the SCM provider implementation encountered any error querying the repository history.
+   */
+  HistoryResult getHistory(HistoryRequest request) throws ScmException;
 }

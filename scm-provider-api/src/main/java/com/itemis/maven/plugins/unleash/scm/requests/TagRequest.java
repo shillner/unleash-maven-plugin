@@ -31,11 +31,11 @@ import com.itemis.maven.plugins.unleash.scm.merge.MergeStrategy;
 public class TagRequest {
   private String remoteRepositoryUrl;
   private String revision;
-  protected String message;
-  protected boolean push;
-  protected String tagName;
-  protected boolean commitBeforeTagging;
-  protected String preTagCommitMessage;
+  private String message;
+  private boolean push;
+  private String tagName;
+  private boolean commitBeforeTagging;
+  private String preTagCommitMessage;
   private MergeStrategy mergeStrategy = MergeStrategy.DO_NOT_MERGE;
   private MergeClient mergeClient;
   private boolean includeUntrackedFiles;

@@ -11,9 +11,9 @@ import com.google.common.base.Strings;
  * @since 0.1.0
  */
 public class DeleteTagRequest {
-  protected String message;
-  protected boolean push;
-  protected String tagName;
+  private String message;
+  private boolean push;
+  private String tagName;
 
   private DeleteTagRequest() {
     // use builder!

@@ -31,11 +31,11 @@ import com.itemis.maven.plugins.unleash.scm.merge.MergeStrategy;
 public class BranchRequest {
   private String remoteRepositoryUrl;
   private String revision;
-  protected String message;
-  protected boolean push;
-  protected String branchName;
-  protected boolean commitBeforeBranching;
-  protected String preBranchCommitMessage;
+  private String message;
+  private boolean push;
+  private String branchName;
+  private boolean commitBeforeBranching;
+  private String preBranchCommitMessage;
   private MergeStrategy mergeStrategy = MergeStrategy.DO_NOT_MERGE;
   private MergeClient mergeClient;
 

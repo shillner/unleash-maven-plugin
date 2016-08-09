@@ -11,9 +11,9 @@ import com.google.common.base.Strings;
  * @since 0.1.0
  */
 public class DeleteBranchRequest {
-  protected String message;
-  protected boolean push;
-  protected String branchName;
+  private String message;
+  private boolean push;
+  private String branchName;
 
   private DeleteBranchRequest() {
     // use builder!
