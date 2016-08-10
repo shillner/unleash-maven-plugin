@@ -12,12 +12,25 @@ import com.google.common.base.Function;
  * @since 1.0.0
  */
 public enum ProjectToString implements Function<MavenProject, String> {
-  INSTANCE(false), INCLUDE_PACKAGING(true);
+  /**
+   * The default instance which prints the groupId, artifactId and the version.
+   */
+  INSTANCE(false, true),
+  /**
+   * An instance which uses the groupId, the artifactId, the version and the packaging of the artifact.
+   */
+  INCLUDE_PACKAGING(true, true),
+  /**
+   * An instance which only prints the groupId and the artifactId.
+   */
+  EXCLUDE_VERSION(false, false);
 
   private boolean includePackaging;
+  private boolean includeVersion;
 
-  private ProjectToString(boolean includePackaging) {
+  private ProjectToString(boolean includePackaging, boolean includeVersion) {
     this.includePackaging = includePackaging;
+    this.includeVersion = includeVersion;
   }
 
   @Override
@@ -27,7 +40,7 @@ public enum ProjectToString implements Function<MavenProject, String> {
     if (this.includePackaging && p.getPackaging() != null) {
       sb.append(":").append(p.getPackaging());
     }
-    if (p.getVersion() != null) {
+    if (this.includeVersion && p.getVersion() != null) {
       sb.append(":").append(p.getVersion());
     }
     return sb.toString();

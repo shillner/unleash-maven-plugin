@@ -23,6 +23,13 @@ public class ProjectToStringTest {
         { createProject("x", "y", "13", "war"), "x:y:13" } };
   }
 
+  @DataProvider
+  public static Object[][] projects_excludeVersion() {
+    return new Object[][] { { createProject("x", "y", "2.0", null), "x:y" },
+        { createProject("x", "y", "13", "war"), "x:y" } };
+
+  }
+
   @Test
   @UseDataProvider("projects_includePackaging")
   public void testApply_IncludePackaging(MavenProject p, String expected) {
@@ -33,6 +40,12 @@ public class ProjectToStringTest {
   @UseDataProvider("projects_excludePackaging")
   public void testApply_ExcludePackaging(MavenProject p, String expected) {
     Assert.assertEquals(expected, ProjectToString.INSTANCE.apply(p));
+  }
+
+  @Test
+  @UseDataProvider("projects_excludeVersion")
+  public void testApply_ExcludeVersion(MavenProject p, String expected) {
+    Assert.assertEquals(expected, ProjectToString.EXCLUDE_VERSION.apply(p));
   }
 
   private static MavenProject createProject(String gid, String aid, String version, String packaging) {
