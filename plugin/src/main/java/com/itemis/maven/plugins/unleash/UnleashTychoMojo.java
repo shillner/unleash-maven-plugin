@@ -6,6 +6,8 @@ import javax.inject.Named;
 
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.MojoExecution;
+import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -78,6 +80,10 @@ public class UnleashTychoMojo extends AbstractCDIMojo {
   @Parameter(property = "session", readonly = true)
   @MojoProduces
   protected MavenSession session;
+
+  @Parameter(property = "mojoExecution", readonly = true)
+  @MojoProduces
+  private MojoExecution mojoExecution;
 
   @Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
   @MojoProduces
@@ -171,6 +177,11 @@ public class UnleashTychoMojo extends AbstractCDIMojo {
   @Named("artifactSpyPlugin")
   private ArtifactCoordinates artifactSpyPluginCoordinates = new ArtifactCoordinates("com.itemis.maven.plugins",
       "artifact-spy-plugin", "1.0.3", "maven-plugin");
+
+  @MojoProduces
+  private PluginParameterExpressionEvaluator getExpressionEvaluator() {
+    return new PluginParameterExpressionEvaluator(this.session, this.mojoExecution);
+  }
 
   @MojoProduces
   private PluginDescriptor getPluginDescriptor() {

@@ -11,6 +11,7 @@ import javax.inject.Singleton;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.model.Scm;
+import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -33,6 +34,8 @@ import com.itemis.maven.plugins.unleash.util.functions.ProjectToCoordinates;
 public class ReleaseMetadata {
   @Inject
   private MavenProject project;
+  @Inject
+  private PluginParameterExpressionEvaluator expressionEvaluator;
   @Inject
   @Named("tagNamePattern")
   private String tagNamePattern;
@@ -143,7 +146,7 @@ public class ReleaseMetadata {
 
   public String getScmTagName() {
     if (this.scmTagName == null) {
-      this.scmTagName = ReleaseUtil.getTagName(this.tagNamePattern, this.project);
+      this.scmTagName = ReleaseUtil.getTagName(this.tagNamePattern, this.project, this.expressionEvaluator);
     }
     return this.scmTagName;
   }
