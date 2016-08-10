@@ -1,6 +1,8 @@
 package com.itemis.maven.plugins.unleash.util;
 
+import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.codehaus.plexus.components.interactivity.Prompter;
 import org.codehaus.plexus.components.interactivity.PrompterException;
 
@@ -73,54 +75,41 @@ public final class ReleaseUtil {
   }
 
   /**
-   * Calculates an SCM tag name based on a pattern. This pattern can include the following variables that get expanded
-   * during calculation:
-   * <table border="1" rules="all">
-   * <tr>
-   * <th>variable</th>
-   * <th>replaced by</th>
-   * </tr>
-   * <tr>
-   * <td>@{project.groupId}</td>
-   * <td>The groupId of the maven project.</td>
-   * </tr>
-   * <tr>
-   * <td>@{project.artifactId}</td>
-   * <td>The artifactId of the maven project.</td>
-   * </tr>
-   * <tr>
-   * <td>@{project.version}</td>
-   * <td>The version of the maven project.</td>
-   * </tr>
-   * </table>
-   *
+   * Calculates an SCM tag name based on a pattern. This pattern can include every parameter reference that can be
+   * resolved by <a href=
+   * "https://maven.apache.org/ref/3.3.9/maven-core/apidocs/org/apache/maven/plugin/PluginParameterExpressionEvaluator.html">PluginParameterExpressionEvaluator</a>.
+   * 
    * @param pattern the pattern for the tag name which may contain variables listed above.
-   * @param project the project which is used for variable expansion.
+   * @param project the Maven project to be used for version calculation during parameter resolution.
+   * @param evaluator the Maven plugin parameter expression evaluator used to evaluate expressions containing parameter
+   *          references.
    * @return the name of the tag derived from the pattern.
    */
-  public static String getTagName(String pattern, MavenProject project) {
+  public static String getTagName(String pattern, MavenProject project, PluginParameterExpressionEvaluator evaluator) {
     Preconditions.checkArgument(pattern != null, "Need a tag name pattern to calculate the tag name.");
-    Preconditions.checkArgument(project != null, "Need a maven project to calculate the tag name.");
+    Preconditions.checkArgument(evaluator != null, "Need an expression evaluator to calculate the tag name.");
 
-    StringBuilder sb = new StringBuilder(pattern);
-    int start = -1;
-    while ((start = sb.indexOf("@{")) > -1) {
-      int end = sb.indexOf("}");
-      String var = sb.substring(start + 2, end);
-      sb.replace(start, end + 1, getMavenProperty(var, project));
+    try {
+      StringBuilder sb = new StringBuilder(pattern);
+      int start = -1;
+      while ((start = sb.indexOf("@{")) > -1) {
+        int end = sb.indexOf("}");
+        String var = sb.substring(start + 2, end);
+        String resolved;
+        // the parameter project.version gets a special treatment and will not be resolved by the evaluator but gets the
+        // release version instead
+        if (Objects.equal("project.version", var)) {
+          resolved = MavenVersionUtil.calculateReleaseVersion(project.getVersion());
+        } else {
+          String expression = "${" + var + "}";
+          resolved = evaluator.evaluate(expression).toString();
+        }
+        sb.replace(start, end + 1, resolved);
+      }
+      return sb.toString();
+    } catch (ExpressionEvaluationException e) {
+      throw new RuntimeException("Could not resolve expressions in pattern: " + pattern, e);
     }
-    return sb.toString();
-  }
-
-  private static String getMavenProperty(String varName, MavenProject project) {
-    if (Objects.equal("project.version", varName)) {
-      return MavenVersionUtil.calculateReleaseVersion(project.getVersion());
-    } else if (Objects.equal("project.artifactId", varName)) {
-      return project.getArtifactId();
-    } else if (Objects.equal("project.groupId", varName)) {
-      return project.getGroupId();
-    }
-    return "";
   }
 
   /**
