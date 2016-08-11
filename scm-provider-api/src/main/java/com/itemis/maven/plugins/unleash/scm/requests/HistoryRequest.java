@@ -9,8 +9,8 @@ import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
 
 /**
- * A Request for the creation of a commit history for the current repository (working dir) or a remote one. Not that the
- * remote repository option may not be supported by all SCM types.<br>
+ * A Request for the creation of a commit history for the current repository (working dir) or a remote one. Note that
+ * the remote repository option may not be supported by all SCM types.<br>
  * <b>USE {@link #builder()} TO CREATE A REQUEST!</b><br>
  * <br>
  * The following configuration options are possible:
@@ -163,7 +163,7 @@ public class HistoryRequest {
     /**
      * Adds a filter working on the commit messages. Those filters can be used to filter out commits that are not if
      * interest.
-     * 
+     *
      * @param filterExpression a regular expression pattern that can be used to match commit messages against.
      * @return the builder itself.
      */

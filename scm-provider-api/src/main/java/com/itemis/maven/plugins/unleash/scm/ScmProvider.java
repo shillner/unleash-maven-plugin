@@ -10,11 +10,13 @@ import com.itemis.maven.plugins.unleash.scm.requests.CheckoutRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.CommitRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.DeleteBranchRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.DeleteTagRequest;
+import com.itemis.maven.plugins.unleash.scm.requests.DiffRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.HistoryRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.PushRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.RevertCommitsRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.TagRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.UpdateRequest;
+import com.itemis.maven.plugins.unleash.scm.results.DiffResult;
 import com.itemis.maven.plugins.unleash.scm.results.HistoryResult;
 
 /**
@@ -210,4 +212,15 @@ public interface ScmProvider {
    * @throws ScmException if the SCM provider implementation encountered any error querying the repository history.
    */
   HistoryResult getHistory(HistoryRequest request) throws ScmException;
+
+  /**
+   * Calculates a diff between the requested repository paths and objects. The result may only contain diff status
+   * information or a full textual diff for each changed object.
+   *
+   * @param request the request which specifies the diff calculation requirements.
+   * @return a result containing a diff object for each changed object of the repository.
+   * @throws ScmException if the underlying scm provider implementation encountered an error while creating the diff.
+   *           The operation type is alway DIFF.
+   */
+  DiffResult getDiff(DiffRequest request) throws ScmException;
 }

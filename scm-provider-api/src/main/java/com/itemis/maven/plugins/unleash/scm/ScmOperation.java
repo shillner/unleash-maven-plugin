@@ -8,11 +8,6 @@ package com.itemis.maven.plugins.unleash.scm;
  */
 public enum ScmOperation {
   /**
-   * Retrieving information about the local and/or remote repository. This includes also querying for the existence of
-   * artifacts such as branches or tags.
-   */
-  INFO,
-  /**
    * The creation of a repository branch, either local or remote.
    */
   BRANCH,
@@ -32,6 +27,15 @@ public enum ScmOperation {
    * Deletion of a repository tag, either local or remote.
    */
   DELETE_TAG,
+  /**
+   * Creation of diffs between repoistory paths and/or revisions.
+   */
+  DIFF,
+  /**
+   * Retrieving information about the local and/or remote repository. This includes also querying for the existence of
+   * artifacts such as branches or tags and history queries.
+   */
+  INFO,
   /**
    * Merging local and remote changes. For distributed SCMs this means also merging of a fetched upstream branch into
    * the local working copy.
