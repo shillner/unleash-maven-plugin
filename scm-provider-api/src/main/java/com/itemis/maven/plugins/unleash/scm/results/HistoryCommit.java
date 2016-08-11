@@ -67,7 +67,7 @@ public class HistoryCommit {
 
   @Override
   public boolean equals(Object other) {
-    if (other == null || other.getClass() != HistoryCommit.class) {
+    if (other == null || other.getClass() != getClass()) {
       return false;
     }
     HistoryCommit otherCommit = (HistoryCommit) other;

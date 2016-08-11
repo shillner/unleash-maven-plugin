@@ -43,6 +43,10 @@ public class HistoryResult {
     return new Builder();
   }
 
+  /**
+   * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+   * @since 1.2.0
+   */
   public static class Builder {
     private HistoryResult result;
 
@@ -52,7 +56,7 @@ public class HistoryResult {
 
     /**
      * Adds the given commit at the end of the commit history.
-     * 
+     *
      * @param commit the commit to be added to the history.
      * @return the builder itself.
      */
