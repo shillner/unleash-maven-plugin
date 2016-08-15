@@ -38,3 +38,13 @@ What Is It Built On?
 The Unleash Maven Plugin is built on the new library Maven CDI Plugin Utils which provides some concepts that increases the possibilities of implementing Maven plugins enormously. Is gives you f.i. CDI-based dependency injection and a workflow-based processing model and pushes reusability, extendability and customizablity to a higher level.
 
 More about the library can be found here: [Maven CDI Plugin Utils](https://github.com/shillner/maven-cdi-plugin-utils)
+
+
+CI Server Integration
+---------------------
+Releases should be built by Continuous Integration Servers only. This is much safer than building them on a local machine since your personal setup and local repository could influence the release build in an unwanted  way.
+
+On any CI server you have the option to create a sepatate "release job" that sets all necessary optional and calls the  unleash goals manually. When you build this job a new release will be built. Althouth this is possible and the simplest solution it is quite uncomfortable and error prone since you will have to maintain two different build jobs for the same project. To face this problem there is a plugin for the [Jenkins CI server](https://jenkins.io/) which lets you trigger a release build for an existing Maven job. It is able to store plugin settings globally and locally to make release building as easy as clicking a link.
+
+The Jenkins plugin can be found here: [Unleash Plugin](https://wiki.jenkins-ci.org/display/JENKINS/Unleash+Plugin)
+Simply install it using the Jenkins Plugin manager and you are all set ;)
