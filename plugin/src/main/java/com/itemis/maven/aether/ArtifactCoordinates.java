@@ -27,6 +27,10 @@ public class ArtifactCoordinates {
     this.classifier = classifier;
   }
 
+  public ArtifactCoordinates cloneNoClassifier() {
+    return new ArtifactCoordinates(this.groupId, this.artifactId, this.version, this.type);
+  }
+
   public String getGroupId() {
     return this.groupId;
   }
