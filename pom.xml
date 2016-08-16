@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -9,14 +10,14 @@
 
   <groupId>com.itemis.maven.plugins</groupId>
   <artifactId>unleash-parent</artifactId>
-  <version>1.3.0-SNAPSHOT</version>
+  <version>2.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Unleash Parent</name>
   <description>An alternative release plugin for maven projects that tries to reduce the risk of failure during the release process as well as the number of builds and scm operations. This plugin shall provide a faster, more stable but also more customizable release process.</description>
   <url>https://github.com/shillner/unleash-maven-plugin</url>
   <inceptionYear>2016</inceptionYear>
-  
+
   <developers>
     <developer>
       <id>shillner</id>
@@ -32,7 +33,7 @@
     <url>https://github.com/shillner/unleash-maven-plugin</url>
     <tag>HEAD</tag>
   </scm>
-  
+
   <issueManagement>
     <system>GitHub</system>
     <url>https://github.com/shillner/unleash-maven-plugin/issues</url>
