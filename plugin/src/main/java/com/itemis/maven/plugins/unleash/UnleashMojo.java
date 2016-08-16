@@ -1,5 +1,6 @@
 package com.itemis.maven.plugins.unleash;
 
+import java.io.File;
 import java.util.List;
 
 import javax.inject.Named;
@@ -172,6 +173,11 @@ public class UnleashMojo extends AbstractCDIMojo {
   @Named("scmSshPassphrase")
   @Parameter(property = "unleash.scmSshPassphrase", required = false)
   private String scmSshPassphrase;
+
+  @MojoProduces
+  @Named("globalSettings")
+  @Parameter(property = "unleash.globalSettings", required = false)
+  private File globalSettings;
 
   @MojoProduces
   @Named("artifactSpyPlugin")

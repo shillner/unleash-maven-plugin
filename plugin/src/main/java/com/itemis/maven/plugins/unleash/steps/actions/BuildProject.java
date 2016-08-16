@@ -48,6 +48,9 @@ public class BuildProject implements CDIMojoProcessingStep {
   @Inject
   @Named("releaseArgs")
   private String releaseArgs;
+  @Inject
+  @Named("globalSettings")
+  private File globalSettings;
 
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
@@ -63,6 +66,9 @@ public class BuildProject implements CDIMojoProcessingStep {
     request.setShellEnvironmentInherited(true);
     request.setOffline(this.settings.isOffline());
     request.setInteractive(this.settings.isInteractiveMode());
+    if (this.globalSettings != null) {
+      request.setGlobalSettingsFile(this.globalSettings);
+    }
 
     // IDEA outsource maven executions to an injectable executor since this part will also be needed in later steps
     Invoker invoker = new DefaultInvoker();
