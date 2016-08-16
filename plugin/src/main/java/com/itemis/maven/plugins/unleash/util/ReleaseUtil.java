@@ -78,7 +78,7 @@ public final class ReleaseUtil {
    * Calculates an SCM tag name based on a pattern. This pattern can include every parameter reference that can be
    * resolved by <a href=
    * "https://maven.apache.org/ref/3.3.9/maven-core/apidocs/org/apache/maven/plugin/PluginParameterExpressionEvaluator.html">PluginParameterExpressionEvaluator</a>.
-   * 
+   *
    * @param pattern the pattern for the tag name which may contain variables listed above.
    * @param project the Maven project to be used for version calculation during parameter resolution.
    * @param evaluator the Maven plugin parameter expression evaluator used to evaluate expressions containing parameter
@@ -116,6 +116,6 @@ public final class ReleaseUtil {
    * @return {@code true} if the environmen variable {@code UNLEASH_IT} is set to {@code true}.
    */
   public static boolean isIntegrationtest() {
-    return Boolean.valueOf(System.getenv("UNLEASH_IT"));
+    return Boolean.valueOf(System.getenv("UNLEASH_IT")) || Boolean.valueOf(System.getProperty("unleash.it"));
   }
 }
