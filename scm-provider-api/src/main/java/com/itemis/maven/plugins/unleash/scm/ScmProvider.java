@@ -1,9 +1,5 @@
 package com.itemis.maven.plugins.unleash.scm;
 
-import java.io.File;
-import java.util.logging.Logger;
-
-import com.google.common.base.Optional;
 import com.itemis.maven.plugins.unleash.scm.annotations.ScmProviderType;
 import com.itemis.maven.plugins.unleash.scm.requests.BranchRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.CheckoutRequest;
@@ -29,19 +25,12 @@ import com.itemis.maven.plugins.unleash.scm.results.HistoryResult;
  * @since 0.1.0
  */
 public interface ScmProvider {
-  // TODO also provide an option for keyfiles, ...
-  // system or repo keyring?
-
   /**
    * Initializes the SCM provider with the working directory and some other optional parameters such as credentials.
    *
-   * @param workingDirectory the working directory on which the scm provider has to do its work.
-   * @param logger the logger to be used with this provider. If not logger is set a standard logger bound to the
-   *          interface {@link ScmProvider} is used.
-   * @param username the username for remote SCM access.
-   * @param password the password for remote SCM access.
+   * @param initialization contains some initialization details such as the working directory or authentication details.
    */
-  void initialize(File workingDirectory, Optional<Logger> logger, Optional<String> username, Optional<String> password);
+  void initialize(ScmProviderInitialization initialization);
 
   /**
    * Closes the SCM provider and releases all bound resources.
