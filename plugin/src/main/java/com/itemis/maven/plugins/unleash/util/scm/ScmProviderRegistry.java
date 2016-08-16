@@ -1,7 +1,6 @@
 package com.itemis.maven.plugins.unleash.util.scm;
 
 import java.lang.reflect.Method;
-import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -17,6 +16,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 import com.itemis.maven.plugins.unleash.scm.annotations.ScmProviderTypeLiteral;
+import com.itemis.maven.plugins.unleash.scm.impl.DefaultScmProviderInitialization;
 import com.itemis.maven.plugins.unleash.util.logging.JavaLoggerAdapter;
 
 /**
@@ -42,6 +42,9 @@ public class ScmProviderRegistry {
   @Inject
   @Named("scmPassword")
   private String scmPassword;
+  @Inject
+  @Named("scmSshPassphrase")
+  private String scmSshPassphrase;
   private String scmProviderName;
   private ScmProvider provider;
 
@@ -65,9 +68,12 @@ public class ScmProviderRegistry {
       try {
         this.provider = this.providers.select(new ScmProviderTypeLiteral(this.scmProviderName)).get();
         checkProviderAPI();
-        this.provider.initialize(this.project.getBasedir(),
-            Optional.<Logger> of(new JavaLoggerAdapter(this.provider.getClass().getName(), this.log)),
-            Optional.fromNullable(this.scmUsername), Optional.fromNullable(this.scmPassword));
+        DefaultScmProviderInitialization initialization = new DefaultScmProviderInitialization(
+            this.project.getBasedir());
+        initialization.setLogger(new JavaLoggerAdapter(this.provider.getClass().getName(), this.log));
+        initialization.setUsername(this.scmUsername).setPassword(this.scmPassword)
+            .setSshPrivateKeyPassphrase(this.scmSshPassphrase);
+        this.provider.initialize(initialization);
       } catch (Throwable t) {
         throw new IllegalStateException("No SCM provider found for SCM with name " + this.scmProviderName
             + ". Maybe you need to add an appropriate provider implementation as a dependency to the plugin.", t);

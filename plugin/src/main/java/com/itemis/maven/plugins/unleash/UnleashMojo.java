@@ -169,6 +169,11 @@ public class UnleashMojo extends AbstractCDIMojo {
   private String scmUsername;
 
   @MojoProduces
+  @Named("scmSshPassphrase")
+  @Parameter(property = "unleash.scmSshPassphrase", required = false)
+  private String scmSshPassphrase;
+
+  @MojoProduces
   @Named("artifactSpyPlugin")
   private ArtifactCoordinates artifactSpyPluginCoordinates = new ArtifactCoordinates("com.itemis.maven.plugins",
       "artifact-spy-plugin", "1.0.3", "maven-plugin");
