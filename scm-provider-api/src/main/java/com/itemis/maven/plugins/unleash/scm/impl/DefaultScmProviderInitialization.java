@@ -7,6 +7,14 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.itemis.maven.plugins.unleash.scm.ScmProviderInitialization;
 
+/**
+ * A simple bean-style default implementation of the {@link ScmProviderInitialization} interface used to pass
+ * initialization data to the SCM provider.<br>
+ * More advanced implementations could f.i. realize user prompts as password callbacks.
+ *
+ * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
+ * @since 2.0.0
+ */
 public class DefaultScmProviderInitialization implements ScmProviderInitialization {
   private File workingDir;
   private Logger logger;
@@ -14,7 +22,14 @@ public class DefaultScmProviderInitialization implements ScmProviderInitializati
   private String password;
   private String sshPKPassphrase;
 
-  public DefaultScmProviderInitialization(File workingDir) {
+  /**
+   * Creates a simple default initialization object with a pre-defined working directory.
+   *
+   * @param workingDir the directory on which the provider shall work. This directory doesn't have to exist if the
+   *          provider is used to checkout things first.
+   * @throws IllegalArgumentException if the workingDir is {@code null}.
+   */
+  public DefaultScmProviderInitialization(File workingDir) throws IllegalArgumentException {
     Preconditions.checkArgument(workingDir != null, "The working directory for the SCM provider must be specified!");
     this.workingDir = workingDir;
   }
