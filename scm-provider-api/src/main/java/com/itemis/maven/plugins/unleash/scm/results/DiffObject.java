@@ -72,7 +72,7 @@ public class DiffObject {
         sb.append(this.newPath);
         break;
       case COPIED:
-        sb.append(sb.append(this.oldPath).append(" => ").append(this.newPath));
+        sb.append(this.oldPath).append(" => ").append(this.newPath);
         break;
       case DELETED:
         sb.append(this.oldPath);
