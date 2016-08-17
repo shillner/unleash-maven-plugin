@@ -66,7 +66,7 @@ public class DiffObject {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("SCM Diff [").append(this.changeType).append(": ");
+    StringBuilder sb = new StringBuilder(this.changeType.toString()).append(": ");
     switch (this.changeType) {
       case ADDED:
         sb.append(this.newPath);
@@ -90,7 +90,6 @@ public class DiffObject {
         sb.append(this.oldPath).append(", ").append(this.newPath);
         break;
     }
-    sb.append("]");
     return sb.toString();
   }
 
