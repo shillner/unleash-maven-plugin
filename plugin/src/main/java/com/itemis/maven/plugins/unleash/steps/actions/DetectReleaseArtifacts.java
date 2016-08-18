@@ -41,6 +41,9 @@ public class DetectReleaseArtifacts implements CDIMojoProcessingStep {
   private List<MavenProject> reactorProjects;
   @Inject
   private ReleaseMetadata metadata;
+  @Inject
+  @Named("unleashOutputFolder")
+  private File unleashOutputFolder;
 
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
@@ -58,7 +61,7 @@ public class DetectReleaseArtifacts implements CDIMojoProcessingStep {
           // in case of pom artifacts the poms are copied to a different location to ensure we upload the correct
           // version of the pom since the pom evolves during the release build.
           if (Objects.equal(p.getFile().getName(), relativePath)) {
-            artifactFile = new File(p.getBuild().getDirectory(), "unleash/" + relativePath);
+            artifactFile = new File(this.unleashOutputFolder, relativePath);
             artifactFile.getParentFile().mkdirs();
             Files.copy(p.getFile(), artifactFile);
           }
@@ -78,8 +81,7 @@ public class DetectReleaseArtifacts implements CDIMojoProcessingStep {
   private Properties loadModuleArtifacts(MavenProject p) throws MojoExecutionException, MojoFailureException {
     Properties props = new Properties();
     // TODO outsource name of file to metadata!
-    File artifactsSpyProperties = new File(p.getBuild().getDirectory() + File.separatorChar + "artifact-spy"
-        + File.separatorChar + "artifacts.properties");
+    File artifactsSpyProperties = new File(p.getBuild().getDirectory(), "artifact-spy/artifacts.properties");
     if (artifactsSpyProperties.exists() && artifactsSpyProperties.isFile()) {
       try {
         this.log.debug("\tLoading artifact-spy output of module '" + ProjectToString.INSTANCE.apply(p) + "' from "

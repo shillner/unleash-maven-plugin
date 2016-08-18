@@ -1,5 +1,6 @@
 package com.itemis.maven.plugins.unleash;
 
+import java.io.File;
 import java.util.List;
 
 import javax.inject.Named;
@@ -14,6 +15,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
+import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.components.interactivity.Prompter;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
@@ -52,6 +54,10 @@ import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
  */
 @Mojo(name = "perform", aggregator = true, requiresProject = true)
 public class UnleashMojo extends AbstractCDIMojo {
+  @Component
+  @MojoProduces
+  private PlexusContainer plexus;
+
   @Component
   @MojoProduces
   private RepositorySystem repoSystem;
@@ -195,5 +201,13 @@ public class UnleashMojo extends AbstractCDIMojo {
       this.scmMessagePrefix = this.scmMessagePrefix + " ";
     }
     return Strings.nullToEmpty(this.scmMessagePrefix);
+  }
+
+  @MojoProduces
+  @Named("unleashOutputFolder")
+  private File getUnleashOutputFolder() {
+    File folder = new File(this.project.getBuild().getDirectory(), "unleash");
+    folder.mkdirs();
+    return folder;
   }
 }

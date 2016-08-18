@@ -1,5 +1,7 @@
 package com.itemis.maven.plugins.unleash.util;
 
+import java.io.File;
+
 import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
@@ -78,7 +80,7 @@ public final class ReleaseUtil {
    * Calculates an SCM tag name based on a pattern. This pattern can include every parameter reference that can be
    * resolved by <a href=
    * "https://maven.apache.org/ref/3.3.9/maven-core/apidocs/org/apache/maven/plugin/PluginParameterExpressionEvaluator.html">PluginParameterExpressionEvaluator</a>.
-   * 
+   *
    * @param pattern the pattern for the tag name which may contain variables listed above.
    * @param project the Maven project to be used for version calculation during parameter resolution.
    * @param evaluator the Maven plugin parameter expression evaluator used to evaluate expressions containing parameter
@@ -116,6 +118,41 @@ public final class ReleaseUtil {
    * @return {@code true} if the environmen variable {@code UNLEASH_IT} is set to {@code true}.
    */
   public static boolean isIntegrationtest() {
-    return Boolean.valueOf(System.getenv("UNLEASH_IT"));
+    return Boolean.valueOf(System.getenv("UNLEASH_IT")) || Boolean.valueOf(System.getProperty("unleash.it"));
+  }
+
+  /**
+   * Determines the home directory of the maven installation to be used.
+   *
+   * @param userDefined an optional user-defined path to use as maven home.
+   * @return a path to a maven installation or {@code null} if none could be determined.
+   */
+  public static File getMavenHome(Optional<String> userDefined) {
+    String path = null;
+    if (isValidMavenHome(userDefined.orNull())) {
+      path = userDefined.orNull();
+    } else {
+      String sysProp = System.getProperty("maven.home");
+      if (isValidMavenHome(sysProp)) {
+        path = sysProp;
+      } else {
+        String envVar = System.getenv("M2_HOME");
+        if (isValidMavenHome(envVar)) {
+          path = envVar;
+        }
+      }
+    }
+    if (path != null) {
+      return new File(path);
+    }
+    return null;
+  }
+
+  private static boolean isValidMavenHome(String path) {
+    if (path != null) {
+      File homeFolder = new File(path);
+      return homeFolder.exists() && homeFolder.isDirectory() && new File(homeFolder, "bin/mvn").exists();
+    }
+    return false;
   }
 }
