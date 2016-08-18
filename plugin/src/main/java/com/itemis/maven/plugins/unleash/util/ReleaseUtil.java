@@ -1,5 +1,7 @@
 package com.itemis.maven.plugins.unleash.util;
 
+import java.io.File;
+
 import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
@@ -117,5 +119,40 @@ public final class ReleaseUtil {
    */
   public static boolean isIntegrationtest() {
     return Boolean.valueOf(System.getenv("UNLEASH_IT")) || Boolean.valueOf(System.getProperty("unleash.it"));
+  }
+
+  /**
+   * Determines the home directory of the maven installation to be used.
+   *
+   * @param userDefined an optional user-defined path to use as maven home.
+   * @return a path to a maven installation or {@code null} if none could be determined.
+   */
+  public static File getMavenHome(Optional<String> userDefined) {
+    String path = null;
+    if (isValidMavenHome(userDefined.orNull())) {
+      path = userDefined.orNull();
+    } else {
+      String sysProp = System.getProperty("maven.home");
+      if (isValidMavenHome(sysProp)) {
+        path = sysProp;
+      } else {
+        String envVar = System.getenv("M2_HOME");
+        if (isValidMavenHome(envVar)) {
+          path = envVar;
+        }
+      }
+    }
+    if (path != null) {
+      return new File(path);
+    }
+    return null;
+  }
+
+  private static boolean isValidMavenHome(String path) {
+    if (path != null) {
+      File homeFolder = new File(path);
+      return homeFolder.exists() && homeFolder.isDirectory() && new File(homeFolder, "bin/mvn").exists();
+    }
+    return false;
   }
 }

@@ -1,6 +1,7 @@
 package com.itemis.maven.plugins.unleash.steps.actions;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -10,6 +11,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
+import org.apache.maven.settings.io.DefaultSettingsWriter;
+import org.apache.maven.settings.io.SettingsWriter;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.DefaultInvoker;
 import org.apache.maven.shared.invoker.InvocationRequest;
@@ -18,11 +21,14 @@ import org.apache.maven.shared.invoker.Invoker;
 import org.apache.maven.shared.invoker.MavenInvocationException;
 import org.codehaus.plexus.util.cli.CommandLineException;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
+import com.itemis.maven.plugins.cdi.annotations.RollbackOnError;
 import com.itemis.maven.plugins.cdi.logging.Logger;
+import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
 
 /**
  * Performs the actual release build but does not install or deploy artifacts to the repositories. These steps are
@@ -49,31 +55,19 @@ public class BuildProject implements CDIMojoProcessingStep {
   @Named("releaseArgs")
   private String releaseArgs;
   @Inject
-  @Named("globalSettings")
-  private File globalSettings;
+  @Named("unleashOutputFolder")
+  private File unleashOutputFolder;
+
+  private File tempSettingsFile;
 
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     this.log.info("Starting release build.");
 
-    InvocationRequest request = new DefaultInvocationRequest();
-    request.setPomFile(this.project.getFile());
-    // installation and deployment are performed in a later step. We first need to ensure that there are no changes in
-    // the scm, ...
-    request.setGoals(Lists.newArrayList("clean", "verify"));
-    request.setMavenOpts(this.releaseArgs);
-    request.setProfiles(this.profiles);
-    request.setShellEnvironmentInherited(true);
-    request.setOffline(this.settings.isOffline());
-    request.setInteractive(this.settings.isInteractiveMode());
-    if (this.globalSettings != null) {
-      request.setGlobalSettingsFile(this.globalSettings);
-    }
-
-    // IDEA outsource maven executions to an injectable executor since this part will also be needed in later steps
-    Invoker invoker = new DefaultInvoker();
-    setMavenHome(invoker);
     try {
+      InvocationRequest request = setupInvocationRequest();
+      Invoker invoker = setupInvoker();
+
       InvocationResult result = invoker.execute(request);
       if (result.getExitCode() != 0) {
         CommandLineException executionException = result.getExecutionException();
@@ -86,36 +80,57 @@ public class BuildProject implements CDIMojoProcessingStep {
       }
     } catch (MavenInvocationException e) {
       throw new MojoFailureException(e.getMessage(), e);
+    } finally {
+      deleteTempSettings();
     }
   }
 
-  private void setMavenHome(Invoker invoker) {
-    String path = null;
-    if (isValidMavenHome(this.mavenHome)) {
-      path = this.mavenHome;
-    } else {
-      String sysProp = System.getProperty("maven.home");
-      if (isValidMavenHome(sysProp)) {
-        path = sysProp;
-      } else {
-        String envVar = System.getenv("M2_HOME");
-        if (isValidMavenHome(envVar)) {
-          path = envVar;
-        }
-      }
+  private Invoker setupInvoker() {
+    Invoker invoker = new DefaultInvoker();
+    File calculatedMavenHome = ReleaseUtil.getMavenHome(Optional.fromNullable(this.mavenHome));
+    if (calculatedMavenHome != null) {
+      this.log.debug("\tUsing maven home: " + calculatedMavenHome.getAbsolutePath());
+      invoker.setMavenHome(calculatedMavenHome);
     }
+    return invoker;
+  }
 
-    if (path != null) {
-      this.log.debug("\tUsing maven home: " + path);
-      invoker.setMavenHome(new File(path));
+  private InvocationRequest setupInvocationRequest() throws MojoExecutionException {
+    InvocationRequest request = new DefaultInvocationRequest();
+    request.setPomFile(this.project.getFile());
+    // installation and deployment are performed in a later step. We first need to ensure that there are no changes in
+    // the scm, ...
+    request.setGoals(Lists.newArrayList("clean", "verify"));
+    request.setMavenOpts(this.releaseArgs);
+    request.setProfiles(this.profiles);
+    request.setShellEnvironmentInherited(true);
+    request.setOffline(this.settings.isOffline());
+    request.setInteractive(this.settings.isInteractiveMode());
+    this.tempSettingsFile = createAndSetTempSettings(request);
+    return request;
+  }
+
+  private File createAndSetTempSettings(InvocationRequest request) throws MojoExecutionException {
+    SettingsWriter settingsWriter = new DefaultSettingsWriter();
+    File settingsFile = new File(this.unleashOutputFolder, "settings.xml");
+    try {
+      settingsWriter.write(settingsFile, null, this.settings);
+    } catch (IOException e) {
+      throw new MojoExecutionException("Unable to store Maven settings for release build", e);
+    }
+    request.setUserSettingsFile(settingsFile);
+    return settingsFile;
+  }
+
+  private void deleteTempSettings() {
+    if (this.tempSettingsFile != null && this.tempSettingsFile.exists()) {
+      this.tempSettingsFile.delete();
+      this.tempSettingsFile = null;
     }
   }
 
-  private boolean isValidMavenHome(String path) {
-    if (path != null) {
-      File homeFolder = new File(path);
-      return homeFolder.exists() && homeFolder.isDirectory() && new File(homeFolder, "bin/mvn").exists();
-    }
-    return false;
+  @RollbackOnError
+  public void rollback() {
+    deleteTempSettings();
   }
 }

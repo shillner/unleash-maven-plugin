@@ -1,5 +1,6 @@
 package com.itemis.maven.plugins.unleash;
 
+import java.io.File;
 import java.util.List;
 
 import javax.inject.Named;
@@ -79,7 +80,7 @@ public class UnleashTychoMojo extends AbstractCDIMojo {
 
   @Parameter(property = "session", readonly = true)
   @MojoProduces
-  protected MavenSession session;
+  private MavenSession session;
 
   @Parameter(property = "mojoExecution", readonly = true)
   @MojoProduces
@@ -200,5 +201,13 @@ public class UnleashTychoMojo extends AbstractCDIMojo {
       this.scmMessagePrefix = this.scmMessagePrefix + " ";
     }
     return Strings.nullToEmpty(this.scmMessagePrefix);
+  }
+
+  @MojoProduces
+  @Named("unleashOutputFolder")
+  private File getUnleashOutputFolder() {
+    File folder = new File(this.project.getBuild().getDirectory(), "unleash");
+    folder.mkdirs();
+    return folder;
   }
 }
