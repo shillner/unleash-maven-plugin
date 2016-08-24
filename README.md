@@ -10,6 +10,12 @@ The Background
 This plugin has been developed because we had some serious issues with the default release plugin in a customer project. After an excessive search for alternatives we decided to develop our own plugin and make it open-source as it was pretty clear that this will become a bigger project that can significantly add value to the community. There are quite a few very good approaches for producing Maven release Artifacts and dealing with them but none of them could easily be integrated in the project's requirements as it was necessary and most of the approaches we tried left some critical questions open.
 
 
+Requirements
+------------
+* JDK 1.6 or higher
+* Apache Maven 3.2.1 or higher
+
+
 The Advantages At A Glance
 --------------------------
 Using the Unleash Maven Plugin brings some significant advantages over the standard Maven Release Plugin as there are f.i.:
