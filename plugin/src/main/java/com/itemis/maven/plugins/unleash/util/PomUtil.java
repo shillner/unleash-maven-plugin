@@ -230,19 +230,26 @@ public final class PomUtil {
    *         to {@code false}.
    */
   public static Node getOrCreateBuildNode(Document document, boolean createOnDemand) {
-    Preconditions.checkArgument(hasChildNode(document, NODE_NAME_PROJECT),
-        "The document doesn't seem to be a POM model, project element is missing.");
+		Preconditions.checkArgument(hasChildNode(document, NODE_NAME_PROJECT),
+			"The document doesn't seem to be a POM model, project element is missing.");
 
-    NodeList buildNodeList = document.getElementsByTagName(NODE_NAME_BUILD);
-    Node build = null;
-    if (buildNodeList.getLength() == 0 && createOnDemand) {
-      build = document.createElement(NODE_NAME_BUILD);
-      document.getDocumentElement().appendChild(build);
-    } else {
-      build = buildNodeList.item(0);
-    }
-    return build;
-  }
+		Node build = null;
+		Element root = document.getDocumentElement();
+		NodeList children = root.getChildNodes();
+		for (int i = 0; i < children.getLength(); i++) {
+			Node node = children.item(i);
+			if (Objects.equal(NODE_NAME_BUILD, node.getNodeName())) {
+				build = node;
+				break;
+			}
+			if (build == null && createOnDemand) {
+				build = document.createElement(NODE_NAME_BUILD);
+				root.appendChild(build);
+			}
+		}
+
+		return build;
+	}
 
   /**
    * Queries for the project build plugins node and creates one on demand. Creation is cascaded backwards.
