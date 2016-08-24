@@ -51,7 +51,7 @@ public class CheckParentVersions implements CDIMojoProcessingStep {
         Map<ReleasePhase, ArtifactCoordinates> coordinatesByPhase = this.metadata
             .getArtifactCoordinatesByPhase(parent.getGroupId(), parent.getArtifactId());
         ArtifactCoordinates coordinates = coordinatesByPhase.get(ReleasePhase.PRE_RELEASE);
-        if (Objects.equal(parent.getVersion(), coordinates.getVersion())) {
+        if (coordinates != null && Objects.equal(parent.getVersion(), coordinates.getVersion())) {
           this.log.debug("\tModule '" + ProjectToString.INSTANCE.apply(p) + "' references SNAPSHOT parent '"
               + ProjectToString.INSTANCE.apply(parent) + "' which is also scheduled for release.");
         } else {
