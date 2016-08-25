@@ -11,28 +11,27 @@ import com.google.common.base.Function;
  * @since 1.0.0
  */
 public enum DependencyToString implements Function<Dependency, String> {
-	INSTANCE(true),
-	NO_TYPE(false);
+  INSTANCE(true), NO_TYPE(false);
 
-	private boolean includeType;
+  private boolean includeType;
 
-	private DependencyToString(boolean includeType) {
-		this.includeType = includeType;
-	}
+  private DependencyToString(boolean includeType) {
+    this.includeType = includeType;
+  }
 
-	@Override
-	public String apply(Dependency d) {
-		StringBuilder sb = new StringBuilder(d.getGroupId());
-		sb.append(":").append(d.getArtifactId());
-		if (includeType && d.getType() != null) {
-			sb.append(":").append(d.getType());
-		}
-		if (d.getClassifier() != null) {
-			sb.append(":").append(d.getClassifier());
-		}
-		if (d.getVersion() != null) {
-			sb.append(":").append(d.getVersion());
-		}
-		return sb.toString();
-	}
+  @Override
+  public String apply(Dependency d) {
+    StringBuilder sb = new StringBuilder(d.getGroupId());
+    sb.append(":").append(d.getArtifactId());
+    if (includeType && d.getType() != null) {
+      sb.append(":").append(d.getType());
+    }
+    if (d.getClassifier() != null) {
+      sb.append(":").append(d.getClassifier());
+    }
+    if (d.getVersion() != null) {
+      sb.append(":").append(d.getVersion());
+    }
+    return sb.toString();
+  }
 }

@@ -1,4 +1,5 @@
 package com.itemis.maven.plugins.unleash.util;
+
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 

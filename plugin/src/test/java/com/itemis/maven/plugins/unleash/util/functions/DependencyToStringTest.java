@@ -20,7 +20,7 @@ public class DependencyToStringTest {
         { createDependency("x", "y", "2.0", "zip", "model"), "x:y:zip:model:2.0" },
         { createDependency("x", "y", null, "zip", "model"), "x:y:zip:model" } };
   }
-  
+
   @DataProvider
   public static Object[][] dependencies_noType() {
     return new Object[][] { { createDependency("x", "y", "2.0", null, null), "x:y:2.0" },
@@ -36,7 +36,7 @@ public class DependencyToStringTest {
   public void testApply(Dependency d, String expected) {
     Assert.assertEquals(expected, DependencyToString.INSTANCE.apply(d));
   }
-  
+
   @Test
   @UseDataProvider("dependencies_noType")
   public void testApply_noType(Dependency d, String expected) {

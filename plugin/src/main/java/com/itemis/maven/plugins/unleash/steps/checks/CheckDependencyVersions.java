@@ -133,11 +133,11 @@ public class CheckDependencyVersions implements CDIMojoProcessingStep {
     for (Iterator<ArtifactCoordinates> i = snapshotDependencies.iterator(); i.hasNext();) {
       ArtifactCoordinates dep = i.next();
       for (ArtifactCoordinates projectCoordinate : projectCoordinates) {
-			if(projectCoordinate.equalsGAV(dep)) {
-				i.remove();
-				break;
-			}
-		}
+        if (projectCoordinate.equalsGAV(dep)) {
+          i.remove();
+          break;
+        }
+      }
     }
   }
 }
