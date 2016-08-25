@@ -10,10 +10,12 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.project.MavenProject;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 import com.itemis.maven.plugins.unleash.scm.annotations.ScmProviderTypeLiteral;
 import com.itemis.maven.plugins.unleash.scm.impl.DefaultScmProviderInitialization;
@@ -45,6 +47,15 @@ public class ScmProviderRegistry {
   @Inject
   @Named("scmSshPassphrase")
   private String scmSshPassphrase;
+  @Inject
+  @Named("scmUsernameEnvVar")
+  private String scmUsernameEnvVar;
+  @Inject
+  @Named("scmPasswordEnvVar")
+  private String scmPasswordEnvVar;
+  @Inject
+  @Named("scmSshPassphraseEnvVar")
+  private String scmSshPassphraseEnvVar;
   private String scmProviderName;
   private ScmProvider provider;
 
@@ -68,11 +79,13 @@ public class ScmProviderRegistry {
       try {
         this.provider = this.providers.select(new ScmProviderTypeLiteral(this.scmProviderName)).get();
         checkProviderAPI();
+
         DefaultScmProviderInitialization initialization = new DefaultScmProviderInitialization(
             this.project.getBasedir());
         initialization.setLogger(new JavaLoggerAdapter(this.provider.getClass().getName(), this.log));
-        initialization.setUsername(this.scmUsername).setPassword(this.scmPassword)
-            .setSshPrivateKeyPassphrase(this.scmSshPassphrase);
+        initialization.setUsername(getScmUsername()).setPassword(getScmPassword())
+            .setSshPrivateKeyPassphrase(getScmSshPassphrase());
+
         this.provider.initialize(initialization);
       } catch (Throwable t) {
         throw new IllegalStateException("No SCM provider found for SCM with name " + this.scmProviderName
@@ -97,6 +110,30 @@ public class ScmProviderRegistry {
         throw new IllegalStateException("Could not get enough information about the scm provider API version.", e);
       }
     }
+  }
+
+  private String getScmUsername() {
+    String username = Strings.emptyToNull(this.scmUsername);
+    if (username == null && StringUtils.isNotBlank(this.scmUsernameEnvVar)) {
+      username = Strings.emptyToNull(System.getenv(this.scmUsernameEnvVar));
+    }
+    return username;
+  }
+
+  private String getScmPassword() {
+    String password = Strings.emptyToNull(this.scmPassword);
+    if (password == null && StringUtils.isNotBlank(this.scmPasswordEnvVar)) {
+      password = Strings.emptyToNull(System.getenv(this.scmPasswordEnvVar));
+    }
+    return password;
+  }
+
+  private String getScmSshPassphrase() {
+    String passphrase = Strings.emptyToNull(this.scmSshPassphrase);
+    if (passphrase == null && StringUtils.isNotBlank(this.scmSshPassphraseEnvVar)) {
+      passphrase = Strings.emptyToNull(System.getenv(this.scmSshPassphraseEnvVar));
+    }
+    return passphrase;
   }
 
   @PreDestroy
