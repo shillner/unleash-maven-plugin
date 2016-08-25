@@ -87,6 +87,8 @@ public class ScmProviderRegistry {
             .setSshPrivateKeyPassphrase(getScmSshPassphrase());
 
         this.provider.initialize(initialization);
+      } catch (IllegalStateException e) {
+        throw e;
       } catch (Throwable t) {
         throw new IllegalStateException("No SCM provider found for SCM with name " + this.scmProviderName
             + ". Maybe you need to add an appropriate provider implementation as a dependency to the plugin.", t);
@@ -95,19 +97,36 @@ public class ScmProviderRegistry {
     return this.provider;
   }
 
-  private void checkProviderAPI() {
+  private void checkProviderAPI() throws IllegalStateException {
+    boolean isIncompatible = false;
+    Throwable cause = null;
+
     // compares all API methods against all implementation methods and fails on missing and/or wrong method signatures.
     for (Method apiMethod : ScmProvider.class.getDeclaredMethods()) {
       try {
         Method implMethod = this.provider.getClass().getDeclaredMethod(apiMethod.getName(),
             apiMethod.getParameterTypes());
         if (!Objects.equal(implMethod.getReturnType(), apiMethod.getReturnType())) {
-          throw new IllegalStateException("Invalid API version for provider: " + this.scmProviderName);
+          isIncompatible = true;
+          break;
         }
-      } catch (NoSuchMethodException e) {
-        throw new IllegalStateException("Invalid API version for provider: " + this.scmProviderName, e);
-      } catch (SecurityException e) {
-        throw new IllegalStateException("Could not get enough information about the scm provider API version.", e);
+      } catch (Throwable e) {
+        isIncompatible = true;
+        cause = e;
+        break;
+      }
+    }
+
+    if (isIncompatible) {
+      this.log.error(
+          "The SCM provider API and the configured implementation for SCMs with identifier '" + this.scmProviderName
+              + "' are incompatible. Please check the compatibility notes of the chosen provider implementation.");
+      if (cause != null) {
+        throw new IllegalStateException(
+            "Invalid SCM provider API version of provider implementation '" + this.scmProviderName + "'.", cause);
+      } else {
+        throw new IllegalStateException(
+            "Invalid SCM provider API version of provider implementation '" + this.scmProviderName + "'.");
       }
     }
   }
