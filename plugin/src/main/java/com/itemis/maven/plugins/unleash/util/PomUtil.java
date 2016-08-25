@@ -234,18 +234,18 @@ public final class PomUtil {
         "The document doesn't seem to be a POM model, project element is missing.");
 
     Node build = null;
-    Element root = document.getDocumentElement();
-    NodeList children = root.getChildNodes();
+    Node project = document.getElementsByTagName(NODE_NAME_PROJECT).item(0);
+    NodeList children = project.getChildNodes();
     for (int i = 0; i < children.getLength(); i++) {
       Node node = children.item(i);
       if (Objects.equal(NODE_NAME_BUILD, node.getNodeName())) {
         build = node;
         break;
       }
-      if (build == null && createOnDemand) {
-        build = document.createElement(NODE_NAME_BUILD);
-        root.appendChild(build);
-      }
+    }
+    if (build == null && createOnDemand) {
+      build = document.createElement(NODE_NAME_BUILD);
+      project.appendChild(build);
     }
 
     return build;
@@ -483,7 +483,7 @@ public final class PomUtil {
 
   /**
    * Deletes the specified node from the given parent.
-   * 
+   *
    * @param parentNode the parent of the node to delete.
    * @param nodeName the name of the node to delete.
    */
@@ -505,7 +505,7 @@ public final class PomUtil {
 
   /**
    * Queries a node for a child with a specific name.
-   * 
+   *
    * @param parentNode the parent to query for the node.
    * @param nodeName the name of the searched node.
    * @return {@code true} if the parent contains a node with the specified name.
