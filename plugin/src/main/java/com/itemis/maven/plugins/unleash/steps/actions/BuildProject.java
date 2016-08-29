@@ -3,6 +3,7 @@ package com.itemis.maven.plugins.unleash.steps.actions;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -53,7 +54,7 @@ public class BuildProject implements CDIMojoProcessingStep {
   private Settings settings;
   @Inject
   @Named("releaseArgs")
-  private String releaseArgs;
+  private Properties releaseArgs;
   @Inject
   @Named("unleashOutputFolder")
   private File unleashOutputFolder;
@@ -101,7 +102,7 @@ public class BuildProject implements CDIMojoProcessingStep {
     // installation and deployment are performed in a later step. We first need to ensure that there are no changes in
     // the scm, ...
     request.setGoals(Lists.newArrayList("clean", "verify"));
-    request.setMavenOpts(this.releaseArgs);
+    request.setProperties(this.releaseArgs);
     request.setProfiles(this.profiles);
     request.setShellEnvironmentInherited(true);
     request.setOffline(this.settings.isOffline());

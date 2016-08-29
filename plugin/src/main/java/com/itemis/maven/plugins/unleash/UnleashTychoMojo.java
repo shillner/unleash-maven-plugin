@@ -2,9 +2,11 @@ package com.itemis.maven.plugins.unleash;
 
 import java.io.File;
 import java.util.List;
+import java.util.Properties;
 
 import javax.inject.Named;
 
+import org.apache.commons.logging.Log;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecution;
@@ -24,9 +26,11 @@ import org.eclipse.aether.impl.Installer;
 import org.eclipse.aether.impl.RemoteRepositoryManager;
 import org.eclipse.aether.repository.RemoteRepository;
 
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.AbstractCDIMojo;
+import com.itemis.maven.plugins.cdi.annotations.MojoInject;
 import com.itemis.maven.plugins.cdi.annotations.MojoProduces;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 
@@ -152,9 +156,7 @@ public class UnleashTychoMojo extends AbstractCDIMojo {
   private List<String> profiles;
 
   @Parameter(defaultValue = "", property = "unleash.releaseArgs", required = false)
-  @MojoProduces
-  @Named("releaseArgs")
-  private String releaseArgs;
+  private List<String> releaseArgs;
 
   @Parameter(property = "unleash.releaseVersion", required = false)
   @MojoProduces
@@ -224,5 +226,22 @@ public class UnleashTychoMojo extends AbstractCDIMojo {
     File folder = new File(this.project.getBuild().getDirectory(), "unleash");
     folder.mkdirs();
     return folder;
+  }
+
+  @MojoProduces
+  @Named("releaseArgs")
+  @MojoInject
+  private Properties getReleaseArgs(Log log) {
+    Properties args = new Properties();
+    Splitter splitter = Splitter.on('=');
+    for (String arg : this.releaseArgs) {
+      List<String> split = splitter.splitToList(arg);
+      if (split.size() == 2) {
+        args.put(split.get(0), split.get(1));
+      } else {
+        log.warn("Could not set '" + arg + "' as a Property for the Maven release build.");
+      }
+    }
+    return args;
   }
 }
