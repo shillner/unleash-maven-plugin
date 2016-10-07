@@ -123,11 +123,15 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
       message.insert(0, this.scmMessagePrefix);
     }
 
-    RevertCommitsRequest revertCommitsRequest = RevertCommitsRequest.builder()
-        .fromRevision(this.metadata.getScmRevisionAfterNextDevVersion())
-        .toRevision(this.metadata.getScmRevisionBeforeNextDevVersion()).message(message.toString()).merge()
-        .mergeClient(new ScmPomVersionsMergeClient()).push().build();
-    this.scmProvider.revertCommits(revertCommitsRequest);
+    if (this.metadata.getScmRevisionAfterNextDevVersion() != null) {
+      // #49 (https://github.com/shillner/unleash-maven-plugin/issues/49)
+      // commit reversion is only performed if the commit didn't fail (revision after dev version setting is not null)
+      RevertCommitsRequest revertCommitsRequest = RevertCommitsRequest.builder()
+          .fromRevision(this.metadata.getScmRevisionAfterNextDevVersion())
+          .toRevision(this.metadata.getScmRevisionBeforeNextDevVersion()).message(message.toString()).merge()
+          .mergeClient(new ScmPomVersionsMergeClient()).push().build();
+      this.scmProvider.revertCommits(revertCommitsRequest);
+    }
 
     for (MavenProject project : this.reactorProjects) {
       Document document = this.cachedPOMs.get(ProjectToCoordinates.EMPTY_VERSION.apply(project));
