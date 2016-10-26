@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -12,7 +13,7 @@
 
   <name>Unleash Maven Plugin</name>
   <description>This plugin provides a generic alternative to the error-prone default release plugin provided by Maven. It is designed to require a minimal effort of work for releasing modules and being extensible to integrate in every project setup.</description>
-  
+
   <prerequisites>
     <maven>${version.maven}</maven>
   </prerequisites>
@@ -21,21 +22,28 @@
     <version.aether>1.0.2.v20150114</version.aether>
     <version.artifact-spy-plugin>1.0.3</version.artifact-spy-plugin>
     <version.cdi-api>1.2</version.cdi-api>
-    <version.cdi-plugin-utils>3.1.8</version.cdi-plugin-utils>
+    <version.cdi-plugin-utils>3.1.9-SNAPSHOT</version.cdi-plugin-utils>
     <version.commons-lang3>3.4</version.commons-lang3>
-    <version.guava>19.0</version.guava>
+    <version.guava>14.0.1</version.guava>
     <version.junit>4.12</version.junit>
     <version.junit-dataprovider>1.10.3</version.junit-dataprovider>
     <version.maven>3.2.1</version.maven>
     <version.maven-invoker>2.2</version.maven-invoker>
     <version.maven-plugin-plugin>3.4</version.maven-plugin-plugin>
     <version.mockito-all>1.10.19</version.mockito-all>
+    <version.nexus-staging-maven-plugin>1.6.7</version.nexus-staging-maven-plugin>
     <version.plexus-interactivity-api>1.0-alpha-6</version.plexus-interactivity-api>
     <version.tycho-versions-plugin>0.25.0</version.tycho-versions-plugin>
     <version.weld-se>2.3.3.Final</version.weld-se>
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-compat</artifactId>
+      <version>3.1.0</version>
+    </dependency>
+
     <dependency>
       <groupId>org.eclipse.aether</groupId>
       <artifactId>aether-api</artifactId>
@@ -146,6 +154,11 @@
       <artifactId>mockito-all</artifactId>
       <version>${version.mockito-all}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.sonatype.plugins</groupId>
+      <artifactId>nexus-staging-maven-plugin</artifactId>
+      <version>${version.nexus-staging-maven-plugin}</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>

@@ -43,7 +43,11 @@ public class ScmPomVersionsMergeClient implements MergeClient {
     } catch (IOException e) {
       throw new ScmException(ScmOperation.MERGE, "Unable to read remote content!", e);
     } finally {
-      Closeables.closeQuietly(remote);
+      // Closeables.closeQuietly(remote);
+      try {
+        Closeables.close(remote, true);
+      } catch (IOException e) {
+      }
     }
 
     Optional<Model> remoteModel = loadModel(new ByteArrayInputStream(remoteData));
@@ -147,7 +151,11 @@ public class ScmPomVersionsMergeClient implements MergeClient {
     } catch (Exception e) {
       return Optional.absent();
     } finally {
-      Closeables.closeQuietly(in);
+      // Closeables.closeQuietly(in);
+      try {
+        Closeables.close(in, true);
+      } catch (IOException e) {
+      }
     }
   }
 }

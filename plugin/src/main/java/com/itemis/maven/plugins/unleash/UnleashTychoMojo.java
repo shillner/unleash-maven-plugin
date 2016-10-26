@@ -28,6 +28,7 @@ import org.eclipse.aether.repository.RemoteRepository;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.AbstractCDIMojo;
 import com.itemis.maven.plugins.cdi.annotations.MojoInject;
@@ -235,9 +236,9 @@ public class UnleashTychoMojo extends AbstractCDIMojo {
     Properties args = new Properties();
     Splitter splitter = Splitter.on('=');
     for (String arg : this.releaseArgs) {
-      List<String> split = splitter.splitToList(arg);
-      if (split.size() == 2) {
-        args.put(split.get(0), split.get(1));
+      Iterable<String> split = splitter.split(arg);
+      if (Iterables.size(split) == 2) {
+        args.put(Iterables.get(split, 0), Iterables.get(split, 1));
       } else {
         log.warn("Could not set '" + arg + "' as a Property for the Maven release build.");
       }

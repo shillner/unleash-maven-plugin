@@ -115,7 +115,11 @@ public final class PomUtil {
     } catch (Exception e) {
       throw new RuntimeException("Could not load the project object model from input stream.", e);
     } finally {
-      Closeables.closeQuietly(in);
+      // Closeables.closeQuietly(in);
+      try {
+        Closeables.close(in, true);
+      } catch (IOException e) {
+      }
     }
   }
 

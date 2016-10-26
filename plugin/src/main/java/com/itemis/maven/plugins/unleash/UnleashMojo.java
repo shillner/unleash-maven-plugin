@@ -2,6 +2,7 @@ package com.itemis.maven.plugins.unleash;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.inject.Named;
@@ -25,9 +26,12 @@ import org.eclipse.aether.impl.Deployer;
 import org.eclipse.aether.impl.Installer;
 import org.eclipse.aether.impl.RemoteRepositoryManager;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy;
+import org.sonatype.nexus.maven.staging.deploy.strategy.Strategies;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.AbstractCDIMojo;
 import com.itemis.maven.plugins.cdi.annotations.MojoInject;
@@ -58,6 +62,9 @@ import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
  */
 @Mojo(name = "perform", aggregator = true, requiresProject = true)
 public class UnleashMojo extends AbstractCDIMojo {
+  @Component(role = DeployStrategy.class)
+  private Map<String, DeployStrategy> deployStrategies;
+
   @Component
   @MojoProduces
   private PlexusContainer plexus;
@@ -235,13 +242,18 @@ public class UnleashMojo extends AbstractCDIMojo {
     Properties args = new Properties();
     Splitter splitter = Splitter.on('=');
     for (String arg : this.releaseArgs) {
-      List<String> split = splitter.splitToList(arg);
-      if (split.size() == 2) {
-        args.put(split.get(0), split.get(1));
+      Iterable<String> split = splitter.split(arg);
+      if (Iterables.size(split) == 2) {
+        args.put(Iterables.get(split, 0), Iterables.get(split, 1));
       } else {
         log.warn("Could not set '" + arg + "' as a Property for the Maven release build.");
       }
     }
     return args;
+  }
+
+  @MojoProduces
+  private DeployStrategy getNexusDeployStrategy() {
+    return this.deployStrategies.get(Strategies.STAGING);
   }
 }

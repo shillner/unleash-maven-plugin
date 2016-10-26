@@ -39,9 +39,12 @@ public class ScmPomVersionsMergeClientTest {
       String result = os.toString();
       Assert.assertEquals(new String(ByteStreams.toByteArray(expected)), result);
     } finally {
-      Closeables.closeQuietly(local);
-      Closeables.closeQuietly(remote);
-      Closeables.closeQuietly(base);
+      Closeables.close(local, true);
+      Closeables.close(remote, true);
+      Closeables.close(base, true);
+      // Closeables.closeQuietly(local);
+      // Closeables.closeQuietly(remote);
+      // Closeables.closeQuietly(base);
       Closeables.close(os, true);
     }
   }

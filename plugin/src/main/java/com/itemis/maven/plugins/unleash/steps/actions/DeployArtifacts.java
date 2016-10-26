@@ -1,14 +1,11 @@
 package com.itemis.maven.plugins.unleash.steps.actions;
 
 import java.util.Collection;
-import java.util.List;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.deployment.DeploymentException;
 
@@ -30,9 +27,6 @@ import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 public class DeployArtifacts implements CDIMojoProcessingStep {
   @Inject
   private Logger log;
-  @Inject
-  @Named("reactorProjects")
-  private List<MavenProject> reactorProjects;
   @Inject
   private ArtifactDeployer deployer;
   @Inject
