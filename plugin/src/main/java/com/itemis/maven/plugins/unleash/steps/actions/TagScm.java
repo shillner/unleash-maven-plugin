@@ -14,6 +14,7 @@ import org.apache.maven.project.MavenProject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 import com.itemis.maven.aether.ArtifactCoordinates;
@@ -24,8 +25,10 @@ import com.itemis.maven.plugins.cdi.annotations.RollbackOnError;
 import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
+import com.itemis.maven.plugins.unleash.scm.ScmException;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 import com.itemis.maven.plugins.unleash.scm.requests.DeleteTagRequest;
+import com.itemis.maven.plugins.unleash.scm.requests.PushRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.RevertCommitsRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.TagRequest;
 import com.itemis.maven.plugins.unleash.scm.requests.TagRequest.Builder;
@@ -98,8 +101,8 @@ public class TagScm implements CDIMojoProcessingStep {
 
     Builder requestBuilder = TagRequest.builder().message(message.toString()).tagName(scmTagName).push();
     if (this.commitBeforeTagging) {
-      this.metadata.setScmRevisionBeforeTag(this.scmProvider.getLatestRemoteRevision());
       String remoteRevision = this.scmProvider.getLatestRemoteRevision();
+      this.metadata.setScmRevisionBeforeTag(remoteRevision);
       if (!Objects.equal(remoteRevision, this.metadata.getInitialScmRevision())) {
         throw new MojoFailureException("Error creating the SCM tag! "
             + "A commit before tag creation was requested but the remote repository changed since we started the release. "
@@ -114,6 +117,9 @@ public class TagScm implements CDIMojoProcessingStep {
       requestBuilder.preTagCommitMessage(preTagMessage.toString());
     }
 
+    if (true) {
+      throw new RuntimeException();
+    }
     String newRevision = this.scmProvider.tag(requestBuilder.build());
     this.metadata.setScmRevisionAfterTag(newRevision);
   }
@@ -161,34 +167,47 @@ public class TagScm implements CDIMojoProcessingStep {
   @RollbackOnError
   private void rollback() throws MojoExecutionException {
     this.log.info("Rollback of SCM tag creation and POM modifications due to a processing exception.");
-
     String scmTagName = this.metadata.getScmTagName();
-    if (this.scmProvider.hasTag(scmTagName) && !this.tagWasPresent) {
+
+    StringBuilder deleteTagMessageBuilder = new StringBuilder("Deletion of tag '").append(scmTagName)
+        .append("' due to release rollback.");
+    if (StringUtils.isNotBlank(this.scmMessagePrefix)) {
+      deleteTagMessageBuilder.insert(0, this.scmMessagePrefix);
+    }
+
+    DeleteTagRequest.Builder deleteTagRequestBuilder = DeleteTagRequest.builder()
+        .message(deleteTagMessageBuilder.toString()).tagName(scmTagName);
+    if (this.scmProvider.hasTag(scmTagName)) {
+      deleteTagRequestBuilder.push();
+    }
+
+    if (!this.tagWasPresent) {
       this.log.debug("\tDeleting scm tag '" + scmTagName + "' since the release build failed.");
-
-      StringBuilder message = new StringBuilder("Deletion of tag '").append(scmTagName)
-          .append("' due to release rollback.");
-      if (StringUtils.isNotBlank(this.scmMessagePrefix)) {
-        message.insert(0, this.scmMessagePrefix);
-      }
-
-      DeleteTagRequest request = DeleteTagRequest.builder().message(message.toString()).tagName(scmTagName).push()
-          .build();
-      this.scmProvider.deleteTag(request);
+      this.scmProvider.deleteTag(deleteTagRequestBuilder.build());
     } else {
       this.log.debug("\tSkipping deletion of SCM tag '" + scmTagName
           + "' since the tag was already present before the release build was triggered.");
     }
 
     if (this.commitBeforeTagging) {
-      StringBuilder message = new StringBuilder("Reversion of failed release build (step: tag SCM).");
+      StringBuilder revertCommitsMessageBuilder = new StringBuilder(
+          "Reversion of failed release build (step: tag SCM).");
       if (StringUtils.isNotBlank(this.scmMessagePrefix)) {
-        message.insert(0, this.scmMessagePrefix);
+        revertCommitsMessageBuilder.insert(0, this.scmMessagePrefix);
       }
-      RevertCommitsRequest revertCommitsRequest = RevertCommitsRequest.builder()
-          .fromRevision(this.metadata.getScmRevisionAfterTag()).toRevision(this.metadata.getScmRevisionBeforeTag())
-          .message(message.toString()).merge().mergeClient(new ScmPomVersionsMergeClient()).build();
+
+      String fromRevision = MoreObjects.firstNonNull(this.metadata.getScmRevisionAfterTag(),
+          this.scmProvider.getLocalRevision());
+
+      RevertCommitsRequest revertCommitsRequest = RevertCommitsRequest.builder().fromRevision(fromRevision)
+          .toRevision(this.metadata.getScmRevisionBeforeTag()).message(revertCommitsMessageBuilder.toString()).merge()
+          .mergeClient(new ScmPomVersionsMergeClient()).build();
       this.scmProvider.revertCommits(revertCommitsRequest);
+      try {
+        this.scmProvider.push(PushRequest.builder().build());
+      } catch (ScmException e) {
+        throw new MojoExecutionException(e.getMessage(), e);
+      }
     }
 
     for (MavenProject project : this.reactorProjects) {
