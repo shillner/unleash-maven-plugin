@@ -117,9 +117,6 @@ public class TagScm implements CDIMojoProcessingStep {
       requestBuilder.preTagCommitMessage(preTagMessage.toString());
     }
 
-    if (true) {
-      throw new RuntimeException();
-    }
     String newRevision = this.scmProvider.tag(requestBuilder.build());
     this.metadata.setScmRevisionAfterTag(newRevision);
   }
