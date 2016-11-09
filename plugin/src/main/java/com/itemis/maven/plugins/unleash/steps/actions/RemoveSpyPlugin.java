@@ -1,5 +1,7 @@
 package com.itemis.maven.plugins.unleash.steps.actions;
 
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -30,7 +32,8 @@ public class RemoveSpyPlugin implements CDIMojoProcessingStep {
   @Inject
   private Logger log;
   @Inject
-  private MavenProject project;
+  @Named("reactorProjects")
+  private List<MavenProject> reactorProjects;
   @Inject
   @Named("artifactSpyPlugin")
   private ArtifactCoordinates artifactSpyPluginCoordinates;
@@ -39,22 +42,24 @@ public class RemoveSpyPlugin implements CDIMojoProcessingStep {
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     this.log.info("Removing artifact-spy-plugin from build configuration.");
     try {
-      Document document = PomUtil.parsePOM(this.project);
+      for (MavenProject p : this.reactorProjects) {
+        Document document = PomUtil.parsePOM(p);
 
-      Node plugin = PomUtil.getPlugin(document, this.artifactSpyPluginCoordinates.getGroupId(),
-          this.artifactSpyPluginCoordinates.getArtifactId());
-      if (plugin != null) {
-        Node plugins = plugin.getParentNode();
-        plugins.removeChild(plugin);
-        if (plugins.getChildNodes().getLength() == 0) {
-          Node build = plugins.getParentNode();
-          build.removeChild(plugins);
-          if (build.getChildNodes().getLength() == 0) {
-            build.getParentNode().removeChild(build);
+        Node plugin = PomUtil.getPlugin(document, this.artifactSpyPluginCoordinates.getGroupId(),
+            this.artifactSpyPluginCoordinates.getArtifactId());
+        if (plugin != null) {
+          Node plugins = plugin.getParentNode();
+          plugins.removeChild(plugin);
+          if (plugins.getChildNodes().getLength() == 0) {
+            Node build = plugins.getParentNode();
+            build.removeChild(plugins);
+            if (build.getChildNodes().getLength() == 0) {
+              build.getParentNode().removeChild(build);
+            }
           }
-        }
 
-        PomUtil.writePOM(document, this.project);
+          PomUtil.writePOM(document, p);
+        }
       }
     } catch (Throwable t) {
       throw new MojoFailureException("Could not remove the artifact-spy-plugin from the POM.", t);
