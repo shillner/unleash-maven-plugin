@@ -33,13 +33,13 @@ public class DeployArtifactsNexusStaging implements CDIMojoProcessingStep {
   @Inject
   private Logger log;
   @Inject
-  private DeployStrategy deployStrategy;
-  @Inject
   private MavenSession session;
   @Inject
   private ReleaseMetadata metadata;
   @Inject
   private MavenProject project;
+  @Inject
+  private DeployStrategy deployStrategy;
 
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
