@@ -1,8 +1,8 @@
 package com.itemis.maven.plugins.unleash.steps.checks;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -14,8 +14,10 @@ import org.apache.maven.project.MavenProject;
 import com.google.common.base.Optional;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.aether.ArtifactResolver;
+import com.itemis.maven.aether.ArtifactResolver.ResolutionResult;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
@@ -56,17 +58,19 @@ public class CheckAether implements CDIMojoProcessingStep {
 
     Collection<MavenProject> snapshotProjects = Collections2.filter(this.reactorProjects, IsSnapshotProject.INSTANCE);
 
-    List<ArtifactCoordinates> remotelyReleasedProjects = Lists.newArrayList();
+    Map<ArtifactCoordinates, String> remotelyReleasedProjects = Maps.newHashMap();
     List<ArtifactCoordinates> locallyReleasedProjects = Lists.newArrayList();
     for (MavenProject p : snapshotProjects) {
       this.log.debug("\tChecking module '" + ProjectToString.INSTANCE.apply(p) + "'");
       ArtifactCoordinates calculatedCoordinates = this.metadata
           .getArtifactCoordinatesByPhase(p.getGroupId(), p.getArtifactId()).get(ReleasePhase.RELEASE);
-      if (isRemotelyReleased(calculatedCoordinates.getGroupId(), calculatedCoordinates.getArtifactId(),
-          calculatedCoordinates.getVersion())) {
-        remotelyReleasedProjects.add(calculatedCoordinates);
-      } else if (isLocallyReleased(calculatedCoordinates.getGroupId(), calculatedCoordinates.getArtifactId(),
-          calculatedCoordinates.getVersion())) {
+
+      Optional<ResolutionResult> remoteResolvedArtifact = resolve(calculatedCoordinates.getGroupId(),
+          calculatedCoordinates.getArtifactId(), calculatedCoordinates.getVersion(), true);
+      if (remoteResolvedArtifact.isPresent()) {
+        remotelyReleasedProjects.put(calculatedCoordinates, remoteResolvedArtifact.get().getRepositoryId());
+      } else if (resolve(calculatedCoordinates.getGroupId(), calculatedCoordinates.getArtifactId(),
+          calculatedCoordinates.getVersion(), false).isPresent()) {
         locallyReleasedProjects.add(calculatedCoordinates);
       }
     }
@@ -75,11 +79,12 @@ public class CheckAether implements CDIMojoProcessingStep {
     handleLocalReleases(locallyReleasedProjects);
   }
 
-  private void handleRemoteReleases(List<ArtifactCoordinates> remotelyReleasedProjects) throws MojoFailureException {
+  private void handleRemoteReleases(Map<ArtifactCoordinates, String> remotelyReleasedProjects)
+      throws MojoFailureException {
     if (!remotelyReleasedProjects.isEmpty()) {
       this.log.error("\tThe following artifacts are already present in one of your remote repositories:");
-      for (ArtifactCoordinates c : remotelyReleasedProjects) {
-        this.log.error("\t\t" + c);
+      for (ArtifactCoordinates c : remotelyReleasedProjects.keySet()) {
+        this.log.error("\t\t" + c + " (RepositoryId: " + remotelyReleasedProjects.get(c) + ")");
       }
       throw new MojoFailureException(
           "Some of the reactor projects have already been released. Please check your remote repositories!");
@@ -105,15 +110,9 @@ public class CheckAether implements CDIMojoProcessingStep {
     }
   }
 
-  private boolean isRemotelyReleased(String groupId, String artifactId, String version) {
+  private Optional<ResolutionResult> resolve(String groupId, String artifactId, String version, boolean remoteOnly) {
     ArtifactCoordinates coordinates = new ArtifactCoordinates(groupId, artifactId, version, PomUtil.ARTIFACT_TYPE_POM);
-    Optional<File> pom = this.artifactResolver.resolve(coordinates, true);
-    return pom.isPresent();
-  }
-
-  private boolean isLocallyReleased(String groupId, String artifactId, String version) {
-    ArtifactCoordinates coordinates = new ArtifactCoordinates(groupId, artifactId, version, PomUtil.ARTIFACT_TYPE_POM);
-    Optional<File> pom = this.artifactResolver.resolve(coordinates, false);
-    return pom.isPresent();
+    Optional<ResolutionResult> result = this.artifactResolver.resolve(coordinates, remoteOnly);
+    return result;
   }
 }

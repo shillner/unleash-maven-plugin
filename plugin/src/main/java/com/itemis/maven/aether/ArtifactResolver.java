@@ -45,35 +45,55 @@ public class ArtifactResolver {
    * @param coordinates the coordinates of the artifact to resolve.
    * @param remoteOnly {@code true} if the artifact resolving shall be performed remotely only which means that the
    *          artifact will only be delivered if it is present in any of the remote repositories.
-   * @return the artifact as a file.
+   * @return the result of the artifact resolution containing the file and the id of the repository from which is has
+   *         been resolved.
    */
-  public Optional<File> resolve(ArtifactCoordinates coordinates, boolean remoteOnly) {
-    File f = null;
+  public Optional<ResolutionResult> resolve(ArtifactCoordinates coordinates, boolean remoteOnly) {
+    ResolutionResult r = null;
     try {
       Optional<ArtifactResult> result = this.cache
           .get(new ArtifactCoordinates(coordinates.getGroupId(), coordinates.getArtifactId(), coordinates.getVersion(),
               MoreObjects.firstNonNull(coordinates.getType(), "jar"), coordinates.getClassifier()));
       if (result.isPresent()) {
-        f = getRawArtifact(result.get(), remoteOnly);
+        r = getResolutionResult(result.get(), remoteOnly);
       }
     } catch (Throwable t) {
       throw new RuntimeException(t.getMessage(), t);
     }
-    return Optional.fromNullable(f);
+    return Optional.fromNullable(r);
   }
 
-  private File getRawArtifact(ArtifactResult artifactResult, boolean remoteOnly) {
-    File result = null;
+  private ResolutionResult getResolutionResult(ArtifactResult artifactResult, boolean remoteOnly) {
+    ResolutionResult result = null;
     Artifact artifact = artifactResult.getArtifact();
     if (artifact != null) {
+      String repositoryId = artifactResult.getRepository().getId();
       if (remoteOnly) {
-        if (!Objects.equal(artifactResult.getRepository().getId(), this.repoSession.getLocalRepository().getId())) {
-          result = artifact.getFile();
+        if (!Objects.equal(repositoryId, this.repoSession.getLocalRepository().getId())) {
+          result = new ResolutionResult(artifact.getFile(), repositoryId);
         }
       } else {
-        result = artifact.getFile();
+        result = new ResolutionResult(artifact.getFile(), repositoryId);
       }
     }
     return result;
+  }
+
+  public static class ResolutionResult {
+    private File file;
+    private String repositoryId;
+
+    public ResolutionResult(File f, String repositoryId) {
+      this.file = f;
+      this.repositoryId = repositoryId;
+    }
+
+    public File getFile() {
+      return this.file;
+    }
+
+    public String getRepositoryId() {
+      return this.repositoryId;
+    }
   }
 }
