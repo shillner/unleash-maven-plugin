@@ -26,7 +26,7 @@
     <version.guava>19.0</version.guava>
     <version.junit>4.12</version.junit>
     <version.junit-dataprovider>1.10.3</version.junit-dataprovider>
-    <version.maven>3.2.1</version.maven>
+    <version.maven>3.2.2</version.maven>
     <version.maven-invoker>2.2</version.maven-invoker>
     <version.maven-plugin-plugin>3.4</version.maven-plugin-plugin>
     <version.mockito-all>1.10.19</version.mockito-all>
