@@ -56,30 +56,64 @@ public class CheckAether implements CDIMojoProcessingStep {
 
     Collection<MavenProject> snapshotProjects = Collections2.filter(this.reactorProjects, IsSnapshotProject.INSTANCE);
 
-    List<MavenProject> alreadyReleasedProjects = Lists.newArrayList();
+    List<ArtifactCoordinates> remotelyReleasedProjects = Lists.newArrayList();
+    List<ArtifactCoordinates> locallyReleasedProjects = Lists.newArrayList();
     for (MavenProject p : snapshotProjects) {
       this.log.debug("\tChecking module '" + ProjectToString.INSTANCE.apply(p) + "'");
       ArtifactCoordinates calculatedCoordinates = this.metadata
           .getArtifactCoordinatesByPhase(p.getGroupId(), p.getArtifactId()).get(ReleasePhase.RELEASE);
-      if (isReleased(calculatedCoordinates.getGroupId(), calculatedCoordinates.getArtifactId(),
+      if (isRemotelyReleased(calculatedCoordinates.getGroupId(), calculatedCoordinates.getArtifactId(),
           calculatedCoordinates.getVersion())) {
-        alreadyReleasedProjects.add(p);
+        remotelyReleasedProjects.add(calculatedCoordinates);
+      } else if (isLocallyReleased(calculatedCoordinates.getGroupId(), calculatedCoordinates.getArtifactId(),
+          calculatedCoordinates.getVersion())) {
+        locallyReleasedProjects.add(calculatedCoordinates);
       }
     }
 
-    if (!alreadyReleasedProjects.isEmpty()) {
-      this.log.error("\tThe following projects are already present in one of your remote repositories:");
-      for (MavenProject p : alreadyReleasedProjects) {
-        this.log.error("\t\t" + ProjectToString.INSTANCE.apply(p));
+    handleRemoteReleases(remotelyReleasedProjects);
+    handleLocalReleases(locallyReleasedProjects);
+  }
+
+  private void handleRemoteReleases(List<ArtifactCoordinates> remotelyReleasedProjects) throws MojoFailureException {
+    if (!remotelyReleasedProjects.isEmpty()) {
+      this.log.error("\tThe following artifacts are already present in one of your remote repositories:");
+      for (ArtifactCoordinates c : remotelyReleasedProjects) {
+        this.log.error("\t\t" + c);
       }
-      throw new IllegalStateException(
-          "Some of the reactor projects have already been released. Please check your repositories!");
+      throw new MojoFailureException(
+          "Some of the reactor projects have already been released. Please check your remote repositories!");
     }
   }
 
-  private boolean isReleased(String groupId, String artifactId, String version) {
+  private void handleLocalReleases(List<ArtifactCoordinates> locallyReleasedProjects) throws MojoFailureException {
+    if (!locallyReleasedProjects.isEmpty()) {
+      if (this.allowLocalReleaseArtifacts) {
+        this.log.warn(
+            "\tLocal release artifacts are allowed but just for information, the following artifacts are already present in your local repository:");
+        for (ArtifactCoordinates c : locallyReleasedProjects) {
+          this.log.warn("\t\t" + c);
+        }
+      } else {
+        this.log.error("\tThe following artifacts are already present in your local repository:");
+        for (ArtifactCoordinates c : locallyReleasedProjects) {
+          this.log.error("\t\t" + c);
+        }
+        throw new MojoFailureException(
+            "Some of the reactor projects have already been released locally. Please check your local repository!");
+      }
+    }
+  }
+
+  private boolean isRemotelyReleased(String groupId, String artifactId, String version) {
     ArtifactCoordinates coordinates = new ArtifactCoordinates(groupId, artifactId, version, PomUtil.ARTIFACT_TYPE_POM);
-    Optional<File> pom = this.artifactResolver.resolve(coordinates, this.allowLocalReleaseArtifacts);
+    Optional<File> pom = this.artifactResolver.resolve(coordinates, true);
+    return pom.isPresent();
+  }
+
+  private boolean isLocallyReleased(String groupId, String artifactId, String version) {
+    ArtifactCoordinates coordinates = new ArtifactCoordinates(groupId, artifactId, version, PomUtil.ARTIFACT_TYPE_POM);
+    Optional<File> pom = this.artifactResolver.resolve(coordinates, false);
     return pom.isPresent();
   }
 }
