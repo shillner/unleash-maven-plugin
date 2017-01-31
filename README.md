@@ -13,7 +13,7 @@ This plugin has been developed because we had some serious issues with the defau
 Requirements
 ------------
 * JDK 1.6 or higher
-* Apache Maven 3.2.1 or higher
+* Apache Maven 3.2.2 or higher
 
 
 The Advantages At A Glance
