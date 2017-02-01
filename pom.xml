@@ -45,7 +45,7 @@
   </modules>
 
   <properties>
-    <version.java>1.6</version.java>
+    <version.java>1.7</version.java>
   </properties>
 
   <build>

@@ -1,7 +1,6 @@
 package com.itemis.maven.plugins.unleash.util.logging;
 
 import java.text.MessageFormat;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -42,10 +41,10 @@ public class JavaLoggerAdapter extends Logger {
     log(new LogRecord(level, msg));
   }
 
-  @Override
-  public void log(Level level, Supplier<String> msgSupplier) {
-    log(new LogRecord(level, msgSupplier.get()));
-  }
+  // @Override
+  // public void log(Level level, Supplier<String> msgSupplier) {
+  // log(new LogRecord(level, msgSupplier.get()));
+  // }
 
   @Override
   public void log(Level level, String msg, Object param1) {
@@ -68,12 +67,12 @@ public class JavaLoggerAdapter extends Logger {
     log(record);
   }
 
-  @Override
-  public void log(Level level, Throwable thrown, Supplier<String> msgSupplier) {
-    LogRecord record = new LogRecord(level, msgSupplier.get());
-    record.setThrown(thrown);
-    log(record);
-  }
+  // @Override
+  // public void log(Level level, Throwable thrown, Supplier<String> msgSupplier) {
+  // LogRecord record = new LogRecord(level, msgSupplier.get());
+  // record.setThrown(thrown);
+  // log(record);
+  // }
 
   @Override
   public Level getLevel() {
