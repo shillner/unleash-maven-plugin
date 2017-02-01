@@ -41,11 +41,6 @@ public class JavaLoggerAdapter extends Logger {
     log(new LogRecord(level, msg));
   }
 
-  // @Override
-  // public void log(Level level, Supplier<String> msgSupplier) {
-  // log(new LogRecord(level, msgSupplier.get()));
-  // }
-
   @Override
   public void log(Level level, String msg, Object param1) {
     LogRecord record = new LogRecord(level, msg);
@@ -66,13 +61,6 @@ public class JavaLoggerAdapter extends Logger {
     record.setThrown(thrown);
     log(record);
   }
-
-  // @Override
-  // public void log(Level level, Throwable thrown, Supplier<String> msgSupplier) {
-  // LogRecord record = new LogRecord(level, msgSupplier.get());
-  // record.setThrown(thrown);
-  // log(record);
-  // }
 
   @Override
   public Level getLevel() {
