@@ -3,6 +3,7 @@ package com.itemis.maven.plugins.unleash.steps.actions;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.inject.Inject;
@@ -58,6 +59,9 @@ public class BuildProject implements CDIMojoProcessingStep {
   @Inject
   @Named("unleashOutputFolder")
   private File unleashOutputFolder;
+  @Inject
+  @Named("releaseEnvVariables")
+  private Map<String, String> releaseEnvironmentVariables;
 
   private File tempSettingsFile;
 
@@ -105,6 +109,9 @@ public class BuildProject implements CDIMojoProcessingStep {
     request.setProperties(this.releaseArgs);
     request.setProfiles(this.profiles);
     request.setShellEnvironmentInherited(true);
+    for (String key : this.releaseEnvironmentVariables.keySet()) {
+      request.addShellEnvironment(key, this.releaseEnvironmentVariables.get(key));
+    }
     request.setOffline(this.settings.isOffline());
     request.setInteractive(this.settings.isInteractiveMode());
     this.tempSettingsFile = createAndSetTempSettings(request);

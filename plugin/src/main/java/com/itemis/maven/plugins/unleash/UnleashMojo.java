@@ -2,6 +2,7 @@ package com.itemis.maven.plugins.unleash;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.inject.Named;
@@ -28,6 +29,7 @@ import org.eclipse.aether.repository.RemoteRepository;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.AbstractCDIMojo;
 import com.itemis.maven.plugins.cdi.annotations.MojoInject;
@@ -196,6 +198,9 @@ public class UnleashMojo extends AbstractCDIMojo {
   @Parameter(property = "unleash.scmSshPassphraseEnvVar", required = false)
   private String scmSshPassphraseEnvVar;
 
+  @Parameter(property = "unleash.releaseEnvironment", required = false)
+  private String releaseEnvironmentVariables;
+
   @MojoProduces
   @Named("artifactSpyPlugin")
   private ArtifactCoordinates artifactSpyPluginCoordinates = new ArtifactCoordinates("com.itemis.maven.plugins",
@@ -243,5 +248,24 @@ public class UnleashMojo extends AbstractCDIMojo {
       }
     }
     return args;
+  }
+
+  @MojoProduces
+  @Named("releaseEnvVariables")
+  private Map<String, String> getReleaseEnvironmentVariables() {
+    Map<String, String> env = Maps.newHashMap();
+    if (!Strings.isNullOrEmpty(releaseEnvironmentVariables)) {
+      Iterable<String> split = Splitter.on(',').split(releaseEnvironmentVariables);
+      for (String token : split) {
+        String date = Strings.emptyToNull(token.trim());
+        if (date != null) {
+          List<String> dataSplit = Splitter.on("=>").splitToList(date);
+          String key = dataSplit.get(0);
+          String value = dataSplit.get(1);
+          env.put(key, value);
+        }
+      }
+    }
+    return env;
   }
 }
