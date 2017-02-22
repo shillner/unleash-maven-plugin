@@ -28,8 +28,8 @@ public final class MavenVersionUtil {
   }
 
   /**
-   * Calculates the next higher SNAPSHOT version of the passed version String by incrementing the lowest possible number
-   * segment of the version String by one.<br>
+   * Calculates the next higher SNAPSHOT version of the passed version String by incrementing the respective number
+   * segment of the version String by one that is determined by the chosen upgrade strategy.<br>
    * <strong>Some examples:</strong>
    * <table style="width:50%;border:2px solid black;border-collapse:collapse;">
    * <tr>
@@ -63,41 +63,34 @@ public final class MavenVersionUtil {
    * </table>
    *
    * @param version the current version from which the follow-up SNAPSHOT version shall be calculated.
+   * @param upgradeStrategy the strategy which determines the part of the version to upgrade.
+   * @return the next higher SNAPSHOT version.
+   */
+  public static String calculateNextSnapshotVersion(String version, VersionUpgradeStrategy upgradeStrategy) {
+    VersionUpgradeStrategy strategy = upgradeStrategy != null ? upgradeStrategy : VersionUpgradeStrategy.DEFAULT;
+    Version v = Version.parse(version);
+    v.increase(strategy);
+
+    String snapshotVersion = v.toString();
+    if (!snapshotVersion.endsWith(VERSION_QUALIFIER_SNAPSHOT)) {
+      snapshotVersion += VERSION_QUALIFIER_SNAPSHOT;
+    }
+    return snapshotVersion;
+  }
+
+  /**
+   * Calculates the next higher SNAPSHOT version of the passed version String by incrementing the lowest possible
+   * number
+   * segment of the version String by one.<br>
+   * This is just a convenience method which calls {@link #calculateNextSnapshotVersion(String,
+   * VersionUpgradeStrategy)}
+   * with the passed version and {@link VersionUpgradeStrategy#DEFAULT}.
+   *
+   * @param version the current version from which the follow-up SNAPSHOT version shall be calculated.
    * @return the next higher SNAPSHOT version.
    */
   public static String calculateNextSnapshotVersion(String version) {
-    StringBuilder sb;
-    if (version.endsWith(VERSION_QUALIFIER_SNAPSHOT)) {
-      sb = new StringBuilder(version.substring(0, version.length() - VERSION_QUALIFIER_SNAPSHOT.length()));
-    } else {
-      sb = new StringBuilder(version);
-    }
-
-    int start = -1;
-    int end = -1;
-    for (int i = sb.length() - 1; i >= 0; i--) {
-      try {
-        Integer.parseInt(sb.substring(i, i + 1));
-        if (end == -1) {
-          end = i;
-        }
-      } catch (NumberFormatException e) {
-        if (end > 0 && start == -1) {
-          start = i + 1;
-          break;
-        }
-      }
-    }
-
-    if (end >= 0 && start == -1) {
-      start = 0;
-    }
-
-    int versionSegmentToIncrease = Integer.parseInt(sb.substring(start, end + 1));
-    sb.replace(start, end + 1, Integer.toString(versionSegmentToIncrease + 1));
-    sb.append(VERSION_QUALIFIER_SNAPSHOT);
-
-    return sb.toString();
+    return calculateNextSnapshotVersion(version, VersionUpgradeStrategy.DEFAULT);
   }
 
   /**

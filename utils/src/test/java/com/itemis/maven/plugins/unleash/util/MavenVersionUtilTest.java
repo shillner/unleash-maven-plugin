@@ -9,6 +9,7 @@ import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
 
 @RunWith(DataProviderRunner.class)
+// TODO implement tests for upgrade strategy usage!
 public class MavenVersionUtilTest {
   @DataProvider
   public static Object[][] calculateReleaseVersion() {

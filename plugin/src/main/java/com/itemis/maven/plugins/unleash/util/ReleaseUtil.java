@@ -56,15 +56,16 @@ public final class ReleaseUtil {
    * @param version the initial version from which the development version shall be derived.
    * @param defaultDevelopmentVersion the default development version that should be taken into account.
    * @param prompter a {@link Prompter} for prompting the user for a version.
+   * @param upgradeStrategy the strategy which determines the version segment to increase.
    * @return the development version derived after applying several calculation strategies.
    */
   public static String getNextDevelopmentVersion(String version, Optional<String> defaultDevelopmentVersion,
-      Optional<Prompter> prompter) {
+      Optional<Prompter> prompter, VersionUpgradeStrategy upgradeStrategy) {
     if (defaultDevelopmentVersion.isPresent()) {
       return defaultDevelopmentVersion.get();
     }
 
-    String devVersion = MavenVersionUtil.calculateNextSnapshotVersion(version);
+    String devVersion = MavenVersionUtil.calculateNextSnapshotVersion(version, upgradeStrategy);
     if (prompter.isPresent()) {
       try {
         devVersion = prompter.get().prompt("Please specify the next development version", devVersion);

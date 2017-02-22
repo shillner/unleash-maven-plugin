@@ -21,6 +21,7 @@ import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
+import com.itemis.maven.plugins.unleash.util.VersionUpgradeStrategy;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 
 /**
@@ -50,6 +51,8 @@ public class CalculateVersions implements CDIMojoProcessingStep {
   private Settings settings;
   @Inject
   private Prompter prompter;
+  @Inject
+  private VersionUpgradeStrategy upgradeStrategy;
 
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
@@ -73,7 +76,7 @@ public class CalculateVersions implements CDIMojoProcessingStep {
       this.log.debug("\t\t" + ReleasePhase.RELEASE + " = " + releaseVersion);
 
       String nextDevVersion = ReleaseUtil.getNextDevelopmentVersion(releaseVersion,
-          Optional.fromNullable(this.defaultDevelopmentVersion), prompterToUse);
+          Optional.fromNullable(this.defaultDevelopmentVersion), prompterToUse, this.upgradeStrategy);
       ArtifactCoordinates postReleaseCoordinates = new ArtifactCoordinates(project.getGroupId(),
           project.getArtifactId(), nextDevVersion, PomUtil.ARTIFACT_TYPE_POM);
       this.metadata.addArtifactCoordinates(postReleaseCoordinates, ReleasePhase.POST_RELEASE);

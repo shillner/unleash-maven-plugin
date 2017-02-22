@@ -71,13 +71,14 @@ public class ReleaseUtilTest {
         ReleaseUtil.getReleaseVersion(version, Optional.fromNullable(defaultReleaseVersion), Optional.of(prompter)));
   }
 
+  // TODO implement further tests with different strategies and null
   @Test
   @DataProvider({ "1-SNAPSHOT,null,2-SNAPSHOT", "1.0.0-SNAPSHOT,null,1.0.1-SNAPSHOT", "3.1,null,3.2-SNAPSHOT",
       "3.Alpha1-SNAPSHOT,null,3.Alpha2-SNAPSHOT", "2.4,3-SNAPSHOT,3-SNAPSHOT",
       "2.1.Alpha-SNAPSHOT,null,2.2.Alpha-SNAPSHOT" })
   public void testGetNextDevelopmentVersion(String version, String defaultDevVersion, String expected) {
     Assert.assertEquals(expected, ReleaseUtil.getNextDevelopmentVersion(version,
-        Optional.fromNullable(defaultDevVersion), Optional.<Prompter> absent()));
+        Optional.fromNullable(defaultDevVersion), Optional.<Prompter> absent(), VersionUpgradeStrategy.DEFAULT));
   }
 
   @Test
@@ -87,6 +88,6 @@ public class ReleaseUtilTest {
     Prompter prompter = Mockito.mock(Prompter.class);
     Mockito.when(prompter.prompt((String) Matchers.notNull(), (String) Matchers.notNull())).thenReturn(userInput);
     Assert.assertEquals(expected, ReleaseUtil.getNextDevelopmentVersion(version,
-        Optional.fromNullable(defaultReleaseVersion), Optional.of(prompter)));
+        Optional.fromNullable(defaultReleaseVersion), Optional.of(prompter), VersionUpgradeStrategy.DEFAULT));
   }
 }
