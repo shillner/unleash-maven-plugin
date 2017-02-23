@@ -26,6 +26,17 @@ public class MavenVersionUtilTest {
   }
 
   @DataProvider
+  public static Object[][] calculateNextSnapshotVersionWithStrategy() {
+    return new Object[][] { { "3.8.1", VersionUpgradeStrategy.DEFAULT, "3.8.2-SNAPSHOT" },
+        { "1.0.0-SNAPSHOT", VersionUpgradeStrategy.MAJOR, "2.0.0-SNAPSHOT" },
+        { "1.12", VersionUpgradeStrategy.INCREMENTAL, "1.13-SNAPSHOT" },
+        { "1.3-SNAPSH", VersionUpgradeStrategy.MAJOR, "2.3-SNAPSH-SNAPSHOT" },
+        { "3-Alpha1", VersionUpgradeStrategy.DEFAULT, "3-Alpha2-SNAPSHOT" },
+        { "3-Alpha1-SNAPSHOT", null, "3-Alpha2-SNAPSHOT" },
+        { "1.1.1-SNAPSHOT", VersionUpgradeStrategy.INCREMENTAL, "1.1.2-SNAPSHOT" } };
+  }
+
+  @DataProvider
   public static Object[][] isSnapshot() {
     return new Object[][] { { "1.0.0" + MavenVersionUtil.VERSION_QUALIFIER_SNAPSHOT, true },
         { "1.0.0" + MavenVersionUtil.VERSION_QUALIFIER_SNAPSHOT.toLowerCase(), true }, { "1.0.0", false },
@@ -54,6 +65,13 @@ public class MavenVersionUtilTest {
   @UseDataProvider("calculateNextSnapshotVersion")
   public void testCalculateNextSnapshotVersion(String version, String expectedSnapshotVersion) {
     Assert.assertEquals(expectedSnapshotVersion, MavenVersionUtil.calculateNextSnapshotVersion(version));
+  }
+
+  @Test
+  @UseDataProvider("calculateNextSnapshotVersionWithStrategy")
+  public void testCalculateNextSnapshotVersionWithStrategy(String version, VersionUpgradeStrategy strategy,
+      String expectedSnapshotVersion) {
+    Assert.assertEquals(expectedSnapshotVersion, MavenVersionUtil.calculateNextSnapshotVersion(version, strategy));
   }
 
   @Test

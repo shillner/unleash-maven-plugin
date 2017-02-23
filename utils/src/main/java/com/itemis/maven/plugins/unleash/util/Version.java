@@ -63,13 +63,11 @@ class Version {
 
   private void increaseSpecificSegment(short index) {
     if (index >= this.segments.size() || index < 0) {
-      // QUESTION do we need some logging here?
       increaseLowestPossibleSegment();
     } else {
       String segment = this.segments.get(index);
       String increasedSegment = increaseSegment(segment);
       if (Objects.equal(segment, increasedSegment)) {
-        // QUESTION do we need some logging here?
         increaseLowestPossibleSegment();
       } else {
         this.segments.set(index, increasedSegment);

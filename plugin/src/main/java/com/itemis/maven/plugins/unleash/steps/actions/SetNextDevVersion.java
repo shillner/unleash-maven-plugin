@@ -26,6 +26,7 @@ import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 import com.itemis.maven.plugins.unleash.scm.requests.RevertCommitsRequest;
 import com.itemis.maven.plugins.unleash.util.DevVersionUtil;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
+import com.itemis.maven.plugins.unleash.util.VersionUpgradeStrategy;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToCoordinates;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 import com.itemis.maven.plugins.unleash.util.scm.ScmPomVersionsMergeClient;
@@ -56,6 +57,8 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
   private String scmMessagePrefix;
   @Inject
   private DevVersionUtil util;
+  @Inject
+  private VersionUpgradeStrategy versionUpgradeStrategy;
   private ScmProvider scmProvider;
   private Map<ArtifactCoordinates, Document> cachedPOMs;
 
@@ -90,7 +93,7 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
     String oldVerion = coordinatesByPhase.get(ReleasePhase.RELEASE).getVersion();
     String newVersion = coordinatesByPhase.get(ReleasePhase.POST_RELEASE).getVersion();
     this.log.debug("\t\tUpdate of module version '" + project.getGroupId() + ":" + project.getArtifact() + "' ["
-        + oldVerion + " => " + newVersion + "]");
+        + oldVerion + " => " + newVersion + "] Version Upgrade Strategy: " + this.versionUpgradeStrategy.name());
     PomUtil.setProjectVersion(project.getModel(), document, newVersion);
   }
 
