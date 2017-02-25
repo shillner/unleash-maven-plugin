@@ -204,7 +204,7 @@ public class UnleashMojo extends AbstractCDIMojo {
 
   @Parameter(property = "unleash.versionUpgradeStrategy", required = true, defaultValue = "DEFAULT")
   @MojoProduces
-  private VersionUpgradeStrategy VersionUpgradeStrategy;
+  private VersionUpgradeStrategy versionUpgradeStrategy;
 
   @MojoProduces
   @Named("artifactSpyPlugin")

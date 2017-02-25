@@ -35,6 +35,7 @@ import com.itemis.maven.plugins.cdi.AbstractCDIMojo;
 import com.itemis.maven.plugins.cdi.annotations.MojoInject;
 import com.itemis.maven.plugins.cdi.annotations.MojoProduces;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
+import com.itemis.maven.plugins.unleash.util.VersionUpgradeStrategy;
 
 /**
  * A Maven {@link Mojo} which performs a release of the project it is started on.<br>
@@ -201,6 +202,10 @@ public class UnleashTychoMojo extends AbstractCDIMojo {
   @Parameter(property = "unleash.releaseEnvironment", required = false)
   private String releaseEnvironmentVariables;
 
+  @Parameter(property = "unleash.versionUpgradeStrategy", required = true, defaultValue = "DEFAULT")
+  @MojoProduces
+  private VersionUpgradeStrategy versionUpgradeStrategy;
+
   @MojoProduces
   @Named("artifactSpyPlugin")
   private ArtifactCoordinates artifactSpyPluginCoordinates = new ArtifactCoordinates("com.itemis.maven.plugins",
@@ -254,8 +259,8 @@ public class UnleashTychoMojo extends AbstractCDIMojo {
   @Named("releaseEnvVariables")
   private Map<String, String> getReleaseEnvironmentVariables() {
     Map<String, String> env = Maps.newHashMap();
-    if (!Strings.isNullOrEmpty(releaseEnvironmentVariables)) {
-      Iterable<String> split = Splitter.on(',').split(releaseEnvironmentVariables);
+    if (!Strings.isNullOrEmpty(this.releaseEnvironmentVariables)) {
+      Iterable<String> split = Splitter.on(',').split(this.releaseEnvironmentVariables);
       for (String token : split) {
         String date = Strings.emptyToNull(token.trim());
         if (date != null) {
