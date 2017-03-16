@@ -4,8 +4,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -21,16 +21,20 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.project.MavenProject;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.cdi.logging.Logger;
+import com.itemis.maven.plugins.unleash.util.PomPropertyResolver;
 import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
-import com.itemis.maven.plugins.unleash.util.functions.PluginToString;
+import com.itemis.maven.plugins.unleash.util.functions.PluginToCoordinates;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 import com.itemis.maven.plugins.unleash.util.predicates.IsSnapshotPlugin;
 
@@ -55,25 +59,43 @@ public class CheckPluginVersions implements CDIMojoProcessingStep {
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     this.log.info("Checking that none of the reactor projects contains SNAPSHOT plugins.");
 
-    Multimap<MavenProject, String> snapshotsByProject = HashMultimap.create();
+    Map<MavenProject, PomPropertyResolver> propertyResolvers = Maps
+        .newHashMapWithExpectedSize(this.reactorProjects.size());
+    Multimap<MavenProject, ArtifactCoordinates> snapshotsByProject = HashMultimap.create();
     for (MavenProject project : this.reactorProjects) {
       this.log.debug("\tChecking plugins of reactor project '" + ProjectToString.INSTANCE.apply(project) + "':");
-      snapshotsByProject.putAll(project, getSnapshotsFromManagement(project));
-      snapshotsByProject.putAll(project, getSnapshots(project));
-      snapshotsByProject.putAll(project, getSnapshotsFromAllProfiles(project));
+      PomPropertyResolver propertyResolver = new PomPropertyResolver(project);
+      propertyResolvers.put(project, propertyResolver);
+
+      snapshotsByProject.putAll(project, getSnapshotsFromManagement(project, propertyResolver));
+      snapshotsByProject.putAll(project, getSnapshots(project, propertyResolver));
+      snapshotsByProject.putAll(project, getSnapshotsFromAllProfiles(project, propertyResolver));
 
       removePluginForIntegrationTests(snapshotsByProject);
     }
 
+    failIfSnapshotsAreReferenced(snapshotsByProject, propertyResolvers);
+  }
+
+  private void failIfSnapshotsAreReferenced(Multimap<MavenProject, ArtifactCoordinates> snapshotsByProject,
+      Map<MavenProject, PomPropertyResolver> propertyResolvers) throws MojoFailureException {
     if (!snapshotsByProject.values().isEmpty()) {
       this.log.error(
           "\tThere are references to SNAPSHOT plugins! The following list contains all SNAPSHOT plugins grouped by module:");
+
       for (MavenProject project : snapshotsByProject.keySet()) {
-        Collection<String> snapshots = snapshotsByProject.get(project);
+        PomPropertyResolver propertyResolver = propertyResolvers.get(project);
+        Collection<ArtifactCoordinates> snapshots = snapshotsByProject.get(project);
         if (!snapshots.isEmpty()) {
           this.log.error("\t\t[PROJECT] " + ProjectToString.INSTANCE.apply(project));
-          for (String plugin : snapshots) {
-            this.log.error("\t\t\t[PLUGIN] " + plugin);
+
+          for (ArtifactCoordinates plugin : snapshots) {
+            String resolvedVersion = propertyResolver.expandPropertyReferences(plugin.getVersion());
+            String coordinates = plugin.toString();
+            if (!Objects.equal(resolvedVersion, plugin.getVersion())) {
+              coordinates = coordinates + " (resolves to " + resolvedVersion + ")";
+            }
+            this.log.error("\t\t\t[PLUGIN] " + coordinates);
           }
         }
       }
@@ -81,70 +103,75 @@ public class CheckPluginVersions implements CDIMojoProcessingStep {
     }
   }
 
-  private Set<String> getSnapshotsFromManagement(MavenProject project) {
+  private Set<ArtifactCoordinates> getSnapshotsFromManagement(MavenProject project,
+      PomPropertyResolver propertyResolver) {
     this.log.debug("\t\tChecking managed plugins");
     Build build = project.getBuild();
     if (build != null) {
       PluginManagement pluginManagement = build.getPluginManagement();
       if (pluginManagement != null) {
-        Collection<Plugin> snapshots = Collections2.filter(pluginManagement.getPlugins(), IsSnapshotPlugin.INSTANCE);
-        return Sets.newHashSet(Collections2.transform(snapshots, PluginToString.INSTANCE));
+        Collection<Plugin> snapshots = Collections2.filter(pluginManagement.getPlugins(),
+            new IsSnapshotPlugin(propertyResolver));
+        return Sets.newHashSet(Collections2.transform(snapshots, PluginToCoordinates.INSTANCE));
       }
     }
     return Collections.emptySet();
   }
 
-  private Set<String> getSnapshots(MavenProject project) {
+  private Set<ArtifactCoordinates> getSnapshots(MavenProject project, PomPropertyResolver propertyResolver) {
     this.log.debug("\t\tChecking direct plugin references");
     Build build = project.getBuild();
     if (build != null) {
-      Collection<Plugin> snapshots = Collections2.filter(build.getPlugins(), IsSnapshotPlugin.INSTANCE);
-      return Sets.newHashSet(Collections2.transform(snapshots, PluginToString.INSTANCE));
+      Collection<Plugin> snapshots = Collections2.filter(build.getPlugins(), new IsSnapshotPlugin(propertyResolver));
+      return Sets.newHashSet(Collections2.transform(snapshots, PluginToCoordinates.INSTANCE));
     }
     return Collections.emptySet();
   }
 
-  private Set<String> getSnapshotsFromAllProfiles(MavenProject project) {
-    Set<String> snapshots = Sets.newHashSet();
+  private Set<ArtifactCoordinates> getSnapshotsFromAllProfiles(MavenProject project,
+      PomPropertyResolver propertyResolver) {
+    Set<ArtifactCoordinates> snapshots = Sets.newHashSet();
     List<Profile> profiles = project.getModel().getProfiles();
     if (profiles != null) {
       for (Profile profile : profiles) {
-        snapshots.addAll(getSnapshotsFromManagement(profile));
-        snapshots.addAll(getSnapshots(profile));
+        snapshots.addAll(getSnapshotsFromManagement(profile, propertyResolver));
+        snapshots.addAll(getSnapshots(profile, propertyResolver));
       }
     }
     return snapshots;
   }
 
-  private Set<String> getSnapshotsFromManagement(Profile profile) {
+  private Set<ArtifactCoordinates> getSnapshotsFromManagement(Profile profile, PomPropertyResolver propertyResolver) {
     this.log.debug("\t\tChecking managed plugins of profile '" + profile.getId() + "'");
     BuildBase build = profile.getBuild();
     if (build != null) {
       PluginManagement pluginManagement = build.getPluginManagement();
       if (pluginManagement != null) {
-        Collection<Plugin> snapshots = Collections2.filter(pluginManagement.getPlugins(), IsSnapshotPlugin.INSTANCE);
-        return Sets.newHashSet(Collections2.transform(snapshots, PluginToString.INSTANCE));
+        Collection<Plugin> snapshots = Collections2.filter(pluginManagement.getPlugins(),
+            new IsSnapshotPlugin(propertyResolver));
+        return Sets.newHashSet(Collections2.transform(snapshots, PluginToCoordinates.INSTANCE));
       }
     }
     return Collections.emptySet();
   }
 
-  private Set<String> getSnapshots(Profile profile) {
+  private Set<ArtifactCoordinates> getSnapshots(Profile profile, PomPropertyResolver propertyResolver) {
     this.log.debug("\t\tChecking direct plugin references of profile '" + profile.getId() + "'");
     BuildBase build = profile.getBuild();
     if (build != null) {
-      Collection<Plugin> snapshots = Collections2.filter(build.getPlugins(), IsSnapshotPlugin.INSTANCE);
-      return Sets.newHashSet(Collections2.transform(snapshots, PluginToString.INSTANCE));
+      Collection<Plugin> snapshots = Collections2.filter(build.getPlugins(), new IsSnapshotPlugin(propertyResolver));
+      return Sets.newHashSet(Collections2.transform(snapshots, PluginToCoordinates.INSTANCE));
     }
     return Collections.emptySet();
   }
 
   // Removes the unleash plugin itself from the list of violating dependencies if the integration test mode is enabled.
-  private void removePluginForIntegrationTests(Multimap<MavenProject, String> snapshotsByProject) {
+  private void removePluginForIntegrationTests(Multimap<MavenProject, ArtifactCoordinates> snapshotsByProject) {
     if (ReleaseUtil.isIntegrationtest()) {
-      for (Iterator<Entry<MavenProject, String>> i = snapshotsByProject.entries().iterator(); i.hasNext();) {
-        Entry<MavenProject, String> entry = i.next();
-        if (Objects.equals(entry.getValue(), PluginToString.INSTANCE.apply(this.pluginDescriptor.getPlugin()))) {
+      for (Iterator<Entry<MavenProject, ArtifactCoordinates>> i = snapshotsByProject.entries().iterator(); i
+          .hasNext();) {
+        Entry<MavenProject, ArtifactCoordinates> entry = i.next();
+        if (Objects.equal(entry.getValue(), PluginToCoordinates.INSTANCE.apply(this.pluginDescriptor.getPlugin()))) {
           i.remove();
         }
       }

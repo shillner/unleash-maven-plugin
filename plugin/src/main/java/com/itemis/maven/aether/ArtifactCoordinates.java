@@ -15,6 +15,10 @@ public class ArtifactCoordinates {
   private String type;
   private String classifier;
 
+  public ArtifactCoordinates(String groupId, String artifactId, String version) {
+    this(groupId, artifactId, version, null, null);
+  }
+
   public ArtifactCoordinates(String groupId, String artifactId, String version, String type) {
     this(groupId, artifactId, version, type, null);
   }
@@ -52,7 +56,9 @@ public class ArtifactCoordinates {
     StringBuilder sb = new StringBuilder();
     sb.append(this.groupId).append(':');
     sb.append(this.artifactId).append(':');
-    sb.append(this.type).append(':');
+    if (this.type != null) {
+      sb.append(this.type).append(':');
+    }
     if (this.classifier != null) {
       sb.append(this.classifier).append(':');
     }
@@ -87,9 +93,6 @@ public class ArtifactCoordinates {
 
   @Override
   public int hashCode() {
-    if (this.classifier != null) {
-      return Objects.hashCode(this.groupId, this.artifactId, this.type, this.classifier, this.version);
-    }
-    return Objects.hashCode(this.groupId, this.artifactId, this.type, this.version);
+    return Objects.hashCode(this.groupId, this.artifactId, this.type, this.classifier, this.version);
   }
 }

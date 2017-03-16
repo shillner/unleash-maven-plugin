@@ -4,6 +4,7 @@ import org.apache.maven.model.Plugin;
 
 import com.google.common.base.Predicate;
 import com.itemis.maven.plugins.unleash.util.MavenVersionUtil;
+import com.itemis.maven.plugins.unleash.util.PomPropertyResolver;
 
 /**
  * A predicate determining whether a {@link Plugin} has a SNAPSHOT version assigned.
@@ -11,12 +12,17 @@ import com.itemis.maven.plugins.unleash.util.MavenVersionUtil;
  * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
  * @since 1.0.0
  */
-public enum IsSnapshotPlugin implements Predicate<Plugin> {
-  INSTANCE;
+public class IsSnapshotPlugin implements Predicate<Plugin> {
+  private PomPropertyResolver propertyResolver;
+
+  public IsSnapshotPlugin(PomPropertyResolver propertyResolver) {
+    this.propertyResolver = propertyResolver;
+  }
 
   @Override
   public boolean apply(Plugin p) {
     String version = p.getVersion();
+    version = propertyResolver.expandPropertyReferences(version);
     return version != null && MavenVersionUtil.isSnapshot(version);
   }
 }

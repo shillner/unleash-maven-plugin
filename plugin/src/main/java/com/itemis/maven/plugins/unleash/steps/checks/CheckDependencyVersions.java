@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -17,8 +18,10 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.itemis.maven.aether.ArtifactCoordinates;
@@ -26,6 +29,7 @@ import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.cdi.logging.Logger;
+import com.itemis.maven.plugins.unleash.util.PomPropertyResolver;
 import com.itemis.maven.plugins.unleash.util.functions.DependencyToCoordinates;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToCoordinates;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
@@ -50,23 +54,42 @@ public class CheckDependencyVersions implements CDIMojoProcessingStep {
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     this.log.info("Checking that none of the reactor projects contain SNAPSHOT dependencies.");
 
+    Map<MavenProject, PomPropertyResolver> propertyResolvers = Maps
+        .newHashMapWithExpectedSize(this.reactorProjects.size());
     Multimap<MavenProject, ArtifactCoordinates> snapshotsByProject = HashMultimap.create();
     for (MavenProject project : this.reactorProjects) {
       this.log.debug("\tChecking dependencies of reactor project '" + ProjectToString.INSTANCE.apply(project) + "':");
-      snapshotsByProject.putAll(project, getSnapshotsFromManagement(project));
-      snapshotsByProject.putAll(project, getSnapshots(project));
-      snapshotsByProject.putAll(project, getSnapshotsFromAllProfiles(project));
+      PomPropertyResolver propertyResolver = new PomPropertyResolver(project);
+      propertyResolvers.put(project, propertyResolver);
+
+      snapshotsByProject.putAll(project, getSnapshotsFromManagement(project, propertyResolver));
+      snapshotsByProject.putAll(project, getSnapshots(project, propertyResolver));
+      snapshotsByProject.putAll(project, getSnapshotsFromAllProfiles(project, propertyResolver));
     }
 
+    failIfSnapshotsAreReferenced(snapshotsByProject, propertyResolvers);
+  }
+
+  private void failIfSnapshotsAreReferenced(Multimap<MavenProject, ArtifactCoordinates> snapshotsByProject,
+      Map<MavenProject, PomPropertyResolver> propertyResolvers) throws MojoFailureException {
     if (!snapshotsByProject.values().isEmpty()) {
       this.log.error(
           "\tThere are SNAPSHOT dependency references! The following list contains all SNAPSHOT dependencies grouped by module:");
+
       for (MavenProject p : snapshotsByProject.keySet()) {
+        PomPropertyResolver propertyResolver = propertyResolvers.get(p);
         Collection<ArtifactCoordinates> snapshots = snapshotsByProject.get(p);
+
         if (!snapshots.isEmpty()) {
           this.log.error("\t\t[PROJECT] " + ProjectToString.INSTANCE.apply(p));
+
           for (ArtifactCoordinates dependency : snapshots) {
-            this.log.error("\t\t\t[DEPENDENCY] " + dependency);
+            String resolvedVersion = propertyResolver.expandPropertyReferences(dependency.getVersion());
+            String coordinates = dependency.toString();
+            if (!Objects.equal(resolvedVersion, dependency.getVersion())) {
+              coordinates = coordinates + " (resolves to " + resolvedVersion + ")";
+            }
+            this.log.error("\t\t\t[DEPENDENCY] " + coordinates);
           }
         }
       }
@@ -74,12 +97,13 @@ public class CheckDependencyVersions implements CDIMojoProcessingStep {
     }
   }
 
-  private Set<ArtifactCoordinates> getSnapshotsFromManagement(MavenProject project) {
+  private Set<ArtifactCoordinates> getSnapshotsFromManagement(MavenProject project,
+      PomPropertyResolver propertyResolver) {
     this.log.debug("\t\tChecking managed dependencies");
     DependencyManagement dependencyManagement = project.getDependencyManagement();
     if (dependencyManagement != null) {
       Collection<Dependency> snapshots = Collections2.filter(dependencyManagement.getDependencies(),
-          IsSnapshotDependency.INSTANCE);
+          new IsSnapshotDependency(propertyResolver));
       HashSet<ArtifactCoordinates> snapshotDependencies = Sets
           .newHashSet(Collections2.transform(snapshots, DependencyToCoordinates.INSTANCE));
       filterMultiModuleDependencies(snapshotDependencies);
@@ -88,42 +112,45 @@ public class CheckDependencyVersions implements CDIMojoProcessingStep {
     return Collections.emptySet();
   }
 
-  private Set<ArtifactCoordinates> getSnapshots(MavenProject project) {
+  private Set<ArtifactCoordinates> getSnapshots(MavenProject project, PomPropertyResolver propertyResolver) {
     this.log.debug("\t\tChecking direct dependencies");
-    Collection<Dependency> snapshots = Collections2.filter(project.getDependencies(), IsSnapshotDependency.INSTANCE);
+    Collection<Dependency> snapshots = Collections2.filter(project.getDependencies(),
+        new IsSnapshotDependency(propertyResolver));
     HashSet<ArtifactCoordinates> snapshotDependencies = Sets
         .newHashSet(Collections2.transform(snapshots, DependencyToCoordinates.INSTANCE));
     filterMultiModuleDependencies(snapshotDependencies);
     return snapshotDependencies;
   }
 
-  private Set<ArtifactCoordinates> getSnapshotsFromAllProfiles(MavenProject project) {
+  private Set<ArtifactCoordinates> getSnapshotsFromAllProfiles(MavenProject project,
+      PomPropertyResolver propertyResolver) {
     Set<ArtifactCoordinates> snapshots = Sets.newHashSet();
     List<Profile> profiles = project.getModel().getProfiles();
     if (profiles != null) {
       for (Profile profile : profiles) {
-        snapshots.addAll(getSnapshotsFromManagement(profile));
-        snapshots.addAll(getSnapshots(profile));
+        snapshots.addAll(getSnapshotsFromManagement(profile, propertyResolver));
+        snapshots.addAll(getSnapshots(profile, propertyResolver));
       }
     }
     filterMultiModuleDependencies(snapshots);
     return snapshots;
   }
 
-  private Set<ArtifactCoordinates> getSnapshotsFromManagement(Profile profile) {
+  private Set<ArtifactCoordinates> getSnapshotsFromManagement(Profile profile, PomPropertyResolver propertyResolver) {
     this.log.debug("\t\tChecking managed dependencies of profile '" + profile.getId() + "'");
     DependencyManagement dependencyManagement = profile.getDependencyManagement();
     if (dependencyManagement != null) {
       Collection<Dependency> snapshots = Collections2.filter(dependencyManagement.getDependencies(),
-          IsSnapshotDependency.INSTANCE);
+          new IsSnapshotDependency(propertyResolver));
       return Sets.newHashSet(Collections2.transform(snapshots, DependencyToCoordinates.INSTANCE));
     }
     return Collections.emptySet();
   }
 
-  private Set<ArtifactCoordinates> getSnapshots(Profile profile) {
+  private Set<ArtifactCoordinates> getSnapshots(Profile profile, PomPropertyResolver propertyResolver) {
     this.log.debug("\t\tChecking direct dependencies of profile '" + profile.getId() + "'");
-    Collection<Dependency> snapshots = Collections2.filter(profile.getDependencies(), IsSnapshotDependency.INSTANCE);
+    Collection<Dependency> snapshots = Collections2.filter(profile.getDependencies(),
+        new IsSnapshotDependency(propertyResolver));
     return Sets.newHashSet(Collections2.transform(snapshots, DependencyToCoordinates.INSTANCE));
   }
 
