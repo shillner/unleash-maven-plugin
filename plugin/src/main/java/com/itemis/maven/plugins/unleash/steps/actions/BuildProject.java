@@ -9,6 +9,7 @@ import java.util.Properties;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -62,6 +63,8 @@ public class BuildProject implements CDIMojoProcessingStep {
   @Inject
   @Named("releaseEnvVariables")
   private Map<String, String> releaseEnvironmentVariables;
+  @Inject
+  private MavenSession session;
 
   private File tempSettingsFile;
 
@@ -114,6 +117,7 @@ public class BuildProject implements CDIMojoProcessingStep {
     }
     request.setOffline(this.settings.isOffline());
     request.setInteractive(this.settings.isInteractiveMode());
+    request.setToolchainsFile(this.session.getRequest().getUserToolchainsFile());
     this.tempSettingsFile = createAndSetTempSettings(request);
     return request;
   }
