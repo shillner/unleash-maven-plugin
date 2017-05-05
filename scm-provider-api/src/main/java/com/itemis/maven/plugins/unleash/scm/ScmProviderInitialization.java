@@ -34,6 +34,11 @@ public interface ScmProviderInitialization {
   Optional<String> getSshPrivateKeyPassphrase();
 
   /**
+   * @return an optional private key to use for SSH-based SCM access.
+   */
+  Optional<String> getSshPrivateKey();
+
+  /**
    * @return an optional logger for the provider.
    */
   Optional<Logger> getLogger();

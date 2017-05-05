@@ -199,6 +199,11 @@ public class UnleashTychoMojo extends AbstractCDIMojo {
   @Parameter(property = "unleash.scmSshPassphraseEnvVar", required = false)
   private String scmSshPassphraseEnvVar;
 
+  @MojoProduces
+  @Named("scmSshPrivateKeyEnvVar")
+  @Parameter(property = "unleash.scmSshPrivateKeyEnvVar", required = false)
+  private String scmSshPrivateKeyEnvVar;
+
   @Parameter(property = "unleash.releaseEnvironment", required = false)
   private String releaseEnvironmentVariables;
 

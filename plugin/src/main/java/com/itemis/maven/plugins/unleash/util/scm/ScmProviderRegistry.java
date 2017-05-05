@@ -56,6 +56,9 @@ public class ScmProviderRegistry {
   @Inject
   @Named("scmSshPassphraseEnvVar")
   private String scmSshPassphraseEnvVar;
+  @Inject
+  @Named("scmSshPrivateKeyEnvVar")
+  private String scmSshPrivateKeyEnvVar;
   private String scmProviderName;
   private ScmProvider provider;
 
@@ -83,9 +86,11 @@ public class ScmProviderRegistry {
         DefaultScmProviderInitialization initialization = new DefaultScmProviderInitialization(
             this.project.getBasedir());
         initialization.setLogger(new JavaLoggerAdapter(this.provider.getClass().getName(), this.log));
-        initialization.setUsername(getScmUsername()).setPassword(getScmPassword())
-            .setSshPrivateKeyPassphrase(getScmSshPassphrase());
-
+        initialization.setUsername(getScmUsername());
+        initialization.setUsername(getScmUsername());
+        initialization.setPassword(getScmPassword());
+        initialization.setSshPrivateKey(getPrivateKey());
+        initialization.setSshPrivateKeyPassphrase(getScmSshPassphrase());
         this.provider.initialize(initialization);
       } catch (IllegalStateException e) {
         throw e;
@@ -153,6 +158,14 @@ public class ScmProviderRegistry {
       passphrase = Strings.emptyToNull(System.getenv(this.scmSshPassphraseEnvVar));
     }
     return passphrase;
+  }
+
+  private String getPrivateKey() {
+    String privateKey = null;
+    if (StringUtils.isNotBlank(this.scmSshPrivateKeyEnvVar)) {
+      return Strings.emptyToNull(System.getenv(this.scmSshPrivateKeyEnvVar));
+    }
+    return null;
   }
 
   @PreDestroy

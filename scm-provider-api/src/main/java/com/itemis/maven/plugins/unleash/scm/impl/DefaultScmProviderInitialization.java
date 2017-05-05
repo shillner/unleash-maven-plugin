@@ -21,6 +21,7 @@ public class DefaultScmProviderInitialization implements ScmProviderInitializati
   private String username;
   private String password;
   private String sshPKPassphrase;
+  private String sshPrivateKey;
 
   /**
    * Creates a simple default initialization object with a pre-defined working directory.
@@ -67,6 +68,16 @@ public class DefaultScmProviderInitialization implements ScmProviderInitializati
   @Override
   public Optional<String> getSshPrivateKeyPassphrase() {
     return Optional.fromNullable(this.sshPKPassphrase);
+  }
+
+  public DefaultScmProviderInitialization setSshPrivateKey(String sshPrivateKey) {
+    this.sshPrivateKey = sshPrivateKey;
+    return this;
+  }
+
+  @Override
+  public Optional<String> getSshPrivateKey() {
+    return Optional.fromNullable(this.sshPrivateKey);
   }
 
   public DefaultScmProviderInitialization setLogger(Logger logger) {
