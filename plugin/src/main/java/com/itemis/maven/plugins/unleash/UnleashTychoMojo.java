@@ -207,9 +207,14 @@ public class UnleashTychoMojo extends AbstractCDIMojo {
   @Parameter(property = "unleash.releaseEnvironment", required = false)
   private String releaseEnvironmentVariables;
 
-  @Parameter(property = "unleash.versionUpgradeStrategy", required = true, defaultValue = "DEFAULT")
   @MojoProduces
+  @Parameter(property = "unleash.versionUpgradeStrategy", required = true, defaultValue = "DEFAULT")
   private VersionUpgradeStrategy versionUpgradeStrategy;
+
+  @MojoProduces
+  @Named("preserveFixedModuleVersions")
+  @Parameter(property = "unleash.preserveFixedModuleVersions", required = false, defaultValue = "false")
+  private boolean preserveFixedModuleVersions;
 
   @MojoProduces
   @Named("artifactSpyPlugin")

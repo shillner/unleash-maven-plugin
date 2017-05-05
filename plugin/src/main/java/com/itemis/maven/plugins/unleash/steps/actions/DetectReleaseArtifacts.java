@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.inject.Inject;
@@ -17,11 +18,13 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 
 import com.google.common.base.Objects;
 import com.google.common.io.Files;
+import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
+import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 
 /**
@@ -53,6 +56,10 @@ public class DetectReleaseArtifacts implements CDIMojoProcessingStep {
         "Detecting all release artifacts that have been produced during the release build for later installation and deployment.");
 
     for (MavenProject p : this.reactorProjects) {
+      if (wasFixedVersion(p)) {
+        continue;
+      }
+
       try {
         Properties props = loadModuleArtifacts(p);
         for (String name : props.stringPropertyNames()) {
@@ -100,5 +107,17 @@ public class DetectReleaseArtifacts implements CDIMojoProcessingStep {
               + artifactsSpyProperties.getAbsolutePath());
     }
     return props;
+  }
+
+  private boolean wasFixedVersion(MavenProject p) {
+    Map<ReleasePhase, ArtifactCoordinates> coordinatesByPhase = this.metadata
+        .getArtifactCoordinatesByPhase(p.getGroupId(), p.getArtifactId());
+    String preReleaseVersion = coordinatesByPhase.get(ReleasePhase.PRE_RELEASE).getVersion();
+    String releaseVersion = coordinatesByPhase.get(ReleasePhase.RELEASE).getVersion();
+
+    if (Objects.equal(preReleaseVersion, releaseVersion)) {
+      return true;
+    }
+    return false;
   }
 }

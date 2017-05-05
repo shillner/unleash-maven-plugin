@@ -19,6 +19,7 @@ import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
+import com.itemis.maven.plugins.unleash.util.MavenVersionUtil;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
 import com.itemis.maven.plugins.unleash.util.VersionUpgradeStrategy;
@@ -53,34 +54,51 @@ public class CalculateVersions implements CDIMojoProcessingStep {
   private Prompter prompter;
   @Inject
   private VersionUpgradeStrategy upgradeStrategy;
+  @Inject
+  @Named("preserveFixedModuleVersions")
+  private boolean preserveFixedModuleVersions;
 
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     this.log.info("Calculating required versions for all modules.");
 
     for (MavenProject project : this.reactorProjects) {
-      this.log.debug("\tVersions of module " + ProjectToString.EXCLUDE_VERSION.apply(project) + ":");
+      this.log.info("\tVersions of module " + ProjectToString.EXCLUDE_VERSION.apply(project) + ":");
 
       ArtifactCoordinates preReleaseCoordinates = this.metadata
           .getArtifactCoordinatesByPhase(project.getGroupId(), project.getArtifactId()).get(ReleasePhase.PRE_RELEASE);
-      this.log.debug("\t\t" + ReleasePhase.PRE_RELEASE + " = " + preReleaseCoordinates.getVersion());
+      this.log.info("\t\t" + ReleasePhase.PRE_RELEASE + " = " + preReleaseCoordinates.getVersion());
 
       Optional<Prompter> prompterToUse = this.settings.isInteractiveMode() ? Optional.of(this.prompter)
           : Optional.<Prompter> absent();
 
-      String releaseVersion = ReleaseUtil.getReleaseVersion(project.getVersion(),
-          Optional.fromNullable(this.defaultReleaseVersion), prompterToUse);
+      String releaseVersion = calculateReleaseVersion(project.getVersion(), prompterToUse);
       ArtifactCoordinates releaseCoordinates = new ArtifactCoordinates(project.getGroupId(), project.getArtifactId(),
           releaseVersion, PomUtil.ARTIFACT_TYPE_POM);
       this.metadata.addArtifactCoordinates(releaseCoordinates, ReleasePhase.RELEASE);
-      this.log.debug("\t\t" + ReleasePhase.RELEASE + " = " + releaseVersion);
+      this.log.info("\t\t" + ReleasePhase.RELEASE + " = " + releaseVersion);
 
-      String nextDevVersion = ReleaseUtil.getNextDevelopmentVersion(releaseVersion,
-          Optional.fromNullable(this.defaultDevelopmentVersion), prompterToUse, this.upgradeStrategy);
+      String nextDevVersion = calculateDevelopmentVersion(project.getVersion(), prompterToUse);
       ArtifactCoordinates postReleaseCoordinates = new ArtifactCoordinates(project.getGroupId(),
           project.getArtifactId(), nextDevVersion, PomUtil.ARTIFACT_TYPE_POM);
       this.metadata.addArtifactCoordinates(postReleaseCoordinates, ReleasePhase.POST_RELEASE);
-      this.log.debug("\t\t" + ReleasePhase.POST_RELEASE + " = " + nextDevVersion);
+      this.log.info("\t\t" + ReleasePhase.POST_RELEASE + " = " + nextDevVersion);
     }
+  }
+
+  private String calculateReleaseVersion(String version, Optional<Prompter> prompter) {
+
+    if (!MavenVersionUtil.isSnapshot(version) && this.preserveFixedModuleVersions) {
+      return version;
+    }
+    return ReleaseUtil.getReleaseVersion(version, Optional.fromNullable(this.defaultReleaseVersion), prompter);
+  }
+
+  private String calculateDevelopmentVersion(String version, Optional<Prompter> prompter) {
+    if (!MavenVersionUtil.isSnapshot(version) && this.preserveFixedModuleVersions) {
+      return version;
+    }
+    return ReleaseUtil.getNextDevelopmentVersion(version, Optional.fromNullable(this.defaultDevelopmentVersion),
+        prompter, this.upgradeStrategy);
   }
 }
