@@ -114,7 +114,10 @@ public class BuildProject implements CDIMojoProcessingStep {
     MavenExecutionRequest originalRequest = this.session.getRequest();
     request.setGlobalSettingsFile(originalRequest.getGlobalSettingsFile());
     request.setUserSettingsFile(originalRequest.getUserSettingsFile());
-    request.setToolchainsFile(originalRequest.getUserToolchainsFile());
+    File toolchainsFile = originalRequest.getUserToolchainsFile();
+    if (toolchainsFile.exists() && toolchainsFile.isFile()) {
+      request.setToolchainsFile(toolchainsFile);
+    }
     return request;
   }
 }
