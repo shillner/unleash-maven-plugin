@@ -5,3 +5,7 @@ target/
 .classpath
 .project
 .settings/
+
+#intellij idea excludes
+.idea
+*.iml
