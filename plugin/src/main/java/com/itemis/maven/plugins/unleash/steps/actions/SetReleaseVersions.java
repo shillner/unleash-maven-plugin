@@ -65,10 +65,10 @@ public class SetReleaseVersions implements CDIMojoProcessingStep {
   private void setProjectVersion(MavenProject project, Document document) {
     Map<ReleasePhase, ArtifactCoordinates> coordinatesByPhase = this.metadata
         .getArtifactCoordinatesByPhase(project.getGroupId(), project.getArtifactId());
-    String oldVerion = coordinatesByPhase.get(ReleasePhase.PRE_RELEASE).getVersion();
+    String oldVersion = coordinatesByPhase.get(ReleasePhase.PRE_RELEASE).getVersion();
     String newVersion = coordinatesByPhase.get(ReleasePhase.RELEASE).getVersion();
     this.log.debug("\tUpdate of module version '" + project.getGroupId() + ":" + project.getArtifact() + "' ["
-        + oldVerion + " => " + newVersion + "]");
+        + oldVersion + " => " + newVersion + "]");
     PomUtil.setProjectVersion(project.getModel(), document, newVersion);
   }
 
