@@ -12,6 +12,7 @@ import com.itemis.maven.plugins.unleash.util.PomUtil;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.Parent;
 import org.apache.maven.model.Profile;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.mojo.versions.api.PomHelper;
@@ -58,7 +59,60 @@ public abstract class AbstractVersionsStep implements CDIMojoProcessingStep {
             }
           });
 
-  protected void setProjectReactorDependenciesVersion(MavenProject project, Document document) {
+  protected Document loadAndProcess(MavenProject project) {
+    Document document = PomUtil.parsePOM(project);
+    setProjectVersion(project, document);
+    setParentVersion(project, document);
+    if (updateReactorDependencyVersion) {
+      setProjectReactorDependenciesVersion(project, document);
+      setProjectReactorDependencyManagementVersion(project, document);
+      setProfilesReactorDependenciesVersion(project, document);
+      setProfilesReactorDependencyManagementVersion(project, document);
+    }
+    return document;
+  }
+
+  private void setProjectVersion(MavenProject project, Document document) {
+    Map<ReleasePhase, ArtifactCoordinates> coordinatesByPhase = this.metadata
+            .getArtifactCoordinatesByPhase(project.getGroupId(), project.getArtifactId());
+    String oldVersion = coordinatesByPhase.get(previousReleasePhase()).getVersion();
+    String newVersion = coordinatesByPhase.get(currentReleasePhase()).getVersion();
+    logProjectVersionUpdate(project, oldVersion, newVersion);
+    PomUtil.setProjectVersion(project.getModel(), document, newVersion);
+  }
+
+  protected void logProjectVersionUpdate(MavenProject project, String oldVersion, String newVersion) {
+    if (log.isDebugEnabled()) {
+      log.debug("\tUpdate of module version '" + project.getGroupId() + ":"
+              + project.getArtifact() + "' [" + oldVersion + " => " + newVersion + "]");
+    }
+  }
+
+  private void setParentVersion(MavenProject project, Document document) {
+    Parent parent = project.getModel().getParent();
+    if (parent != null) {
+      Map<ReleasePhase, ArtifactCoordinates> coordinatesByPhase = this.metadata
+              .getArtifactCoordinatesByPhase(parent.getGroupId(), parent.getArtifactId());
+      ArtifactCoordinates oldCoordinates = coordinatesByPhase.get(previousReleasePhase());
+      ArtifactCoordinates newCoordinates = coordinatesByPhase.get(currentReleasePhase());
+
+      // null indicates that the parent is not part of the reactor projects since no release version had been calculated
+      // for it
+      if (newCoordinates != null) {
+        logParentVersionUpdate(project, oldCoordinates, newCoordinates);
+        PomUtil.setParentVersion(project.getModel(), document, newCoordinates.getVersion());
+      }
+    }
+  }
+
+  protected void logParentVersionUpdate(MavenProject project, ArtifactCoordinates oldCoordinates, ArtifactCoordinates newCoordinates) {
+    if (log.isDebugEnabled()) {
+      log.debug("\tUpdate of parent version of module '" + project.getGroupId() + ":" + project.getArtifact()
+              + "' [" + oldCoordinates.getVersion() + " => " + newCoordinates.getVersion() + "]");
+    }
+  }
+
+  private void setProjectReactorDependenciesVersion(MavenProject project, Document document) {
     final String dependenciesPath = "/";
     List<Dependency> dependencies = rawModels.getUnchecked(project).getDependencies();
     for (Dependency dependency : dependencies) {
@@ -66,7 +120,7 @@ public abstract class AbstractVersionsStep implements CDIMojoProcessingStep {
     }
   }
 
-  protected void setProjectReactorDependencyManagementVersion(MavenProject project, Document document) {
+  private void setProjectReactorDependencyManagementVersion(MavenProject project, Document document) {
     DependencyManagement dependencyManagement = rawModels.getUnchecked(project).getDependencyManagement();
     if (dependencyManagement != null) {
       String dependenciesPath = "/dependencyManagement";
@@ -77,7 +131,7 @@ public abstract class AbstractVersionsStep implements CDIMojoProcessingStep {
     }
   }
 
-  protected void setProfilesReactorDependenciesVersion(MavenProject project, Document document) {
+  private void setProfilesReactorDependenciesVersion(MavenProject project, Document document) {
     List<Profile> profiles = rawModels.getUnchecked(project).getProfiles();
     for (Profile profile : profiles) {
       final String dependenciesPath = "/profiles/profile[id[text()='" + profile.getId() + "']]";
@@ -88,7 +142,7 @@ public abstract class AbstractVersionsStep implements CDIMojoProcessingStep {
     }
   }
 
-  protected void setProfilesReactorDependencyManagementVersion(MavenProject project, Document document) {
+  private void setProfilesReactorDependencyManagementVersion(MavenProject project, Document document) {
     List<Profile> profiles = rawModels.getUnchecked(project).getProfiles();
     for (Profile profile : profiles) {
       final String dependenciesPath = "/profiles/profile[id[text()='" + profile.getId() + "']]/dependencyManagement";

@@ -37,46 +37,10 @@ public class SetReleaseVersions extends AbstractVersionsStep {
       this.cachedPOMs.put(ProjectToCoordinates.EMPTY_VERSION.apply(project), PomUtil.parsePOM(project));
 
       try {
-        Document document = PomUtil.parsePOM(project);
-        setProjectVersion(project, document);
-        setParentVersion(project, document);
-        if (updateReactorDependencyVersion) {
-          setProjectReactorDependenciesVersion(project, document);
-          setProjectReactorDependencyManagementVersion(project, document);
-          setProfilesReactorDependenciesVersion(project, document);
-          setProfilesReactorDependencyManagementVersion(project, document);
-        }
+        Document document = loadAndProcess(project);
         PomUtil.writePOM(document, project);
       } catch (Throwable t) {
         throw new MojoFailureException("Could not update versions for release.", t);
-      }
-    }
-  }
-
-  private void setProjectVersion(MavenProject project, Document document) {
-    Map<ReleasePhase, ArtifactCoordinates> coordinatesByPhase = this.metadata
-        .getArtifactCoordinatesByPhase(project.getGroupId(), project.getArtifactId());
-    String oldVersion = coordinatesByPhase.get(previousReleasePhase()).getVersion();
-    String newVersion = coordinatesByPhase.get(currentReleasePhase()).getVersion();
-    this.log.debug("\tUpdate of module version '" + project.getGroupId() + ":" + project.getArtifact() + "' ["
-        + oldVersion + " => " + newVersion + "]");
-    PomUtil.setProjectVersion(project.getModel(), document, newVersion);
-  }
-
-  private void setParentVersion(MavenProject project, Document document) {
-    Parent parent = project.getModel().getParent();
-    if (parent != null) {
-      Map<ReleasePhase, ArtifactCoordinates> coordinatesByPhase = this.metadata
-          .getArtifactCoordinatesByPhase(parent.getGroupId(), parent.getArtifactId());
-      ArtifactCoordinates oldCoordinates = coordinatesByPhase.get(previousReleasePhase());
-      ArtifactCoordinates newCoordinates = coordinatesByPhase.get(currentReleasePhase());
-
-      // null indicates that the parent is not part of the reactor projects since no release version had been calculated
-      // for it
-      if (newCoordinates != null) {
-        this.log.debug("\tUpdate of parent version of module '" + project.getGroupId() + ":" + project.getArtifact()
-            + "' [" + oldCoordinates.getVersion() + " => " + newCoordinates.getVersion() + "]");
-        PomUtil.setParentVersion(project.getModel(), document, newCoordinates.getVersion());
       }
     }
   }

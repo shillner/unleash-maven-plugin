@@ -1,12 +1,9 @@
 package com.itemis.maven.plugins.unleash.steps.actions;
 
-import java.util.Map;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.maven.model.Parent;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -62,16 +59,7 @@ public class SetNextDevVersion extends AbstractVersionsStep {
       this.cachedPOMs.put(ProjectToCoordinates.EMPTY_VERSION.apply(project), PomUtil.parsePOM(project));
 
       try {
-        Document document = PomUtil.parsePOM(project);
-        setProjectVersion(project, document);
-        setParentVersion(project, document);
-        if (updateReactorDependencyVersion) {
-          setProjectReactorDependenciesVersion(project, document);
-          setProjectReactorDependencyManagementVersion(project, document);
-          setProfilesReactorDependenciesVersion(project, document);
-          setProfilesReactorDependencyManagementVersion(project, document);
-        }
-        this.util.revertScmSettings(project, document);
+        Document document = loadAndProcess(project);
         PomUtil.writePOM(document, project);
       } catch (Throwable t) {
         throw new MojoFailureException("Could not update versions for next development cycle.", t);
@@ -81,31 +69,26 @@ public class SetNextDevVersion extends AbstractVersionsStep {
     this.util.commitChanges(true);
   }
 
-  private void setProjectVersion(MavenProject project, Document document) {
-    Map<ReleasePhase, ArtifactCoordinates> coordinatesByPhase = this.metadata
-        .getArtifactCoordinatesByPhase(project.getGroupId(), project.getArtifactId());
-    String oldVersion = coordinatesByPhase.get(previousReleasePhase()).getVersion();
-    String newVersion = coordinatesByPhase.get(currentReleasePhase()).getVersion();
-    this.log.debug("\t\tUpdate of module version '" + project.getGroupId() + ":" + project.getArtifact() + "' ["
-        + oldVersion + " => " + newVersion + "] Version Upgrade Strategy: " + this.versionUpgradeStrategy.name());
-    PomUtil.setProjectVersion(project.getModel(), document, newVersion);
+  @Override
+  protected Document loadAndProcess(MavenProject project) {
+    Document document =  super.loadAndProcess(project);
+    this.util.revertScmSettings(project, document);
+    return document;
   }
 
-  private void setParentVersion(MavenProject project, Document document) {
-    Parent parent = project.getModel().getParent();
-    if (parent != null) {
-      Map<ReleasePhase, ArtifactCoordinates> coordinatesByPhase = this.metadata
-          .getArtifactCoordinatesByPhase(parent.getGroupId(), parent.getArtifactId());
-      ArtifactCoordinates oldCoordinates = coordinatesByPhase.get(previousReleasePhase());
-      ArtifactCoordinates newCoordinates = coordinatesByPhase.get(currentReleasePhase());
+  @Override
+  protected void logProjectVersionUpdate(MavenProject project, String oldVersion, String newVersion) {
+    if (log.isDebugEnabled()) {
+      log.debug("\t\tUpdate of module version '" + project.getGroupId() + ":" + project.getArtifact() + "' ["
+              + oldVersion + " => " + newVersion + "] Version Upgrade Strategy: " + this.versionUpgradeStrategy.name());
+    }
+  }
 
-      // null indicates that the parent is not part of the reactor projects since no release version had been calculated
-      // for it
-      if (newCoordinates != null) {
-        this.log.debug("\t\tUpdate of parent version of module '" + project.getGroupId() + ":" + project.getArtifact()
-            + "' [" + oldCoordinates.getVersion() + " => " + newCoordinates.getVersion() + "]");
-        PomUtil.setParentVersion(project.getModel(), document, newCoordinates.getVersion());
-      }
+  @Override
+  protected void logParentVersionUpdate(MavenProject project, ArtifactCoordinates oldCoordinates, ArtifactCoordinates newCoordinates) {
+    if (log.isDebugEnabled()) {
+      log.debug("\t\tUpdate of parent version of module '" + project.getGroupId() + ":" + project.getArtifact()
+              + "' [" + oldCoordinates.getVersion() + " => " + newCoordinates.getVersion() + "]");
     }
   }
 
