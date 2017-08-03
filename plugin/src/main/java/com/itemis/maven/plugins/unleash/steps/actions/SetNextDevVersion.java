@@ -1,6 +1,5 @@
 package com.itemis.maven.plugins.unleash.steps.actions;
 
-import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -15,12 +14,9 @@ import org.w3c.dom.Document;
 
 import com.google.common.collect.Maps;
 import com.itemis.maven.aether.ArtifactCoordinates;
-import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
 import com.itemis.maven.plugins.cdi.annotations.RollbackOnError;
-import com.itemis.maven.plugins.cdi.logging.Logger;
-import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.ReleasePhase;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
 import com.itemis.maven.plugins.unleash.scm.requests.RevertCommitsRequest;
@@ -40,16 +36,9 @@ import com.itemis.maven.plugins.unleash.util.scm.ScmProviderRegistry;
  * @since 1.0.0
  */
 @ProcessingStep(id = "setDevVersion", description = "Updates the projects with the next development versions, reverts previous SCM path changes and finally commits the changes to the current branch.", requiresOnline = true)
-public class SetNextDevVersion implements CDIMojoProcessingStep {
-  @Inject
-  private Logger log;
-  @Inject
-  private ReleaseMetadata metadata;
+public class SetNextDevVersion extends AbstractVersionsStep {
   @Inject
   MavenProject project;
-  @Inject
-  @Named("reactorProjects")
-  private List<MavenProject> reactorProjects;
   @Inject
   private ScmProviderRegistry scmProviderRegistry;
   @Inject
@@ -60,7 +49,6 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
   @Inject
   private VersionUpgradeStrategy versionUpgradeStrategy;
   private ScmProvider scmProvider;
-  private Map<ArtifactCoordinates, Document> cachedPOMs;
 
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
@@ -90,10 +78,10 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
   private void setProjectVersion(MavenProject project, Document document) {
     Map<ReleasePhase, ArtifactCoordinates> coordinatesByPhase = this.metadata
         .getArtifactCoordinatesByPhase(project.getGroupId(), project.getArtifactId());
-    String oldVerion = coordinatesByPhase.get(ReleasePhase.RELEASE).getVersion();
-    String newVersion = coordinatesByPhase.get(ReleasePhase.POST_RELEASE).getVersion();
+    String oldVersion = coordinatesByPhase.get(previousReleasePhase()).getVersion();
+    String newVersion = coordinatesByPhase.get(currentReleasePhase()).getVersion();
     this.log.debug("\t\tUpdate of module version '" + project.getGroupId() + ":" + project.getArtifact() + "' ["
-        + oldVerion + " => " + newVersion + "] Version Upgrade Strategy: " + this.versionUpgradeStrategy.name());
+        + oldVersion + " => " + newVersion + "] Version Upgrade Strategy: " + this.versionUpgradeStrategy.name());
     PomUtil.setProjectVersion(project.getModel(), document, newVersion);
   }
 
@@ -102,8 +90,8 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
     if (parent != null) {
       Map<ReleasePhase, ArtifactCoordinates> coordinatesByPhase = this.metadata
           .getArtifactCoordinatesByPhase(parent.getGroupId(), parent.getArtifactId());
-      ArtifactCoordinates oldCoordinates = coordinatesByPhase.get(ReleasePhase.RELEASE);
-      ArtifactCoordinates newCoordinates = coordinatesByPhase.get(ReleasePhase.POST_RELEASE);
+      ArtifactCoordinates oldCoordinates = coordinatesByPhase.get(previousReleasePhase());
+      ArtifactCoordinates newCoordinates = coordinatesByPhase.get(currentReleasePhase());
 
       // null indicates that the parent is not part of the reactor projects since no release version had been calculated
       // for it
@@ -113,6 +101,16 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
         PomUtil.setParentVersion(project.getModel(), document, newCoordinates.getVersion());
       }
     }
+  }
+
+  @Override
+  protected ReleasePhase previousReleasePhase() {
+    return ReleasePhase.RELEASE;
+  }
+
+  @Override
+  protected ReleasePhase currentReleasePhase() {
+    return ReleasePhase.POST_RELEASE;
   }
 
   @RollbackOnError
