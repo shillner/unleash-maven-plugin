@@ -15,6 +15,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import com.google.common.base.StandardSystemProperty;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Parent;
 import org.apache.maven.project.MavenProject;
@@ -63,6 +64,8 @@ public final class PomUtil {
   public static final String NODE_NAME_SCM_TAG = "tag";
   public static final String NODE_NAME_SCM_URL = "url";
   public static final String NODE_NAME_VERSION = "version";
+
+  private static final byte[] LINE_SEPERATOR = StandardSystemProperty.LINE_SEPARATOR.value().getBytes();
 
   private PomUtil() {
     // Should not be instanciated
@@ -149,6 +152,9 @@ public final class PomUtil {
       Transformer transformer = TransformerFactory.newInstance().newTransformer();
       DOMSource source = new DOMSource(document);
       transformer.transform(source, new StreamResult(out));
+      // append newline to end-of-file
+      // is there any elegant way to do that on Document or in Transformer?
+      out.write(LINE_SEPERATOR);
     } catch (Exception e) {
       throw new RuntimeException("Could not serialize the project object model to given output stream.", e);
     } finally {
