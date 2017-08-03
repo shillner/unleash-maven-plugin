@@ -15,8 +15,12 @@ import org.apache.maven.model.Profile;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.mojo.versions.api.PomHelper;
 import org.w3c.dom.Document;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Maps;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
@@ -50,6 +54,18 @@ public class SetReleaseVersions implements CDIMojoProcessingStep {
   @Inject
   @Named("updateReactorDependencyVersion")
   private boolean updateReactorDependencyVersion;
+
+  // Raw models is only used for dependency version updating currently.
+  // This may cause inconsistencies between reactorProjects and updated POMs.
+  // However, I have no confidence in spread it out of this step.
+  // TODO make the whole plugin work on raw models? (after having integration tests...)
+  private LoadingCache<MavenProject, Model> rawModels = CacheBuilder.newBuilder().build(
+          new CacheLoader<MavenProject, Model>() {
+            @Override
+            public Model load(MavenProject project) throws Exception {
+              return PomHelper.getRawModel(project);
+            }
+          });
 
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
@@ -106,14 +122,14 @@ public class SetReleaseVersions implements CDIMojoProcessingStep {
 
   private void setProjectReactorDependenciesVersion(MavenProject project, Document document) {
     final String dependenciesPath = "/";
-    List<Dependency> dependencies = project.getModel().getDependencies();
+    List<Dependency> dependencies = rawModels.getUnchecked(project).getDependencies();
     for (Dependency dependency : dependencies) {
       trySetDependencyVersionFromReactorProjects(project, document, dependenciesPath, dependency);
     }
   }
 
   private void setProjectReactorDependencyManagementVersion(MavenProject project, Document document) {
-    DependencyManagement dependencyManagement = project.getModel().getDependencyManagement();
+    DependencyManagement dependencyManagement = rawModels.getUnchecked(project).getDependencyManagement();
     if (dependencyManagement != null) {
       String dependenciesPath = "/dependencyManagement";
       List<Dependency> dependencies = dependencyManagement.getDependencies();
@@ -124,7 +140,7 @@ public class SetReleaseVersions implements CDIMojoProcessingStep {
   }
 
   private void setProfilesReactorDependenciesVersion(MavenProject project, Document document) {
-    List<Profile> profiles = project.getModel().getProfiles();
+    List<Profile> profiles = rawModels.getUnchecked(project).getProfiles();
     for (Profile profile : profiles) {
       final String dependenciesPath = "/profiles/profile[id[text()='" + profile.getId() + "']]";
       List<Dependency> dependencies = profile.getDependencies();
@@ -135,7 +151,7 @@ public class SetReleaseVersions implements CDIMojoProcessingStep {
   }
 
   private void setProfilesReactorDependencyManagementVersion(MavenProject project, Document document) {
-    List<Profile> profiles = project.getModel().getProfiles();
+    List<Profile> profiles = rawModels.getUnchecked(project).getProfiles();
     for (Profile profile : profiles) {
       final String dependenciesPath = "/profiles/profile[id[text()='" + profile.getId() + "']]/dependencyManagement";
       DependencyManagement dependencyManagement = profile.getDependencyManagement();
@@ -177,7 +193,7 @@ public class SetReleaseVersions implements CDIMojoProcessingStep {
     String groupId = dependency.getGroupId();
     String artifactId = dependency.getArtifactId();
 
-    Model model = project.getModel();
+    Model model = rawModels.getUnchecked(project);
     String reactorGroupId = model.getGroupId() != null ? model.getGroupId() : model.getParent().getGroupId();
     String reactorArtifactId = model.getArtifactId();
 
