@@ -27,6 +27,7 @@ import org.w3c.dom.Text;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.StandardSystemProperty;
 import com.google.common.io.Closeables;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToString;
 
@@ -63,6 +64,8 @@ public final class PomUtil {
   public static final String NODE_NAME_SCM_TAG = "tag";
   public static final String NODE_NAME_SCM_URL = "url";
   public static final String NODE_NAME_VERSION = "version";
+
+  private static final byte[] LINE_SEPERATOR = StandardSystemProperty.LINE_SEPARATOR.value().getBytes();
 
   private PomUtil() {
     // Should not be instanciated
@@ -149,6 +152,9 @@ public final class PomUtil {
       Transformer transformer = TransformerFactory.newInstance().newTransformer();
       DOMSource source = new DOMSource(document);
       transformer.transform(source, new StreamResult(out));
+      // append newline to end-of-file
+      // is there any elegant way to do that on Document or in Transformer?
+      out.write(LINE_SEPERATOR);
     } catch (Exception e) {
       throw new RuntimeException("Could not serialize the project object model to given output stream.", e);
     } finally {
@@ -196,7 +202,7 @@ public final class PomUtil {
    *
    * @param model the POM where to adapt the project's parent version.
    * @param document the POM as an XML document in which the project's parent version shall be adapted.
-   * @param newVersion the new version to set for the project parent.
+   * @param newParentVersion the new version to set for the project parent.
    */
   public static void setParentVersion(Model model, Document document, String newParentVersion) {
     Preconditions.checkArgument(hasChildNode(document, NODE_NAME_PROJECT),
