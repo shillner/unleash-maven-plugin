@@ -202,7 +202,7 @@ public final class PomUtil {
    *
    * @param model the POM where to adapt the project's parent version.
    * @param document the POM as an XML document in which the project's parent version shall be adapted.
-   * @param newVersion the new version to set for the project parent.
+   * @param newParentVersion the new version to set for the project parent.
    */
   public static void setParentVersion(Model model, Document document, String newParentVersion) {
     Preconditions.checkArgument(hasChildNode(document, NODE_NAME_PROJECT),
