@@ -2,11 +2,16 @@ package com.itemis.maven.plugins.unleash.steps.actions;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.DependencyManagement;
+import org.apache.maven.model.Model;
 import org.apache.maven.model.Parent;
+import org.apache.maven.model.Profile;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -42,6 +47,9 @@ public class SetReleaseVersions implements CDIMojoProcessingStep {
   @Named("reactorProjects")
   private List<MavenProject> reactorProjects;
   private Map<ArtifactCoordinates, Document> cachedPOMs;
+  @Inject
+  @Named("updateReactorDependencyVersion")
+  private boolean updateReactorDependencyVersion;
 
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
@@ -55,6 +63,12 @@ public class SetReleaseVersions implements CDIMojoProcessingStep {
         Document document = PomUtil.parsePOM(project);
         setProjectVersion(project, document);
         setParentVersion(project, document);
+        if (updateReactorDependencyVersion) {
+          setProjectReactorDependenciesVersion(project, document);
+          setProjectReactorDependencyManagementVersion(project, document);
+          setProfilesReactorDependenciesVersion(project, document);
+          setProfilesReactorDependencyManagementVersion(project, document);
+        }
         PomUtil.writePOM(document, project);
       } catch (Throwable t) {
         throw new MojoFailureException("Could not update versions for release.", t);
@@ -88,6 +102,86 @@ public class SetReleaseVersions implements CDIMojoProcessingStep {
         PomUtil.setParentVersion(project.getModel(), document, newCoordinates.getVersion());
       }
     }
+  }
+
+  private void setProjectReactorDependenciesVersion(MavenProject project, Document document) {
+    final String dependenciesPath = "/";
+    List<Dependency> dependencies = project.getModel().getDependencies();
+    for (Dependency dependency : dependencies) {
+      trySetDependencyVersionFromReactorProjects(project, document, dependenciesPath, dependency);
+    }
+  }
+
+  private void setProjectReactorDependencyManagementVersion(MavenProject project, Document document) {
+    DependencyManagement dependencyManagement = project.getModel().getDependencyManagement();
+    if (dependencyManagement != null) {
+      String dependenciesPath = "/dependencyManagement";
+      List<Dependency> dependencies = dependencyManagement.getDependencies();
+      for (Dependency dependency : dependencies) {
+        trySetDependencyVersionFromReactorProjects(project, document, dependenciesPath, dependency);
+      }
+    }
+  }
+
+  private void setProfilesReactorDependenciesVersion(MavenProject project, Document document) {
+    List<Profile> profiles = project.getModel().getProfiles();
+    for (Profile profile : profiles) {
+      final String dependenciesPath = "/profiles/profile[id[text()='" + profile.getId() + "']]";
+      List<Dependency> dependencies = profile.getDependencies();
+      for (Dependency dependency : dependencies) {
+        trySetDependencyVersionFromReactorProjects(project, document, dependenciesPath, dependency);
+      }
+    }
+  }
+
+  private void setProfilesReactorDependencyManagementVersion(MavenProject project, Document document) {
+    List<Profile> profiles = project.getModel().getProfiles();
+    for (Profile profile : profiles) {
+      final String dependenciesPath = "/profiles/profile[id[text()='" + profile.getId() + "']]/dependencyManagement";
+      DependencyManagement dependencyManagement = profile.getDependencyManagement();
+      if (dependencyManagement != null) {
+        List<Dependency> dependencies = dependencyManagement.getDependencies();
+        for (Dependency dependency : dependencies) {
+          trySetDependencyVersionFromReactorProjects(project, document, dependenciesPath, dependency);
+        }
+      }
+    }
+  }
+
+  private void trySetDependencyVersionFromReactorProjects(MavenProject project, Document document, String dependenciesPath, Dependency dependency) {
+    for (MavenProject reactorProject : reactorProjects) {
+      if (isReactorDependency(reactorProject, dependency)) {
+        Map<ReleasePhase, ArtifactCoordinates> coordinatesByPhase = this.metadata
+                .getArtifactCoordinatesByPhase(dependency.getGroupId(), dependency.getArtifactId());
+        ArtifactCoordinates oldCoordinates = coordinatesByPhase.get(ReleasePhase.PRE_RELEASE);
+        ArtifactCoordinates newCoordinates = coordinatesByPhase.get(ReleasePhase.RELEASE);
+
+        if (newCoordinates == null || oldCoordinates == null) {
+          // the dependency is not part of the reactor projects since no release version had been calculated for it
+
+        } else if (dependency.getVersion() == null) {
+          // version was managed somewhere
+
+        } else if (Objects.equals(dependency.getVersion(), oldCoordinates.getVersion())) {
+          this.log.debug("\tUpdate of dependency '" + dependency.getGroupId() + ":"
+                  + dependency.getArtifactId() + "' version in '" + dependenciesPath + "' of module '"
+                  + project.getGroupId() + ":" + project.getArtifact() + "' [" + oldCoordinates.getVersion() + " => "
+                  + newCoordinates.getVersion() + "]");
+          PomUtil.setDependencyVersion(dependency, document, dependenciesPath, newCoordinates.getVersion());
+        }
+      }
+    }
+  }
+
+  private boolean isReactorDependency(MavenProject project, Dependency dependency) {
+    String groupId = dependency.getGroupId();
+    String artifactId = dependency.getArtifactId();
+
+    Model model = project.getModel();
+    String reactorGroupId = model.getGroupId() != null ? model.getGroupId() : model.getParent().getGroupId();
+    String reactorArtifactId = model.getArtifactId();
+
+    return Objects.equals(groupId, reactorGroupId) && Objects.equals(artifactId, reactorArtifactId);
   }
 
   @RollbackOnError
