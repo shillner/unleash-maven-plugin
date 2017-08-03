@@ -65,6 +65,12 @@ public class SetNextDevVersion extends AbstractVersionsStep {
         Document document = PomUtil.parsePOM(project);
         setProjectVersion(project, document);
         setParentVersion(project, document);
+        if (updateReactorDependencyVersion) {
+          setProjectReactorDependenciesVersion(project, document);
+          setProjectReactorDependencyManagementVersion(project, document);
+          setProfilesReactorDependenciesVersion(project, document);
+          setProfilesReactorDependencyManagementVersion(project, document);
+        }
         this.util.revertScmSettings(project, document);
         PomUtil.writePOM(document, project);
       } catch (Throwable t) {
