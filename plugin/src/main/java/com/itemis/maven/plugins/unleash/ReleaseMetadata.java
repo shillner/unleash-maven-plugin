@@ -2,6 +2,7 @@ package com.itemis.maven.plugins.unleash;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -9,6 +10,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.model.Scm;
 import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
@@ -30,8 +32,18 @@ import com.itemis.maven.plugins.unleash.util.functions.ProjectToCoordinates;
  * @since 1.0.0
  */
 @Singleton
-// TODO add serialization of metadata as a reporting feature!
 public class ReleaseMetadata {
+  private static final String PROPERTIES_KEY_REL_ARTIFACT = "release.artifact.";
+  private static final String PROPERTIES_KEY_REL_REPO_URL = "release.deploymentRepository.url";
+  private static final String PROPERTIES_KEY_REL_REPO_ID = "release.deploymentRepository.id";
+  private static final String PROPERTIES_KEY_SCM_REV_AFTER_DEV = "scm.rev.afterNextDev";
+  private static final String PROPERTIES_KEY_SCM_REV_BEFORE_DEV = "scm.rev.beforeNextDev";
+  private static final String PROPERTIES_KEY_SCM_REV_AFTER_TAG = "scm.rev.afterTag";
+  private static final String PROPERTIES_KEY_SCM_REV_BEFORE_TAG = "scm.rev.beforeTag";
+  private static final String PROPERTIES_KEY_SCM_REV_INITIAL = "scm.rev.initial";
+  private static final String PROPERTIES_KEY_TAG_PATTERN = "scm.tag.namePattern";
+  private static final String PROPERTIES_KEY_TAG_NAME = "scm.tag.name";
+
   @Inject
   private MavenProject project;
   @Inject
@@ -168,5 +180,51 @@ public class ReleaseMetadata {
 
   public Scm getCachedScmSettings(MavenProject p) {
     return this.cachedScmSettings.get(ProjectToCoordinates.EMPTY_VERSION.apply(p));
+  }
+
+  public Properties toProperties() {
+    Properties p = new Properties();
+    addScmTagInfo(p);
+    addScmRevisions(p);
+    addDeploymentRepositoryInfo(p);
+    addReleaseArtifacts(p);
+    return p;
+  }
+
+  private void addScmTagInfo(Properties p) {
+    p.setProperty(PROPERTIES_KEY_TAG_PATTERN, this.tagNamePattern);
+    p.setProperty(PROPERTIES_KEY_TAG_NAME, this.scmTagName != null ? this.scmTagName : StringUtils.EMPTY);
+  }
+
+  private void addScmRevisions(Properties p) {
+    p.setProperty(PROPERTIES_KEY_SCM_REV_INITIAL,
+        this.initialScmRevision != null ? this.initialScmRevision : StringUtils.EMPTY);
+    p.setProperty(PROPERTIES_KEY_SCM_REV_BEFORE_TAG,
+        this.scmRevisionBeforeTag != null ? this.scmRevisionBeforeTag : StringUtils.EMPTY);
+    p.setProperty(PROPERTIES_KEY_SCM_REV_AFTER_TAG,
+        this.scmRevisionAfterTag != null ? this.scmRevisionAfterTag : StringUtils.EMPTY);
+    p.setProperty(PROPERTIES_KEY_SCM_REV_BEFORE_DEV,
+        this.scmRevisionBeforeNextDevVersion != null ? this.scmRevisionBeforeNextDevVersion : StringUtils.EMPTY);
+    p.setProperty(PROPERTIES_KEY_SCM_REV_AFTER_DEV,
+        this.scmRevisionAfterNextDevVersion != null ? this.scmRevisionAfterNextDevVersion : StringUtils.EMPTY);
+  }
+
+  private void addReleaseArtifacts(Properties p) {
+    if (this.releaseArtifacts == null) {
+      return;
+    }
+
+    int index = 0;
+    for (Artifact a : this.releaseArtifacts) {
+      p.setProperty(PROPERTIES_KEY_REL_ARTIFACT + index, a.toString());
+      index++;
+    }
+  }
+
+  private void addDeploymentRepositoryInfo(Properties p) {
+    p.setProperty(PROPERTIES_KEY_REL_REPO_ID,
+        this.deploymentRepository != null ? this.deploymentRepository.getId() : "");
+    p.setProperty(PROPERTIES_KEY_REL_REPO_URL,
+        this.deploymentRepository != null ? this.deploymentRepository.getUrl() : "");
   }
 }

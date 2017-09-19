@@ -14,5 +14,6 @@ checkForScmChanges
 tagScm
 detectReleaseArtifacts
 setDevVersion
+serializeMetadata
 installArtifacts
 deployArtifacts
