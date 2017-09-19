@@ -153,6 +153,11 @@ public class UnleashMojo extends AbstractCDIMojo {
   @Named("developmentVersion")
   private String developmentVersion;
 
+  @Parameter(defaultValue = "clean,verify", property = "unleash.goals", required = false)
+  @MojoProduces
+  @Named("releaseGoals")
+  private List<String> goals;
+
   @Parameter(property = "unleash.profiles", required = false)
   @MojoProduces
   @Named("profiles")

@@ -23,7 +23,6 @@ import org.apache.maven.shared.invoker.MavenInvocationException;
 import org.codehaus.plexus.util.cli.CommandLineException;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
@@ -51,6 +50,9 @@ public class BuildProject implements CDIMojoProcessingStep {
   private String mavenHome;
   @Inject
   private Settings settings;
+  @Inject
+  @Named("releaseGoals")
+  private List<String> goals;
   @Inject
   @Named("releaseArgs")
   private Properties releaseArgs;
@@ -101,7 +103,7 @@ public class BuildProject implements CDIMojoProcessingStep {
     request.setPomFile(this.project.getFile());
     // installation and deployment are performed in a later step. We first need to ensure that there are no changes in
     // the scm, ...
-    request.setGoals(Lists.newArrayList("clean", "verify"));
+    request.setGoals(this.goals);
     request.setProperties(this.releaseArgs);
     request.setProfiles(this.profiles);
     request.setShellEnvironmentInherited(true);
