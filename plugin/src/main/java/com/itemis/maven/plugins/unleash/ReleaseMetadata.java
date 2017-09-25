@@ -43,6 +43,9 @@ public class ReleaseMetadata {
   private static final String PROPERTIES_KEY_SCM_REV_INITIAL = "scm.rev.initial";
   private static final String PROPERTIES_KEY_TAG_PATTERN = "scm.tag.namePattern";
   private static final String PROPERTIES_KEY_TAG_NAME = "scm.tag.name";
+  private static final String PROPERTIES_KEY_VERSION_REACTOR_PRE_RELEASE = "version.reactor.pre.release";
+  private static final String PROPERTIES_KEY_VERSION_REACTOR_RELEASE = "version.reactor.release";
+  private static final String PROPERTIES_KEY_VERSION_REACTOR_POST_RELEASE = "version.reactor.post.release";
 
   @Inject
   private MavenProject project;
@@ -184,11 +187,33 @@ public class ReleaseMetadata {
 
   public Properties toProperties() {
     Properties p = new Properties();
+    addVersionInfo(p);
     addScmTagInfo(p);
     addScmRevisions(p);
     addDeploymentRepositoryInfo(p);
     addReleaseArtifacts(p);
     return p;
+  }
+
+  private void addVersionInfo(Properties p) {
+    Map<ReleasePhase, ArtifactCoordinates> reactorCoordinates = getArtifactCoordinatesByPhase(this.project.getGroupId(),
+        this.project.getArtifactId());
+
+    if (reactorCoordinates != null) {
+      ArtifactCoordinates preReleaseCoordinates = reactorCoordinates.get(ReleasePhase.PRE_RELEASE);
+      ArtifactCoordinates releaseCoordinates = reactorCoordinates.get(ReleasePhase.RELEASE);
+      ArtifactCoordinates postReleaseCoordinates = reactorCoordinates.get(ReleasePhase.POST_RELEASE);
+
+      if (preReleaseCoordinates != null) {
+        p.setProperty(PROPERTIES_KEY_VERSION_REACTOR_PRE_RELEASE, preReleaseCoordinates.getVersion());
+      }
+      if (releaseCoordinates != null) {
+        p.setProperty(PROPERTIES_KEY_VERSION_REACTOR_RELEASE, releaseCoordinates.getVersion());
+      }
+      if (postReleaseCoordinates != null) {
+        p.setProperty(PROPERTIES_KEY_VERSION_REACTOR_POST_RELEASE, postReleaseCoordinates.getVersion());
+      }
+    }
   }
 
   private void addScmTagInfo(Properties p) {
