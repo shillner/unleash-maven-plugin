@@ -1,0 +1,51 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.itemis.maven.plugins</groupId>
+  <artifactId>test-project-1</artifactId>
+  <packaging>pom</packaging>
+
+  <name>Test Project 1</name>
+  <description>This is just a test POM for automated unit tests.</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.cht.test</groupId>
+      <artifactId>test-dep</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.cht.test</groupId>
+        <artifactId>test-dep</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <profiles>
+    <profile>
+      <id>test</id>
+      <dependencies>
+        <dependency>
+          <groupId>com.cht.test</groupId>
+          <artifactId>test-dep</artifactId>
+          <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+      </dependencies>
+
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>com.cht.test</groupId>
+            <artifactId>test-dep</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
+    </profile>
+  </profiles>
+</project>

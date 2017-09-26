@@ -7,6 +7,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -14,7 +16,13 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
+import com.google.common.base.Joiner;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Parent;
 import org.apache.maven.project.MavenProject;
@@ -64,6 +72,9 @@ public final class PomUtil {
   public static final String NODE_NAME_SCM_TAG = "tag";
   public static final String NODE_NAME_SCM_URL = "url";
   public static final String NODE_NAME_VERSION = "version";
+  public static final String NODE_NAME_DEPENDENCY = "dependency";
+  public static final String NODE_NAME_DEPENDENCIES = "dependencies";
+  public static final String NODE_NAME_DEPENDENCY_MANAGEMENT = "dependencyManagement";
 
   private static final byte[] LINE_SEPERATOR = StandardSystemProperty.LINE_SEPARATOR.value().getBytes();
 
@@ -222,6 +233,61 @@ public final class PomUtil {
         Node child = children.item(i);
         if (Objects.equal(child.getNodeName(), PomUtil.NODE_NAME_VERSION)) {
           child.setTextContent(newParentVersion);
+        }
+      }
+    }
+  }
+
+  /**
+   * Changes the reactor dependency version of the POM as well as directly in the XML document preserving the whole
+   * document formatting.
+   *
+   * @param dependency the reactor dependency where to adapt the project version.
+   * @param document the POM as an XML document in which the project version shall be adapted.
+   * @param dependenciesPath the XPath to the {@code dependencies} starting from {@code /project/}.
+   *                         e.g. {@code /profiles/profile[id[text()='release']]/dependencyManagement}.
+   * @param newVersion the new dependency version to set.
+   */
+  public static void setDependencyVersion(Dependency dependency, Document document, String dependenciesPath,
+                                          String newVersion) {
+    Preconditions.checkArgument(hasChildNode(document, NODE_NAME_PROJECT),
+            "The document doesn't seem to be a POM model, project element is missing.");
+
+    // first step: update dependency version of the in-memory model
+    dependency.setVersion(newVersion);
+
+    // second step: update the dependency version in the DOM document that is then serialized for later building
+    NodeList dependencyNodes;
+    try {
+      List<String> xPathParts = new ArrayList<>();
+      xPathParts.add(NODE_NAME_PROJECT);
+      if (dependenciesPath.startsWith("/")) {
+        dependenciesPath = dependenciesPath.substring("/".length());
+      }
+      if (!dependenciesPath.isEmpty()) {
+        xPathParts.add(dependenciesPath);
+      }
+      xPathParts.add(NODE_NAME_DEPENDENCIES);
+      xPathParts.add(NODE_NAME_DEPENDENCY + "[groupId[text()='" + dependency.getGroupId() + "']"
+              + " and artifactId[text()='" + dependency.getArtifactId() + "']]");
+      String expression = "/" + Joiner.on("/").skipNulls().join(xPathParts);
+
+      XPath xPath = XPathFactory.newInstance().newXPath();
+      dependencyNodes = (NodeList) xPath.evaluate(expression,
+              document.getDocumentElement(), XPathConstants.NODESET);
+
+    } catch (XPathExpressionException e) {
+      String message = "Cannot evaluate xPath against '" + dependenciesPath + "'.";
+      throw new RuntimeException(message, e);
+    }
+
+    for (int i = 0; i < dependencyNodes.getLength(); i++) {
+      Node dependencyNode = dependencyNodes.item(i);
+      NodeList childNodes = dependencyNode.getChildNodes();
+      for (int j = 0; j < childNodes.getLength(); j++) {
+        Node childNode = childNodes.item(j);
+        if (Objects.equal(childNode.getNodeName(), PomUtil.NODE_NAME_VERSION)) {
+          childNode.setTextContent(newVersion);
         }
       }
     }
