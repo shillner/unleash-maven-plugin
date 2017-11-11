@@ -43,7 +43,7 @@ public class SerializeMetadata implements CDIMojoProcessingStep {
       this.metadata.toProperties().store(os, "The unleash release metadata");
     } catch (IOException e) {
       throw new MojoExecutionException("An error occurred during the serialization of the release metadata into file '"
-          + this.metadataOutputFile.getAbsolutePath() + "'.");
+          + this.metadataOutputFile.getAbsolutePath() + "'.", e);
     }
   }
 

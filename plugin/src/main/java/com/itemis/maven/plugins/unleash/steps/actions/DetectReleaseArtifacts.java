@@ -83,7 +83,7 @@ public class DetectReleaseArtifacts implements CDIMojoProcessingStep {
         }
       } catch (IOException e) {
         throw new MojoExecutionException(
-            "Could not determine project release artifacts. Project: " + ProjectToString.INSTANCE.apply(p));
+            "Could not determine project release artifacts. Project: " + ProjectToString.INSTANCE.apply(p), e);
       }
     }
   }
