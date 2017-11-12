@@ -12,6 +12,7 @@ import org.apache.maven.project.MavenProject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import com.google.common.base.Optional;
 import com.itemis.maven.plugins.cdi.logging.Logger;
 import com.itemis.maven.plugins.unleash.ReleaseMetadata;
 import com.itemis.maven.plugins.unleash.scm.ScmProvider;
@@ -53,20 +54,27 @@ public class DevVersionUtil {
     Scm scm = this.metadata.getCachedScmSettings(projectToRevert);
     if (scm != null) {
       this.log.debug("\t\tReversion of SCM connection tags");
+      Document originalPOM = this.metadata.getCachedOriginalPOM(projectToRevert);
+
       Node scmNode = PomUtil.getOrCreateScmNode(document, false);
+      Node originalScmNode = PomUtil.getOrCreateScmNode(originalPOM, false);
 
       if (scmNode != null) {
-        if (scm.getConnection() != null) {
-          PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_CONNECTION, scm.getConnection(), false);
+        Optional<String> connection = PomUtil.getChildNodeTextContent(originalScmNode,
+            PomUtil.NODE_NAME_SCM_CONNECTION);
+        if (connection.isPresent()) {
+          PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_CONNECTION, connection.get(), false);
         }
 
-        if (scm.getDeveloperConnection() != null) {
-          PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_DEV_CONNECTION, scm.getDeveloperConnection(),
-              false);
+        Optional<String> devConnection = PomUtil.getChildNodeTextContent(originalScmNode,
+            PomUtil.NODE_NAME_SCM_DEV_CONNECTION);
+        if (devConnection.isPresent()) {
+          PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_DEV_CONNECTION, devConnection.get(), false);
         }
 
-        if (scm.getUrl() != null) {
-          PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_URL, scm.getUrl(), false);
+        Optional<String> url = PomUtil.getChildNodeTextContent(originalScmNode, PomUtil.NODE_NAME_SCM_URL);
+        if (url.isPresent()) {
+          PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_URL, url.get(), false);
         }
 
         if (scm.getTag() != null) {

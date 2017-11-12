@@ -1,5 +1,6 @@
 package com.itemis.maven.plugins.unleash;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -17,11 +18,13 @@ import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.w3c.dom.Document;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.itemis.maven.aether.ArtifactCoordinates;
+import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToCoordinates;
 
@@ -67,6 +70,7 @@ public class ReleaseMetadata {
   private RemoteRepository deploymentRepository;
   private Set<Artifact> releaseArtifacts;
   private Map<ArtifactCoordinates, Scm> cachedScmSettings;
+  private Map<ArtifactCoordinates, Document> originalPOMs;
 
   private ReleaseMetadata() {
     int numPhases = ReleasePhase.values().length;
@@ -75,6 +79,7 @@ public class ReleaseMetadata {
       this.artifactCoordinates.put(phase, Sets.<ArtifactCoordinates> newHashSet());
     }
     this.cachedScmSettings = Maps.newHashMap();
+    this.originalPOMs = new HashMap<>();
   }
 
   @PostConstruct
@@ -98,6 +103,8 @@ public class ReleaseMetadata {
 
       // caching of SCM settings of every POM in order to go back to it before setting next dev version
       this.cachedScmSettings.put(ProjectToCoordinates.EMPTY_VERSION.apply(p), p.getModel().getScm());
+
+      this.originalPOMs.put(ProjectToCoordinates.EMPTY_VERSION.apply(p), PomUtil.parsePOM(p));
     }
   }
 
@@ -183,6 +190,10 @@ public class ReleaseMetadata {
 
   public Scm getCachedScmSettings(MavenProject p) {
     return this.cachedScmSettings.get(ProjectToCoordinates.EMPTY_VERSION.apply(p));
+  }
+
+  public Document getCachedOriginalPOM(MavenProject p) {
+    return this.originalPOMs.get(ProjectToCoordinates.EMPTY_VERSION.apply(p));
   }
 
   public Properties toProperties() {

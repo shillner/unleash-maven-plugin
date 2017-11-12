@@ -526,4 +526,26 @@ public final class PomUtil {
     }
     return false;
   }
+
+  /**
+   * Get the text content of a specified child node (the first one) if it is present.
+   *
+   * @param parentNode the parent to query for the node.
+   * @param nodeName the name of the child node from which the text content is requested.
+   * @return the text content of the searched node.
+   */
+  public static Optional<String> getChildNodeTextContent(Node parentNode, String nodeName) {
+    String value = null;
+
+    NodeList children = parentNode.getChildNodes();
+    for (int i = 0; i < children.getLength(); i++) {
+      Node n = children.item(i);
+      if (Objects.equal(nodeName, n.getNodeName())) {
+        value = n.getTextContent();
+        break;
+      }
+    }
+
+    return Optional.fromNullable(value);
+  }
 }

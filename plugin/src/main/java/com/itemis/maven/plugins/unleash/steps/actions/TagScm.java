@@ -16,6 +16,7 @@ import org.w3c.dom.Node;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
+import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
@@ -96,8 +97,9 @@ public class TagScm implements CDIMojoProcessingStep {
       message.insert(0, this.scmMessagePrefix);
     }
 
-    this.log.debug("\tCreating SCM tag with name '" + scmTagName + "'." + (this.commitBeforeTagging
-        ? " User requested pre-tag committing." : " Tag will be created from local working copy."));
+    this.log.debug("\tCreating SCM tag with name '" + scmTagName + "'."
+        + (this.commitBeforeTagging ? " User requested pre-tag committing."
+            : " Tag will be created from local working copy."));
 
     Builder requestBuilder = TagRequest.builder().message(message.toString()).tagName(scmTagName).push();
     if (this.commitBeforeTagging) {
@@ -134,19 +136,23 @@ public class TagScm implements CDIMojoProcessingStep {
           Node scmNode = PomUtil.getOrCreateScmNode(document, false);
 
           if (scmNode != null) {
-            if (scm.getConnection() != null) {
+            Optional<String> connection = PomUtil.getChildNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_CONNECTION);
+            if (connection.isPresent()) {
               PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_CONNECTION,
-                  this.scmProvider.calculateTagConnectionString(scm.getConnection(), scmTagName), false);
+                  this.scmProvider.calculateTagConnectionString(connection.get(), scmTagName), false);
             }
 
-            if (scm.getDeveloperConnection() != null) {
+            Optional<String> devConnection = PomUtil.getChildNodeTextContent(scmNode,
+                PomUtil.NODE_NAME_SCM_DEV_CONNECTION);
+            if (devConnection.isPresent()) {
               PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_DEV_CONNECTION,
-                  this.scmProvider.calculateTagConnectionString(scm.getDeveloperConnection(), scmTagName), false);
+                  this.scmProvider.calculateTagConnectionString(devConnection.get(), scmTagName), false);
             }
 
-            if (scm.getUrl() != null) {
+            Optional<String> url = PomUtil.getChildNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_URL);
+            if (url.isPresent()) {
               PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_URL,
-                  this.scmProvider.calculateTagConnectionString(scm.getUrl(), scmTagName), false);
+                  this.scmProvider.calculateTagConnectionString(url.get(), scmTagName), false);
             }
 
             if (!this.scmProvider.isTagInfoIncludedInConnection()) {
