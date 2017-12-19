@@ -14,8 +14,10 @@ import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.eclipse.tycho.versions.engine.ProjectMetadataReader;
 import org.eclipse.tycho.versions.engine.VersionsEngine;
+import org.eclipse.tycho.versions.pom.PomFile;
 import org.w3c.dom.Document;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
@@ -49,23 +51,21 @@ public abstract class AbstractTychoVersionsStep implements CDIMojoProcessingStep
   private List<MavenProject> reactorProjects;
   private Map<ArtifactCoordinates, Document> cachedPOMs;
   private Map<ArtifactCoordinates, String> cachedModuleVersions;
+  private ProjectMetadataReader metadataReader;
 
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     this.cachedPOMs = Maps.newHashMap();
     this.cachedModuleVersions = Maps.newHashMap();
 
-    ProjectMetadataReader metadataReader = lookup(ProjectMetadataReader.class);
-    VersionsEngine versionsEngine = lookup(VersionsEngine.class);
-    versionsEngine.setUpdateVersionRangeMatchingBounds(false);
-    versionsEngine.setProjects(metadataReader.getProjects());
-
+    VersionsEngine versionsEngine = initializeVersionsEngine();
     try {
-      metadataReader.addBasedir(this.project.getBasedir());
-
       for (MavenProject module : this.reactorProjects) {
         ArtifactCoordinates coordinates = ProjectToCoordinates.EMPTY_VERSION.apply(module);
-        this.cachedPOMs.put(coordinates, PomUtil.parsePOM(this.project));
+        Optional<Document> parsedPOM = PomUtil.parsePOM(this.project);
+        if (parsedPOM.isPresent()) {
+          this.cachedPOMs.put(coordinates, parsedPOM.get());
+        }
         this.cachedModuleVersions.put(coordinates, module.getVersion());
 
         Map<ReleasePhase, ArtifactCoordinates> coordinatesByPhase = this.metadata
@@ -80,9 +80,25 @@ public abstract class AbstractTychoVersionsStep implements CDIMojoProcessingStep
       }
 
       versionsEngine.apply();
+      adaptProjectMetadataWithNewVersions();
     } catch (IOException e) {
       throw new MojoExecutionException("Error during tycho version upgrade.", e);
     }
+  }
+
+  private void adaptProjectMetadataWithNewVersions() {
+    // this needs to be done in order to make the changes reversible
+    // if the metadata is not adapted reverting the changes wouldn't be possible for pom-less builds since the metadata
+    // is initialized only once before the build starts
+    this.metadataReader.getProjects().forEach(data -> {
+      PomFile pom = data.getMetadata(PomFile.class);
+
+      Map<ReleasePhase, ArtifactCoordinates> coordinatesByPhase = this.metadata
+          .getArtifactCoordinatesByPhase(pom.getGroupId(), pom.getArtifactId());
+      String version = coordinatesByPhase.get(currentReleasePhase()).getVersion();
+
+      pom.setVersion(version);
+    });
   }
 
   protected abstract ReleasePhase currentReleasePhase();
@@ -97,14 +113,8 @@ public abstract class AbstractTychoVersionsStep implements CDIMojoProcessingStep
 
   @RollbackOnError
   public void rollback() throws MojoExecutionException, MojoFailureException {
-    ProjectMetadataReader metadataReader = lookup(ProjectMetadataReader.class);
-    VersionsEngine versionsEngine = lookup(VersionsEngine.class);
-    versionsEngine.setUpdateVersionRangeMatchingBounds(false);
-    versionsEngine.setProjects(metadataReader.getProjects());
-
+    VersionsEngine versionsEngine = initializeVersionsEngine();
     try {
-      metadataReader.addBasedir(this.project.getBasedir());
-
       // first add all module version changes to the versions engine of tycho and execute the change command
       for (MavenProject module : this.reactorProjects) {
         String version = this.cachedModuleVersions.get(ProjectToCoordinates.EMPTY_VERSION.apply(module));
@@ -135,5 +145,22 @@ public abstract class AbstractTychoVersionsStep implements CDIMojoProcessingStep
     } catch (IOException e) {
       throw new MojoExecutionException("Could not revert the version update after a failed release build.", e);
     }
+  }
+
+  private VersionsEngine initializeVersionsEngine() throws MojoExecutionException, MojoFailureException {
+    if (this.metadataReader == null) {
+      this.metadataReader = lookup(ProjectMetadataReader.class);
+      try {
+        this.metadataReader.addBasedir(this.project.getBasedir());
+      } catch (IOException e) {
+        throw new MojoExecutionException("Tycho was unable to read the project structure!", e);
+      }
+    }
+
+    VersionsEngine versionsEngine = lookup(VersionsEngine.class);
+    versionsEngine.setUpdateVersionRangeMatchingBounds(false);
+    versionsEngine.setProjects(this.metadataReader.getProjects());
+
+    return versionsEngine;
   }
 }

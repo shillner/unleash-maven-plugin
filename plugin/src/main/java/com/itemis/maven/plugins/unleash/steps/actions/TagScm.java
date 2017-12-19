@@ -129,39 +129,43 @@ public class TagScm implements CDIMojoProcessingStep {
       if (scm != null) {
         this.log.debug("\tUpdating SCM connection tags in POM of module '" + ProjectToString.INSTANCE.apply(p) + "'");
 
-        this.cachedPOMs.put(ProjectToCoordinates.EMPTY_VERSION.apply(p), PomUtil.parsePOM(p));
+        Optional<Document> parsedPOM = PomUtil.parsePOM(p);
+        if (parsedPOM.isPresent()) {
+          this.cachedPOMs.put(ProjectToCoordinates.EMPTY_VERSION.apply(p), parsedPOM.get());
 
-        try {
-          Document document = PomUtil.parsePOM(p);
-          Node scmNode = PomUtil.getOrCreateScmNode(document, false);
+          try {
+            // parse again to not modify the cached object
+            Document document = PomUtil.parsePOM(p).get();
+            Node scmNode = PomUtil.getOrCreateScmNode(document, false);
 
-          if (scmNode != null) {
-            Optional<String> connection = PomUtil.getChildNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_CONNECTION);
-            if (connection.isPresent()) {
-              PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_CONNECTION,
-                  this.scmProvider.calculateTagConnectionString(connection.get(), scmTagName), false);
+            if (scmNode != null) {
+              Optional<String> connection = PomUtil.getChildNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_CONNECTION);
+              if (connection.isPresent()) {
+                PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_CONNECTION,
+                    this.scmProvider.calculateTagConnectionString(connection.get(), scmTagName), false);
+              }
+
+              Optional<String> devConnection = PomUtil.getChildNodeTextContent(scmNode,
+                  PomUtil.NODE_NAME_SCM_DEV_CONNECTION);
+              if (devConnection.isPresent()) {
+                PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_DEV_CONNECTION,
+                    this.scmProvider.calculateTagConnectionString(devConnection.get(), scmTagName), false);
+              }
+
+              Optional<String> url = PomUtil.getChildNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_URL);
+              if (url.isPresent()) {
+                PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_URL,
+                    this.scmProvider.calculateTagConnectionString(url.get(), scmTagName), false);
+              }
+
+              if (!this.scmProvider.isTagInfoIncludedInConnection()) {
+                PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_TAG, scmTagName, true);
+              }
+              PomUtil.writePOM(document, p);
             }
-
-            Optional<String> devConnection = PomUtil.getChildNodeTextContent(scmNode,
-                PomUtil.NODE_NAME_SCM_DEV_CONNECTION);
-            if (devConnection.isPresent()) {
-              PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_DEV_CONNECTION,
-                  this.scmProvider.calculateTagConnectionString(devConnection.get(), scmTagName), false);
-            }
-
-            Optional<String> url = PomUtil.getChildNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_URL);
-            if (url.isPresent()) {
-              PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_URL,
-                  this.scmProvider.calculateTagConnectionString(url.get(), scmTagName), false);
-            }
-
-            if (!this.scmProvider.isTagInfoIncludedInConnection()) {
-              PomUtil.setNodeTextContent(scmNode, PomUtil.NODE_NAME_SCM_TAG, scmTagName, true);
-            }
-            PomUtil.writePOM(document, p);
+          } catch (Throwable t) {
+            throw new MojoFailureException("Could not update scm information for release.", t);
           }
-        } catch (Throwable t) {
-          throw new MojoFailureException("Could not update scm information for release.", t);
         }
       }
     }

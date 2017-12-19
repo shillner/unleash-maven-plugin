@@ -11,6 +11,7 @@ import org.apache.maven.project.MavenProject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import com.google.common.base.Optional;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.ExecutionContext;
@@ -43,22 +44,24 @@ public class RemoveSpyPlugin implements CDIMojoProcessingStep {
     this.log.info("Removing artifact-spy-plugin from build configuration.");
     try {
       for (MavenProject p : this.reactorProjects) {
-        Document document = PomUtil.parsePOM(p);
+        Optional<Document> document = PomUtil.parsePOM(p);
 
-        Node plugin = PomUtil.getPlugin(document, this.artifactSpyPluginCoordinates.getGroupId(),
-            this.artifactSpyPluginCoordinates.getArtifactId());
-        if (plugin != null) {
-          Node plugins = plugin.getParentNode();
-          plugins.removeChild(plugin);
-          if (plugins.getChildNodes().getLength() == 0) {
-            Node build = plugins.getParentNode();
-            build.removeChild(plugins);
-            if (build.getChildNodes().getLength() == 0) {
-              build.getParentNode().removeChild(build);
+        if (document.isPresent()) {
+          Node plugin = PomUtil.getPlugin(document.get(), this.artifactSpyPluginCoordinates.getGroupId(),
+              this.artifactSpyPluginCoordinates.getArtifactId());
+          if (plugin != null) {
+            Node plugins = plugin.getParentNode();
+            plugins.removeChild(plugin);
+            if (plugins.getChildNodes().getLength() == 0) {
+              Node build = plugins.getParentNode();
+              build.removeChild(plugins);
+              if (build.getChildNodes().getLength() == 0) {
+                build.getParentNode().removeChild(build);
+              }
             }
-          }
 
-          PomUtil.writePOM(document, p);
+            PomUtil.writePOM(document.get(), p);
+          }
         }
       }
     } catch (Throwable t) {

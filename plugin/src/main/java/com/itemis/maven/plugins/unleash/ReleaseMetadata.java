@@ -21,6 +21,7 @@ import org.eclipse.aether.repository.RemoteRepository;
 import org.w3c.dom.Document;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.itemis.maven.aether.ArtifactCoordinates;
@@ -104,7 +105,10 @@ public class ReleaseMetadata {
       // caching of SCM settings of every POM in order to go back to it before setting next dev version
       this.cachedScmSettings.put(ProjectToCoordinates.EMPTY_VERSION.apply(p), p.getModel().getScm());
 
-      this.originalPOMs.put(ProjectToCoordinates.EMPTY_VERSION.apply(p), PomUtil.parsePOM(p));
+      Optional<Document> parsedPOM = PomUtil.parsePOM(p);
+      if (parsedPOM.isPresent()) {
+        this.originalPOMs.put(ProjectToCoordinates.EMPTY_VERSION.apply(p), parsedPOM.get());
+      }
     }
   }
 

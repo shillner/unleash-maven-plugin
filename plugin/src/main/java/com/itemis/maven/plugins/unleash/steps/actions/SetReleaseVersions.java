@@ -12,6 +12,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.w3c.dom.Document;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
@@ -49,15 +50,19 @@ public class SetReleaseVersions implements CDIMojoProcessingStep {
     this.cachedPOMs = Maps.newHashMap();
 
     for (MavenProject project : this.reactorProjects) {
-      this.cachedPOMs.put(ProjectToCoordinates.EMPTY_VERSION.apply(project), PomUtil.parsePOM(project));
+      Optional<Document> parsedPOM = PomUtil.parsePOM(project);
+      if (parsedPOM.isPresent()) {
+        this.cachedPOMs.put(ProjectToCoordinates.EMPTY_VERSION.apply(project), parsedPOM.get());
 
-      try {
-        Document document = PomUtil.parsePOM(project);
-        setProjectVersion(project, document);
-        setParentVersion(project, document);
-        PomUtil.writePOM(document, project);
-      } catch (Throwable t) {
-        throw new MojoFailureException("Could not update versions for release.", t);
+        try {
+          // parse again to not modify the cached object
+          Document document = PomUtil.parsePOM(project).get();
+          setProjectVersion(project, document);
+          setParentVersion(project, document);
+          PomUtil.writePOM(document, project);
+        } catch (Throwable t) {
+          throw new MojoFailureException("Could not update versions for release.", t);
+        }
       }
     }
   }

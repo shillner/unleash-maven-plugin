@@ -13,6 +13,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.w3c.dom.Document;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
@@ -71,16 +72,20 @@ public class SetNextDevVersion implements CDIMojoProcessingStep {
 
     for (MavenProject project : this.reactorProjects) {
       this.log.debug("\tPreparing module '" + ProjectToString.INSTANCE.apply(project) + "'.");
-      this.cachedPOMs.put(ProjectToCoordinates.EMPTY_VERSION.apply(project), PomUtil.parsePOM(project));
+      Optional<Document> parsedPOM = PomUtil.parsePOM(project);
+      if (parsedPOM.isPresent()) {
+        this.cachedPOMs.put(ProjectToCoordinates.EMPTY_VERSION.apply(project), parsedPOM.get());
 
-      try {
-        Document document = PomUtil.parsePOM(project);
-        setProjectVersion(project, document);
-        setParentVersion(project, document);
-        this.util.revertScmSettings(project, document);
-        PomUtil.writePOM(document, project);
-      } catch (Throwable t) {
-        throw new MojoFailureException("Could not update versions for next development cycle.", t);
+        try {
+          // parse again to not modify the cached object
+          Document document = PomUtil.parsePOM(project).get();
+          setProjectVersion(project, document);
+          setParentVersion(project, document);
+          this.util.revertScmSettings(project, document);
+          PomUtil.writePOM(document, project);
+        } catch (Throwable t) {
+          throw new MojoFailureException("Could not update versions for next development cycle.", t);
+        }
       }
     }
 

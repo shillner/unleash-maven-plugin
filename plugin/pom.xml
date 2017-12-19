@@ -31,7 +31,7 @@
     <version.maven-plugin-plugin>3.4</version.maven-plugin-plugin>
     <version.mockito-all>1.10.19</version.mockito-all>
     <version.plexus-interactivity-api>1.0-alpha-6</version.plexus-interactivity-api>
-    <version.tycho-versions-plugin>0.25.0</version.tycho-versions-plugin>
+    <version.tycho-versions-plugin>1.0.0</version.tycho-versions-plugin>
     <version.weld-se>2.3.3.Final</version.weld-se>
   </properties>
 

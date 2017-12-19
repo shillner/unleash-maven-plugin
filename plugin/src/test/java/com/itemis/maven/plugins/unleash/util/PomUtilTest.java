@@ -47,7 +47,9 @@ public class PomUtilTest {
       f = new File(url.getPath());
     }
 
-    Document document = PomUtil.parsePOM(f);
+    Optional<Document> parsedPOM = PomUtil.parsePOM(f);
+    Assert.assertTrue(parsedPOM.isPresent());
+    Document document = parsedPOM.get();
     Assert.assertNotNull(document);
     Element root = document.getDocumentElement();
     Assert.assertEquals("project", root.getTagName());
@@ -73,7 +75,9 @@ public class PomUtilTest {
 
     MavenProject project = new MavenProject();
     project.setFile(f);
-    document = PomUtil.parsePOM(project);
+    parsedPOM = PomUtil.parsePOM(project);
+    Assert.assertTrue(parsedPOM.isPresent());
+    document = parsedPOM.get();
     Assert.assertNotNull(document);
     root = document.getDocumentElement();
     Assert.assertEquals("project", root.getTagName());

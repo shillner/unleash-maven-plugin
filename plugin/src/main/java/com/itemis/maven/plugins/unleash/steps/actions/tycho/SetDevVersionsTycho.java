@@ -11,6 +11,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.w3c.dom.Document;
 
+import com.google.common.base.Optional;
 import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
 import com.itemis.maven.plugins.cdi.ExecutionContext;
 import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
@@ -58,9 +59,12 @@ public class SetDevVersionsTycho extends AbstractTychoVersionsStep implements CD
     this.scmProvider = this.scmProviderRegistry.getProvider();
     for (MavenProject project : this.reactorProjects) {
       try {
-        Document document = PomUtil.parsePOM(project);
-        this.util.revertScmSettings(project, document);
-        PomUtil.writePOM(document, project);
+        Optional<Document> parsedPOM = PomUtil.parsePOM(project);
+        if (parsedPOM.isPresent()) {
+          Document document = parsedPOM.get();
+          this.util.revertScmSettings(project, document);
+          PomUtil.writePOM(document, project);
+        }
       } catch (Throwable t) {
         throw new MojoFailureException("Could not update versions for next development cycle.", t);
       }

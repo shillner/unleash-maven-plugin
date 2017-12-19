@@ -77,7 +77,7 @@ public final class PomUtil {
    * @param project the project from which the parser retrieves the POM file.
    * @return the parsed document for further manipulation.
    */
-  public static final Document parsePOM(MavenProject project) {
+  public static final Optional<Document> parsePOM(MavenProject project) {
     try {
       return parsePOM(project.getFile());
     } catch (RuntimeException e) {
@@ -93,11 +93,16 @@ public final class PomUtil {
    * @param pomFile the pom file to be parsed.
    * @return the parsed document for further manipulation.
    */
-  public static final Document parsePOM(File pomFile) {
-    Preconditions.checkArgument(pomFile != null && pomFile.exists() && pomFile.isFile(),
-        "The project file does not exist or is invalid.");
+  public static final Optional<Document> parsePOM(File pomFile) {
+    // adaption for https://github.com/shillner/unleash-maven-plugin/issues/98
+    // in case of pom-less tycho builds the modules don't have POMs
+    if (pomFile == null || !pomFile.exists()) {
+      return Optional.absent();
+    }
+
+    Preconditions.checkArgument(pomFile.isFile(), "The project file does not exist or is invalid.");
     try {
-      return parsePOM(new FileInputStream(pomFile));
+      return Optional.of(parsePOM(new FileInputStream(pomFile)));
     } catch (FileNotFoundException e) {
       throw new RuntimeException("Could not load the project object model from file: " + pomFile.getAbsolutePath(), e);
     }
@@ -132,6 +137,7 @@ public final class PomUtil {
     File pom = project.getFile();
     Preconditions.checkArgument(pom != null && pom.exists() && pom.isFile(),
         "The passed project does not contain a valid POM file reference.");
+
     try {
       writePOM(document, new FileOutputStream(pom), true);
     } catch (Throwable t) {

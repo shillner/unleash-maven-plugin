@@ -1,5 +1,6 @@
 package com.itemis.maven.plugins.unleash.steps.actions;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -50,16 +51,21 @@ public class AddSpyPlugin implements CDIMojoProcessingStep {
         "Adding artifact-spy-plugin to the build configuration. This plugin is required to detect all artifacts that are produced by the release build for later installation and deployment.");
     this.cachedPOMs = Maps.newHashMap();
     for (MavenProject p : this.reactorProjects) {
-      this.cachedPOMs.put(p, PomUtil.parsePOM(p));
+      Optional<Document> parsedPOM = PomUtil.parsePOM(p);
+      if (parsedPOM.isPresent()) {
+        this.cachedPOMs.put(p, parsedPOM.get());
+      }
     }
 
     try {
       for (MavenProject p : this.reactorProjects) {
-        Document document = PomUtil.parsePOM(p);
-        Node plugin = PomUtil.createPlugin(document, this.artifactSpyPluginCoordinates.getGroupId(),
-            this.artifactSpyPluginCoordinates.getArtifactId(), this.artifactSpyPluginCoordinates.getVersion());
-        PomUtil.createPluginExecution(plugin, "spy", Optional.of("verify"), "spy");
-        PomUtil.writePOM(document, p);
+        Optional<Document> document = PomUtil.parsePOM(p);
+        if (document.isPresent()) {
+          Node plugin = PomUtil.createPlugin(document.get(), this.artifactSpyPluginCoordinates.getGroupId(),
+              this.artifactSpyPluginCoordinates.getArtifactId(), this.artifactSpyPluginCoordinates.getVersion());
+          PomUtil.createPluginExecution(plugin, "spy", Optional.of("verify"), "spy");
+          PomUtil.writePOM(document.get(), p);
+        }
       }
     } catch (Throwable t) {
       throw new MojoFailureException(
@@ -71,12 +77,18 @@ public class AddSpyPlugin implements CDIMojoProcessingStep {
   @RollbackOnError
   public void rollback() throws MojoExecutionException {
     this.log.info("Rollback of artifact-spy-plugin addition to the build configuration.");
-    try {
-      for (Entry<MavenProject, Document> entry : this.cachedPOMs.entrySet()) {
+
+    List<Throwable> errors = new ArrayList<>();
+    for (Entry<MavenProject, Document> entry : this.cachedPOMs.entrySet()) {
+      try {
         PomUtil.writePOM(entry.getValue(), entry.getKey());
+      } catch (Throwable t) {
+        errors.add(t);
       }
-    } catch (Throwable t) {
-      throw new MojoExecutionException("Could not remove artifact-spy-plugin from the POM.", t);
+    }
+
+    if (!errors.isEmpty()) {
+      throw new MojoExecutionException("Could not remove artifact-spy-plugin from the POM.", errors.get(0));
     }
   }
 }
