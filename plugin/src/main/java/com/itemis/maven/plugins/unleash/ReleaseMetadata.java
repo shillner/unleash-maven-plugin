@@ -102,15 +102,13 @@ public class ReleaseMetadata {
     String oldVersion = projectArtifact.getVersion();
     projectArtifact.setVersion("1");
 
-    // replace properties in remote repository URL
-    for (Profile profile : this.project.getModel().getProfiles()) {
-      if (this.profiles.contains(profile.getId())) {
-        log.debug("Adding profile " + profile.getId() + " to active profiles");
-        profile.getActivation().setActiveByDefault(true);
-        this.session.getRequest().addActiveProfile(profile.getId());
-      }
+    // activate profiles
+    for (String profile : this.profiles) {
+      log.debug("Adding profile " + profile + " to active profiles");
+      this.session.getRequest().addActiveProfile(profile);
     }
 
+    // replace properties in remote repository URL
     MavenPropertiesUtil mavenPropertiesUtil = new MavenPropertiesUtil(this.project, this.session, this.settings);
     ArtifactRepository artifactRepository = this.project.getDistributionManagementArtifactRepository();
     artifactRepository.setUrl(mavenPropertiesUtil.replaceProperties(artifactRepository.getUrl()));
