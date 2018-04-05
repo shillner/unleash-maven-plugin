@@ -115,7 +115,6 @@ public class ReleaseMetadata {
 
     // getting the remote repo
     this.deploymentRepository = RepositoryUtils.toRepo(artifactRepository);
-    log.info(this.deploymentRepository.getUrl());
 
     // resetting the artifact version
     projectArtifact.setVersion(oldVersion);
