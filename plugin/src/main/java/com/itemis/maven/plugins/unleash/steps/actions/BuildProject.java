@@ -110,6 +110,7 @@ public class BuildProject implements CDIMojoProcessingStep {
     for (String key : this.releaseEnvironmentVariables.keySet()) {
       request.addShellEnvironment(key, this.releaseEnvironmentVariables.get(key));
     }
+    request.addShellEnvironment("isUnleashBuild", "true");
     request.setOffline(this.settings.isOffline());
     request.setInteractive(this.settings.isInteractiveMode());
 
