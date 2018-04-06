@@ -1,20 +1,19 @@
 package com.itemis.maven.plugins.unleash;
 
-import com.google.common.base.Objects;
-import com.google.common.base.Optional;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.itemis.maven.aether.ArtifactCoordinates;
-import com.itemis.maven.plugins.cdi.logging.Logger;
-import com.itemis.maven.plugins.unleash.util.MavenPropertiesUtil;
-import com.itemis.maven.plugins.unleash.util.PomUtil;
-import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
-import com.itemis.maven.plugins.unleash.util.functions.ProjectToCoordinates;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.Profile;
 import org.apache.maven.model.Scm;
 import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.project.MavenProject;
@@ -23,11 +22,15 @@ import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.w3c.dom.Document;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-import java.util.*;
+import com.google.common.base.Objects;
+import com.google.common.base.Optional;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.itemis.maven.aether.ArtifactCoordinates;
+import com.itemis.maven.plugins.unleash.util.PomPropertyResolver;
+import com.itemis.maven.plugins.unleash.util.PomUtil;
+import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
+import com.itemis.maven.plugins.unleash.util.functions.ProjectToCoordinates;
 
 /**
  * Provides global metadata used during the release process. These metadata evolve during the release process.
@@ -52,8 +55,6 @@ public class ReleaseMetadata {
   private static final String PROPERTIES_KEY_VERSION_REACTOR_POST_RELEASE = "version.reactor.post.release";
 
   @Inject
-  private MavenSession session;
-  @Inject
   private MavenProject project;
   @Inject
   private Settings settings;
@@ -69,7 +70,8 @@ public class ReleaseMetadata {
   @Named("profiles")
   private List<String> profiles;
   @Inject
-  private Logger log;
+  @Named("releaseArgs")
+  private Properties releaseArgs;
 
   private String initialScmRevision;
   private String scmRevisionBeforeNextDevVersion;
@@ -102,16 +104,11 @@ public class ReleaseMetadata {
     String oldVersion = projectArtifact.getVersion();
     projectArtifact.setVersion("1");
 
-    // activate profiles
-    for (String profile : this.profiles) {
-      log.debug("Adding profile " + profile + " to active profiles");
-      this.session.getRequest().addActiveProfile(profile);
-    }
-
     // replace properties in remote repository URL
-    MavenPropertiesUtil mavenPropertiesUtil = new MavenPropertiesUtil(this.project, this.session, this.settings);
     ArtifactRepository artifactRepository = this.project.getDistributionManagementArtifactRepository();
-    artifactRepository.setUrl(mavenPropertiesUtil.replaceProperties(artifactRepository.getUrl()));
+    PomPropertyResolver propertyResolver = new PomPropertyResolver(this.project, this.settings, this.profiles,
+        this.releaseArgs);
+    artifactRepository.setUrl(propertyResolver.expandPropertyReferences(artifactRepository.getUrl()));
 
     // getting the remote repo
     this.deploymentRepository = RepositoryUtils.toRepo(artifactRepository);
@@ -182,7 +179,7 @@ public class ReleaseMetadata {
     for (ReleasePhase phase : this.artifactCoordinates.keySet()) {
       for (ArtifactCoordinates coordinates : this.artifactCoordinates.get(phase)) {
         if (Objects.equal(coordinates.getArtifactId(), artifactId)
-                && Objects.equal(coordinates.getGroupId(), groupId)) {
+            && Objects.equal(coordinates.getGroupId(), groupId)) {
           result.put(phase, coordinates);
           break;
         }
@@ -233,7 +230,7 @@ public class ReleaseMetadata {
 
   private void addVersionInfo(Properties p) {
     Map<ReleasePhase, ArtifactCoordinates> reactorCoordinates = getArtifactCoordinatesByPhase(this.project.getGroupId(),
-            this.project.getArtifactId());
+        this.project.getArtifactId());
 
     if (reactorCoordinates != null) {
       ArtifactCoordinates preReleaseCoordinates = reactorCoordinates.get(ReleasePhase.PRE_RELEASE);
@@ -259,15 +256,15 @@ public class ReleaseMetadata {
 
   private void addScmRevisions(Properties p) {
     p.setProperty(PROPERTIES_KEY_SCM_REV_INITIAL,
-            this.initialScmRevision != null ? this.initialScmRevision : StringUtils.EMPTY);
+        this.initialScmRevision != null ? this.initialScmRevision : StringUtils.EMPTY);
     p.setProperty(PROPERTIES_KEY_SCM_REV_BEFORE_TAG,
-            this.scmRevisionBeforeTag != null ? this.scmRevisionBeforeTag : StringUtils.EMPTY);
+        this.scmRevisionBeforeTag != null ? this.scmRevisionBeforeTag : StringUtils.EMPTY);
     p.setProperty(PROPERTIES_KEY_SCM_REV_AFTER_TAG,
-            this.scmRevisionAfterTag != null ? this.scmRevisionAfterTag : StringUtils.EMPTY);
+        this.scmRevisionAfterTag != null ? this.scmRevisionAfterTag : StringUtils.EMPTY);
     p.setProperty(PROPERTIES_KEY_SCM_REV_BEFORE_DEV,
-            this.scmRevisionBeforeNextDevVersion != null ? this.scmRevisionBeforeNextDevVersion : StringUtils.EMPTY);
+        this.scmRevisionBeforeNextDevVersion != null ? this.scmRevisionBeforeNextDevVersion : StringUtils.EMPTY);
     p.setProperty(PROPERTIES_KEY_SCM_REV_AFTER_DEV,
-            this.scmRevisionAfterNextDevVersion != null ? this.scmRevisionAfterNextDevVersion : StringUtils.EMPTY);
+        this.scmRevisionAfterNextDevVersion != null ? this.scmRevisionAfterNextDevVersion : StringUtils.EMPTY);
   }
 
   private void addReleaseArtifacts(Properties p) {
@@ -284,8 +281,8 @@ public class ReleaseMetadata {
 
   private void addDeploymentRepositoryInfo(Properties p) {
     p.setProperty(PROPERTIES_KEY_REL_REPO_ID,
-            this.deploymentRepository != null ? this.deploymentRepository.getId() : "");
+        this.deploymentRepository != null ? this.deploymentRepository.getId() : "");
     p.setProperty(PROPERTIES_KEY_REL_REPO_URL,
-            this.deploymentRepository != null ? this.deploymentRepository.getUrl() : "");
+        this.deploymentRepository != null ? this.deploymentRepository.getUrl() : "");
   }
 }

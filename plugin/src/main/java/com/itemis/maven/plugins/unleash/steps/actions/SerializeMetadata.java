@@ -37,6 +37,7 @@ public class SerializeMetadata implements CDIMojoProcessingStep {
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
     this.metadataOutputFile = new File(this.project.getBuild().getDirectory(), "releaseMetadata.properties");
+    this.metadataOutputFile.getParentFile().mkdirs();
     this.log.info("Serializing the release metadata into file '" + this.metadataOutputFile.getAbsolutePath() + "'.");
 
     try (FileOutputStream os = new FileOutputStream(this.metadataOutputFile)) {
