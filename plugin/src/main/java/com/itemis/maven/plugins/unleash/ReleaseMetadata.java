@@ -104,14 +104,14 @@ public class ReleaseMetadata {
     String oldVersion = projectArtifact.getVersion();
     projectArtifact.setVersion("1");
 
-    // replace properties in remote repository URL
+    // replace properties in remote repository URL and getting the remote repo
     ArtifactRepository artifactRepository = this.project.getDistributionManagementArtifactRepository();
-    PomPropertyResolver propertyResolver = new PomPropertyResolver(this.project, this.settings, this.profiles,
-        this.releaseArgs);
-    artifactRepository.setUrl(propertyResolver.expandPropertyReferences(artifactRepository.getUrl()));
-
-    // getting the remote repo
-    this.deploymentRepository = RepositoryUtils.toRepo(artifactRepository);
+    if (artifactRepository != null) {
+      PomPropertyResolver propertyResolver = new PomPropertyResolver(this.project, this.settings, this.profiles,
+          this.releaseArgs);
+      artifactRepository.setUrl(propertyResolver.expandPropertyReferences(artifactRepository.getUrl()));
+      this.deploymentRepository = RepositoryUtils.toRepo(artifactRepository);
+    }
 
     // resetting the artifact version
     projectArtifact.setVersion(oldVersion);
