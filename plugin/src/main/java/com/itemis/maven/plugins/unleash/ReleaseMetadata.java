@@ -13,9 +13,11 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.RepositoryUtils;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Scm;
 import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Settings;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.w3c.dom.Document;
@@ -25,6 +27,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.itemis.maven.aether.ArtifactCoordinates;
+import com.itemis.maven.plugins.unleash.util.PomPropertyResolver;
 import com.itemis.maven.plugins.unleash.util.PomUtil;
 import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
 import com.itemis.maven.plugins.unleash.util.functions.ProjectToCoordinates;
@@ -54,6 +57,8 @@ public class ReleaseMetadata {
   @Inject
   private MavenProject project;
   @Inject
+  private Settings settings;
+  @Inject
   private PluginParameterExpressionEvaluator expressionEvaluator;
   @Inject
   @Named("tagNamePattern")
@@ -61,6 +66,13 @@ public class ReleaseMetadata {
   @Inject
   @Named("reactorProjects")
   private List<MavenProject> reactorProjects;
+  @Inject
+  @Named("profiles")
+  private List<String> profiles;
+  @Inject
+  @Named("releaseArgs")
+  private Properties releaseArgs;
+
   private String initialScmRevision;
   private String scmRevisionBeforeNextDevVersion;
   private String scmRevisionAfterNextDevVersion;
@@ -92,8 +104,14 @@ public class ReleaseMetadata {
     String oldVersion = projectArtifact.getVersion();
     projectArtifact.setVersion("1");
 
+    // replace properties in remote repository URL
+    ArtifactRepository artifactRepository = this.project.getDistributionManagementArtifactRepository();
+    PomPropertyResolver propertyResolver = new PomPropertyResolver(this.project, this.settings, this.profiles,
+        this.releaseArgs);
+    artifactRepository.setUrl(propertyResolver.expandPropertyReferences(artifactRepository.getUrl()));
+
     // getting the remote repo
-    this.deploymentRepository = RepositoryUtils.toRepo(this.project.getDistributionManagementArtifactRepository());
+    this.deploymentRepository = RepositoryUtils.toRepo(artifactRepository);
 
     // resetting the artifact version
     projectArtifact.setVersion(oldVersion);

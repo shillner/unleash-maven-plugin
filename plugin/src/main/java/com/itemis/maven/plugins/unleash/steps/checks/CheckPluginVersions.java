@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -20,6 +21,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Settings;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Collections2;
@@ -54,6 +56,14 @@ public class CheckPluginVersions implements CDIMojoProcessingStep {
   private List<MavenProject> reactorProjects;
   @Inject
   private PluginDescriptor pluginDescriptor;
+  @Inject
+  @Named("profiles")
+  private List<String> profiles;
+  @Inject
+  @Named("releaseArgs")
+  private Properties releaseArgs;
+  @Inject
+  private Settings settings;
 
   @Override
   public void execute(ExecutionContext context) throws MojoExecutionException, MojoFailureException {
@@ -64,7 +74,8 @@ public class CheckPluginVersions implements CDIMojoProcessingStep {
     Multimap<MavenProject, ArtifactCoordinates> snapshotsByProject = HashMultimap.create();
     for (MavenProject project : this.reactorProjects) {
       this.log.debug("\tChecking plugins of reactor project '" + ProjectToString.INSTANCE.apply(project) + "':");
-      PomPropertyResolver propertyResolver = new PomPropertyResolver(project);
+      PomPropertyResolver propertyResolver = new PomPropertyResolver(project, this.settings, this.profiles,
+          this.releaseArgs);
       propertyResolvers.put(project, propertyResolver);
 
       snapshotsByProject.putAll(project, getSnapshotsFromManagement(project, propertyResolver));
