@@ -73,7 +73,11 @@ public class DetectReleaseArtifacts implements CDIMojoProcessingStep {
             relativePath = this.project.getBasedir().toURI().relativize(p.getFile().toURI()).toString();
             artifactFile = new File(this.unleashOutputFolder, relativePath);
             artifactFile.getParentFile().mkdirs();
-            Files.copy(p.getFile(), artifactFile);
+
+            // see https://github.com/shillner/unleash-maven-plugin/issues/98
+            if (p.getFile().exists()) {
+              Files.copy(p.getFile(), artifactFile);
+            }
           }
 
           a = a.setFile(artifactFile);
