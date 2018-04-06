@@ -104,14 +104,13 @@ public class BuildProject implements CDIMojoProcessingStep {
     // installation and deployment are performed in a later step. We first need to ensure that there are no changes in
     // the scm, ...
     request.setGoals(this.goals);
-    // Add default property indicating that the unleash plugin is triggering the build
-    this.releaseArgs.setProperty("unleash.build", "true");
     request.setProperties(this.releaseArgs);
     request.setProfiles(this.profiles);
     request.setShellEnvironmentInherited(true);
     for (String key : this.releaseEnvironmentVariables.keySet()) {
       request.addShellEnvironment(key, this.releaseEnvironmentVariables.get(key));
     }
+    request.addShellEnvironment("isUnleashBuild", "true");
     request.setOffline(this.settings.isOffline());
     request.setInteractive(this.settings.isInteractiveMode());
 

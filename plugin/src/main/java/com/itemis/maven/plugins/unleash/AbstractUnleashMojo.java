@@ -242,6 +242,9 @@ public class AbstractUnleashMojo extends AbstractCDIMojo {
         log.warn("Could not set '" + arg + "' as a Property for the Maven release build.");
       }
     }
+
+    // Add default property indicating that the unleash plugin is triggering the build
+    args.put("isUnleashBuild", "true");
     return args;
   }
 
