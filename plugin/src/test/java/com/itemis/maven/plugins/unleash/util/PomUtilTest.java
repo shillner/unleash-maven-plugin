@@ -10,8 +10,11 @@ import java.net.URL;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Parent;
+import org.apache.maven.model.Profile;
 import org.apache.maven.project.MavenProject;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -275,6 +278,100 @@ public class PomUtilTest {
 
     Assert.assertEquals(newVersion, getNode(document.getDocumentElement(), "parent/version").getTextContent());
     Assert.assertEquals(newVersion, model.getParent().getVersion());
+  }
+
+  @Test
+  public void testSetDependencyVersion() throws Exception {
+    URL url = getClass().getResource(getClass().getSimpleName() + "/pom5-reactor-dependencies.xml");
+    File source;
+    try {
+      source = new File(url.toURI());
+    } catch (URISyntaxException e) {
+      source = new File(url.getPath());
+    }
+
+    DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+    Document document = builder.parse(source);
+
+    Model model = new Model();
+    model.setGroupId("com.itemis.maven.plugins");
+    model.setArtifactId("test-project-1");
+    model.setVersion("1");
+
+    String oldDependencyVersion = "0.0.1-SNAPSHOT";
+    String newDependencyVersion = "0.0.1";
+
+    {
+      Dependency projectDependency = new Dependency();
+      projectDependency.setGroupId("com.cht.test");
+      projectDependency.setArtifactId("test-dep");
+      projectDependency.setVersion(oldDependencyVersion);
+      model.addDependency(projectDependency);
+      PomUtil.setDependencyVersion(projectDependency, document, "/", newDependencyVersion);
+      Assert.assertEquals(newDependencyVersion,
+          getNode(document.getDocumentElement(), "dependencies/dependency/version").getTextContent());
+      Assert.assertEquals(oldDependencyVersion,
+          getNode(document.getDocumentElement(), "dependencyManagement/dependencies/dependency/version")
+              .getTextContent());
+      Assert.assertEquals(oldDependencyVersion,
+          getNode(document.getDocumentElement(), "profiles/profile/dependencies/dependency/version").getTextContent());
+      Assert.assertEquals(oldDependencyVersion, getNode(document.getDocumentElement(),
+          "profiles/profile/dependencyManagement/dependencies/dependency/version").getTextContent());
+      Assert.assertEquals(newDependencyVersion, model.getDependencies().get(0).getVersion());
+    }
+
+    {
+      Dependency projectManagedDependency = new Dependency();
+      projectManagedDependency.setGroupId("com.cht.test");
+      projectManagedDependency.setArtifactId("test-dep");
+      projectManagedDependency.setVersion(oldDependencyVersion);
+      DependencyManagement projectDependencyManagement = new DependencyManagement();
+      projectDependencyManagement.addDependency(projectManagedDependency);
+      model.setDependencyManagement(projectDependencyManagement);
+      PomUtil.setDependencyVersion(projectManagedDependency, document, "/dependencyManagement", newDependencyVersion);
+      Assert.assertEquals(newDependencyVersion,
+          getNode(document.getDocumentElement(), "dependencyManagement/dependencies/dependency/version")
+              .getTextContent());
+      Assert.assertEquals(oldDependencyVersion,
+          getNode(document.getDocumentElement(), "profiles/profile/dependencies/dependency/version").getTextContent());
+      Assert.assertEquals(oldDependencyVersion, getNode(document.getDocumentElement(),
+          "profiles/profile/dependencyManagement/dependencies/dependency/version").getTextContent());
+      Assert.assertEquals(newDependencyVersion, model.getDependencyManagement().getDependencies().get(0).getVersion());
+    }
+
+    Profile testProfile = new Profile();
+    testProfile.setId("test");
+    model.getProfiles().add(testProfile);
+
+    {
+      Dependency profileDependency = new Dependency();
+      profileDependency.setGroupId("com.cht.test");
+      profileDependency.setArtifactId("test-dep");
+      profileDependency.setVersion(oldDependencyVersion);
+      testProfile.getDependencies().add(profileDependency);
+      PomUtil.setDependencyVersion(profileDependency, document, "/profiles/profile[id[text()='test']]",
+          newDependencyVersion);
+      Assert.assertEquals(newDependencyVersion,
+          getNode(document.getDocumentElement(), "profiles/profile/dependencies/dependency/version").getTextContent());
+      Assert.assertEquals(oldDependencyVersion, getNode(document.getDocumentElement(),
+          "profiles/profile/dependencyManagement/dependencies/dependency/version").getTextContent());
+      Assert.assertEquals(newDependencyVersion, model.getProfiles().get(0).getDependencies().get(0).getVersion());
+    }
+
+    {
+      Dependency profileManagedDependency = new Dependency();
+      profileManagedDependency.setGroupId("com.cht.test");
+      profileManagedDependency.setArtifactId("test-dep");
+      profileManagedDependency.setVersion(oldDependencyVersion);
+      DependencyManagement profileDependencyManagement = new DependencyManagement();
+      profileDependencyManagement.addDependency(profileManagedDependency);
+      testProfile.setDependencyManagement(profileDependencyManagement);
+      PomUtil.setDependencyVersion(profileManagedDependency, document,
+          "/profiles/profile[id[text()='test']]/dependencyManagement", newDependencyVersion);
+      Assert.assertEquals(newDependencyVersion, getNode(document.getDocumentElement(),
+          "profiles/profile/dependencyManagement/dependencies/dependency/version").getTextContent());
+      Assert.assertEquals(newDependencyVersion, model.getProfiles().get(0).getDependencies().get(0).getVersion());
+    }
   }
 
   @Test

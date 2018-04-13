@@ -122,6 +122,11 @@ public class AbstractUnleashMojo extends AbstractCDIMojo {
   @Named("tagNamePattern")
   private String tagNamePattern;
 
+  @Parameter(defaultValue = "true", property = "unleash.updateReactorDependencyVersion", required = true)
+  @MojoProduces
+  @Named("updateReactorDependencyVersion")
+  private boolean updateReactorDependencyVersion;
+
   //////////////////////////// optional
   @Parameter(property = "unleash.developmentVersion", required = false)
   @MojoProduces
