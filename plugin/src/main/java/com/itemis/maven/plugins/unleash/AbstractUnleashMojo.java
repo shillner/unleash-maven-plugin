@@ -3,12 +3,20 @@ package com.itemis.maven.plugins.unleash;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Named;
 
 import org.apache.commons.logging.Log;
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
+import org.apache.maven.artifact.repository.Authentication;
+import org.apache.maven.artifact.repository.MavenArtifactRepository;
+import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
@@ -16,6 +24,7 @@ import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.components.interactivity.Prompter;
@@ -33,6 +42,7 @@ import com.itemis.maven.aether.ArtifactCoordinates;
 import com.itemis.maven.plugins.cdi.AbstractCDIMojo;
 import com.itemis.maven.plugins.cdi.annotations.MojoInject;
 import com.itemis.maven.plugins.cdi.annotations.MojoProduces;
+import com.itemis.maven.plugins.unleash.util.Repository;
 import com.itemis.maven.plugins.unleash.util.VersionUpgradeStrategy;
 
 public class AbstractUnleashMojo extends AbstractCDIMojo {
@@ -201,6 +211,9 @@ public class AbstractUnleashMojo extends AbstractCDIMojo {
   @Parameter(property = "unleash.preserveFixedModuleVersions", required = false, defaultValue = "false")
   private boolean preserveFixedModuleVersions;
 
+  @Parameter
+  private Set<Repository> additionalDeploymentRepositories;
+
   @MojoProduces
   @Named("artifactSpyPlugin")
   private ArtifactCoordinates artifactSpyPluginCoordinates = new ArtifactCoordinates("com.itemis.maven.plugins",
@@ -270,5 +283,28 @@ public class AbstractUnleashMojo extends AbstractCDIMojo {
       }
     }
     return env;
+  }
+
+  @MojoProduces
+  @Named("additionalDeployemntRepositories")
+  private Set<RemoteRepository> getAdditionalDeploymentRepositories() {
+    return this.additionalDeploymentRepositories.stream().map(repo -> {
+      DefaultRepositoryLayout layout = new DefaultRepositoryLayout();
+      ArtifactRepositoryPolicy snapshotsPolicy = new ArtifactRepositoryPolicy();
+      ArtifactRepositoryPolicy releasesPolicy = new ArtifactRepositoryPolicy();
+
+      ArtifactRepository artifactRepository = new MavenArtifactRepository(repo.getId(), repo.getUrl(), layout,
+          snapshotsPolicy, releasesPolicy);
+      this.settings.getServers().stream().filter(server -> Objects.equals(server.getId(), repo.getId())).findFirst()
+          .ifPresent(server -> artifactRepository.setAuthentication(createServerAuthentication(server)));
+      return RepositoryUtils.toRepo(artifactRepository);
+    }).collect(Collectors.toSet());
+  }
+
+  private Authentication createServerAuthentication(Server server) {
+    Authentication authentication = new Authentication(server.getUsername(), server.getPassword());
+    authentication.setPrivateKey(server.getPrivateKey());
+    authentication.setPassphrase(server.getPassphrase());
+    return authentication;
   }
 }
