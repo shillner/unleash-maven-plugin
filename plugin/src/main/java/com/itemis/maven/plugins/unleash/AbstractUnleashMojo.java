@@ -1,6 +1,7 @@
 package com.itemis.maven.plugins.unleash;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,6 +47,8 @@ import com.itemis.maven.plugins.unleash.util.Repository;
 import com.itemis.maven.plugins.unleash.util.VersionUpgradeStrategy;
 
 public class AbstractUnleashMojo extends AbstractCDIMojo {
+  public static final String PROPERTY_REPO_BASE = "multiDeploy.repo";
+
   @Component
   @MojoProduces
   private PlexusContainer plexus;
@@ -288,7 +291,18 @@ public class AbstractUnleashMojo extends AbstractCDIMojo {
   @MojoProduces
   @Named("additionalDeployemntRepositories")
   private Set<RemoteRepository> getAdditionalDeploymentRepositories() {
-    return this.additionalDeploymentRepositories.stream().map(repo -> {
+    Set<Repository> repos = new HashSet<>();
+    if (this.additionalDeploymentRepositories != null) {
+      repos.addAll(this.additionalDeploymentRepositories);
+    }
+
+    System.getProperties().forEach((key, value) -> {
+      if (key.toString().startsWith(PROPERTY_REPO_BASE)) {
+        Repository.parseFromProperty(value.toString()).ifPresent(repo -> repos.add(repo));
+      }
+    });
+
+    return repos.stream().map(repo -> {
       DefaultRepositoryLayout layout = new DefaultRepositoryLayout();
       ArtifactRepositoryPolicy snapshotsPolicy = new ArtifactRepositoryPolicy();
       ArtifactRepositoryPolicy releasesPolicy = new ArtifactRepositoryPolicy();
