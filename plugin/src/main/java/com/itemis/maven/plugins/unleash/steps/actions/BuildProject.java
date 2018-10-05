@@ -104,6 +104,19 @@ public class BuildProject implements CDIMojoProcessingStep {
     // installation and deployment are performed in a later step. We first need to ensure that there are no changes in
     // the scm, ...
     request.setGoals(this.goals);
+
+    if (this.releaseArgs.containsKey("-X") || this.releaseArgs.containsKey("--debug")) {
+      this.releaseArgs.remove("-X");
+      this.releaseArgs.remove("--debug");
+      request.setDebug(true);
+    }
+
+    if (this.releaseArgs.containsKey("-e") || this.releaseArgs.containsKey("--errors")) {
+      this.releaseArgs.remove("-e");
+      this.releaseArgs.remove("--errors");
+      request.setShowErrors(true);
+    }
+
     request.setProperties(this.releaseArgs);
     request.setProfiles(this.profiles);
     request.setShellEnvironmentInherited(true);

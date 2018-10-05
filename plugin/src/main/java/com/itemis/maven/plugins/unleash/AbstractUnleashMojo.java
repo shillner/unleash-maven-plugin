@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 import javax.inject.Named;
 
-import org.apache.commons.logging.Log;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
@@ -252,15 +251,19 @@ public class AbstractUnleashMojo extends AbstractCDIMojo {
   @MojoProduces
   @Named("releaseArgs")
   @MojoInject
-  private Properties getReleaseArgs(Log log) {
+  private Properties getReleaseArgs() {
     Properties args = new Properties();
     Splitter splitter = Splitter.on('=');
-    for (String arg : this.releaseArgs) {
-      List<String> split = splitter.splitToList(arg);
-      if (split.size() == 2) {
-        args.put(split.get(0), split.get(1));
-      } else {
-        log.warn("Could not set '" + arg + "' as a Property for the Maven release build.");
+    if (this.releaseArgs != null) {
+      for (String arg : this.releaseArgs) {
+        List<String> split = splitter.splitToList(arg);
+        if (split.size() == 2) {
+          args.put(split.get(0), split.get(1));
+        } else {
+          args.put(split.get(0), "true");
+          getLog().info("Detected release argument without an explicit value. Assuming '" + split.get(0)
+              + "' to be a boolean property and setting it to true.");
+        }
       }
     }
 
