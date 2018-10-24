@@ -17,167 +17,104 @@
     <maven>${version.maven}</maven>
   </prerequisites>
 
-  <properties>
-    <version.aether>1.0.2.v20150114</version.aether>
-    <version.artifact-spy-plugin>1.0.6</version.artifact-spy-plugin>
-    <version.cdi-api>1.2</version.cdi-api>
-    <version.cdi-plugin-utils>3.4.0</version.cdi-plugin-utils>
-    <version.commons-lang3>3.4</version.commons-lang3>
-    <version.guava>23.0</version.guava>
-    <version.junit>4.12</version.junit>
-    <version.junit-dataprovider>1.10.3</version.junit-dataprovider>
-    <version.maven>3.3.9</version.maven>
-    <version.maven-invoker>2.2</version.maven-invoker>
-    <version.maven-plugin-plugin>3.4</version.maven-plugin-plugin>
-    <version.mockito-all>1.10.19</version.mockito-all>
-    <version.plexus-interactivity-api>1.0-alpha-6</version.plexus-interactivity-api>
-    <version.tycho-versions-plugin>1.1.0</version.tycho-versions-plugin>
-    <version.versions-maven-plugin>2.5</version.versions-maven-plugin>
-    <version.weld-se>2.3.3.Final</version.weld-se>
-  </properties>
-
   <dependencies>
+    <!-- env -->
+    <!-- thoses two are declared Unused by dependency plugin-->
     <dependency>
-      <groupId>org.eclipse.aether</groupId>
-      <artifactId>aether-api</artifactId>
-      <version>${version.aether}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.aether</groupId>
-      <artifactId>aether-connector-basic</artifactId>
-      <version>${version.aether}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.aether</groupId>
-      <artifactId>aether-impl</artifactId>
-      <version>${version.aether}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.aether</groupId>
-      <artifactId>aether-spi</artifactId>
-      <version>${version.aether}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.aether</groupId>
-      <artifactId>aether-transport-file</artifactId>
-      <version>${version.aether}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.aether</groupId>
-      <artifactId>aether-transport-http</artifactId>
-      <version>${version.aether}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.aether</groupId>
-      <artifactId>aether-util</artifactId>
-      <version>${version.aether}</version>
+      <groupId>org.eclipse.tycho</groupId>
+      <artifactId>tycho-versions-plugin</artifactId>
+      <type>maven-plugin</type>
     </dependency>
     <dependency>
       <!-- just to be sure that the spy plugin is available in the aether -->
       <groupId>com.itemis.maven.plugins</groupId>
       <artifactId>artifact-spy-plugin</artifactId>
-      <version>${version.artifact-spy-plugin}</version>
       <type>maven-plugin</type>
       <scope>runtime</scope>
+    </dependency>
+
+    <!-- deps-->
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-impl</artifactId>
     </dependency>
     <dependency>
       <groupId>javax.enterprise</groupId>
       <artifactId>cdi-api</artifactId>
-      <version>${version.cdi-api}</version>
     </dependency>
     <dependency>
       <groupId>com.itemis.maven.plugins</groupId>
       <artifactId>cdi-plugin-utils</artifactId>
-      <version>${version.cdi-plugin-utils}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>${version.commons-lang3}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>${version.guava}</version>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${version.junit}</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.tngtech.java</groupId>
       <artifactId>junit-dataprovider</artifactId>
-      <version>${version.junit-dataprovider}</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
-      <artifactId>maven-aether-provider</artifactId>
-      <version>${version.maven}</version>
+      <artifactId>maven-model</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-settings</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-artifact</artifactId>
-      <version>${version.maven}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-core</artifactId>
-      <version>${version.maven}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-invoker</artifactId>
-      <version>${version.maven-invoker}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
       <artifactId>maven-plugin-annotations</artifactId>
-      <version>${version.maven-plugin-plugin}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
-      <version>${version.maven}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <version>${version.mockito-all}</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-interactivity-api</artifactId>
-      <version>${version.plexus-interactivity-api}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.tycho</groupId>
-      <artifactId>tycho-versions-plugin</artifactId>
-      <version>${version.tycho-versions-plugin}</version>
-      <type>maven-plugin</type>
     </dependency>
     <dependency>
       <groupId>com.itemis.maven.plugins</groupId>
       <artifactId>unleash-scm-provider-api</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.itemis.maven.plugins</groupId>
       <artifactId>unleash-utils</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.jboss.weld.se</groupId>
       <artifactId>weld-se</artifactId>
-      <version>${version.weld-se}</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.mojo</groupId>
       <artifactId>versions-maven-plugin</artifactId>
-      <version>${version.versions-maven-plugin}</version>
+    </dependency>
+
+    <!-- TEST -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
     </dependency>
   </dependencies>
 

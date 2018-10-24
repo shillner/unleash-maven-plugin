@@ -11,28 +11,19 @@
   <name>Unleash Utilities</name>
   <description>Common utility classes provided and used by the plugin. These utilities can f.i. be used by external tools, such as CI server integration plugins.</description>
 
-  <properties>
-    <version.guava>23.0</version.guava>
-    <version.junit>4.12</version.junit>
-    <version.junit-dataprovider>1.10.3</version.junit-dataprovider>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>${version.guava}</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>${version.junit}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.tngtech.java</groupId>
       <artifactId>junit-dataprovider</artifactId>
-      <version>${version.junit-dataprovider}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

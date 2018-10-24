@@ -3,11 +3,16 @@ package com.itemis.maven.plugins.unleash.steps.actions;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
+import com.itemis.maven.plugins.cdi.ExecutionContext;
+import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
+import com.itemis.maven.plugins.cdi.logging.Logger;
+import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -20,14 +25,7 @@ import org.apache.maven.shared.invoker.InvocationRequest;
 import org.apache.maven.shared.invoker.InvocationResult;
 import org.apache.maven.shared.invoker.Invoker;
 import org.apache.maven.shared.invoker.MavenInvocationException;
-import org.codehaus.plexus.util.cli.CommandLineException;
-
-import com.google.common.base.Optional;
-import com.itemis.maven.plugins.cdi.CDIMojoProcessingStep;
-import com.itemis.maven.plugins.cdi.ExecutionContext;
-import com.itemis.maven.plugins.cdi.annotations.ProcessingStep;
-import com.itemis.maven.plugins.cdi.logging.Logger;
-import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
+import org.apache.maven.shared.utils.cli.CommandLineException;
 
 /**
  * Performs the actual release build but does not install or deploy artifacts to the repositories. These steps are
@@ -36,7 +34,7 @@ import com.itemis.maven.plugins.unleash.util.ReleaseUtil;
  * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
  * @since 1.0.0
  */
-@ProcessingStep(id = "buildReleaseArtifacts", description = "Triggers the atual release build which produces the release artifacts but does not install or deploy them.", requiresOnline = true)
+@ProcessingStep(id = "buildReleaseArtifacts", description = "Triggers the atual release build which produces the release artifacts but does not install or deploy them.")
 public class BuildProject implements CDIMojoProcessingStep {
   @Inject
   private Logger log;
@@ -90,7 +88,7 @@ public class BuildProject implements CDIMojoProcessingStep {
 
   private Invoker setupInvoker() {
     Invoker invoker = new DefaultInvoker();
-    File calculatedMavenHome = ReleaseUtil.getMavenHome(Optional.fromNullable(this.mavenHome));
+    File calculatedMavenHome = ReleaseUtil.getMavenHome(Optional.ofNullable(this.mavenHome));
     if (calculatedMavenHome != null) {
       this.log.debug("\tUsing maven home: " + calculatedMavenHome.getAbsolutePath());
       invoker.setMavenHome(calculatedMavenHome);
@@ -98,7 +96,7 @@ public class BuildProject implements CDIMojoProcessingStep {
     return invoker;
   }
 
-  private InvocationRequest setupInvocationRequest() throws MojoExecutionException {
+  private InvocationRequest setupInvocationRequest() {
     InvocationRequest request = new DefaultInvocationRequest();
     request.setPomFile(this.project.getFile());
     // installation and deployment are performed in a later step. We first need to ensure that there are no changes in
@@ -125,7 +123,7 @@ public class BuildProject implements CDIMojoProcessingStep {
     }
     request.addShellEnvironment("isUnleashBuild", "true");
     request.setOffline(this.settings.isOffline());
-    request.setInteractive(this.settings.isInteractiveMode());
+    request.setBatchMode(!this.settings.isInteractiveMode());
 
     MavenExecutionRequest originalRequest = this.session.getRequest();
     File globalSettingsFile = originalRequest.getGlobalSettingsFile();

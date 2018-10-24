@@ -2,20 +2,33 @@ package com.itemis.maven.plugins.unleash.util.predicates;
 
 import org.apache.maven.model.Plugin;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.mockito.Mockito;
 
 import com.itemis.maven.plugins.unleash.util.PomPropertyResolver;
-import com.tngtech.java.junit.dataprovider.DataProvider;
-import com.tngtech.java.junit.dataprovider.DataProviderRunner;
-import com.tngtech.java.junit.dataprovider.UseDataProvider;
 
-@RunWith(DataProviderRunner.class)
+@RunWith(Parameterized.class)
 public class IsSnapshotPluginTest {
-  @DataProvider
+
+  private static PomPropertyResolver propertyResolver;
+
+  private static IsSnapshotPlugin predicate;
+
+  private final Plugin p;
+
+  private final boolean expected;
+
+  public IsSnapshotPluginTest(Plugin p, boolean expected) {
+    this.p = p;
+    this.expected = expected;
+  }
+
+  @Parameterized.Parameters
   public static Object[][] plugins() {
+    propertyResolver = Mockito.mock(PomPropertyResolver.class);
+    predicate = new IsSnapshotPlugin(propertyResolver);
     return new Object[][] { { createPluginAndInitPropertyResolver("1-SNAPSHOT", "1-SNAPSHOT"), true },
         { createPluginAndInitPropertyResolver("1", "1"), false },
         { createPluginAndInitPropertyResolver("1-snapshot", "1-snapshot"), true },
@@ -26,26 +39,16 @@ public class IsSnapshotPluginTest {
         { createPluginAndInitPropertyResolver(null, null), false } };
   }
 
-  private static PomPropertyResolver propertyResolver;
-  private static IsSnapshotPlugin predicate;
-
-  @BeforeClass
-  public static void init() {
-    propertyResolver = Mockito.mock(PomPropertyResolver.class);
-    predicate = new IsSnapshotPlugin(propertyResolver);
-  }
-
-  @Test
-  @UseDataProvider("plugins")
-  public void TestApply(Plugin p, boolean expected) {
-    Assert.assertEquals(expected, predicate.apply(p));
-  }
-
   private static Plugin createPluginAndInitPropertyResolver(String version, String resolverOutput) {
     Mockito.when(propertyResolver.expandPropertyReferences(version)).thenReturn(resolverOutput);
 
     Plugin p = new Plugin();
     p.setVersion(version);
     return p;
+  }
+
+  @Test
+  public void TestApply() {
+    Assert.assertEquals(expected, predicate.apply(p));
   }
 }

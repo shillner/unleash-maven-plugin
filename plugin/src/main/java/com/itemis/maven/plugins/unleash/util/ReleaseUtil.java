@@ -2,15 +2,14 @@ package com.itemis.maven.plugins.unleash.util;
 
 import java.io.File;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.codehaus.plexus.components.interactivity.Prompter;
 import org.codehaus.plexus.components.interactivity.PrompterException;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
 
 /**
  * Provides some utility methods that are necessary to prepare the release process, such as version or tag name
@@ -19,6 +18,7 @@ import com.google.common.base.Preconditions;
  * @author <a href="mailto:stanley.hillner@itemis.de">Stanley Hillner</a>
  * @since 1.0.0
  */
+@SuppressWarnings("ALL")
 public final class ReleaseUtil {
 
   /**
@@ -128,10 +128,10 @@ public final class ReleaseUtil {
    * @param userDefined an optional user-defined path to use as maven home.
    * @return a path to a maven installation or {@code null} if none could be determined.
    */
-  public static File getMavenHome(Optional<String> userDefined) {
+  public static File getMavenHome(java.util.Optional<String> userDefined) {
     String path = null;
-    if (isValidMavenHome(userDefined.orNull())) {
-      path = userDefined.orNull();
+    if (isValidMavenHome(userDefined.orElse(null))) {
+      path = userDefined.orElse(null);
     } else {
       String sysProp = System.getProperty("maven.home");
       if (isValidMavenHome(sysProp)) {
