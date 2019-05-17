@@ -7,13 +7,21 @@ checkPluginDependencies
 prepareVersions
 checkAether
 setReleaseVersionsTycho
-addSpyPlugin
-buildReleaseArtifacts
-removeSpyPlugin
+# addSpyPlugin - replaced by save-artifacts maven goal 
+# buildReleaseArtifacts
+mvn[1] {
+	data=clean verify bayern.meyer.maven.plugins:deferring-maven-plugin:0.0.2:save-artifacts
+	rollbackData=
+}
+# removeSpyPlugin - not needed, as not explicitly added 
 checkForScmChanges
 tagScm
-detectReleaseArtifacts
+# detectReleaseArtifacts - replaced by load-artifacts and load-version goal
 setDevVersionTycho
 serializeMetadata
-installArtifacts
-deployArtifacts
+# installArtifacts - replaced by install:install goal
+# deployArtifacts - replaced by deploy:deploy goal
+mvn[2] {
+	data=bayern.meyer.maven.plugins:deferring-maven-plugin:0.0.2:load-artifacts bayern.meyer.maven.plugins:deferring-maven-plugin:0.0.2:load-version install:install deploy:deploy
+	rollbackData=
+}
