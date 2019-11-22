@@ -3,6 +3,7 @@ package com.itemis.maven.plugins.unleash.util.scm;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,8 +37,11 @@ public class ScmPomVersionsMergeClientTest {
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     try {
       mergeClient.merge(local, remote, base, os);
-      String result = os.toString();
-      Assert.assertEquals(new String(ByteStreams.toByteArray(expected)), result);
+      String resultPOM = os.toString(StandardCharsets.UTF_8.name());
+      String expectedPOM = new String(ByteStreams.toByteArray(expected), StandardCharsets.UTF_8);
+
+      // replacement of whitespaces is performed in order to avoid problems with line endings on different systems
+      Assert.assertEquals(expectedPOM.replaceAll("\\s+", ""), resultPOM.replaceAll("\\s+", ""));
     } finally {
       Closeables.closeQuietly(local);
       Closeables.closeQuietly(remote);

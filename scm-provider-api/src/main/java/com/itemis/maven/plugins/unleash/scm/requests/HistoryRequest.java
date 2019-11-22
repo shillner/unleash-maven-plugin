@@ -1,12 +1,12 @@
 package com.itemis.maven.plugins.unleash.scm.requests;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Sets;
 
 /**
  * A Request for the creation of a commit history for the current repository (working dir) or a remote one. Note that
@@ -33,10 +33,11 @@ public class HistoryRequest {
   private String startTag;
   private String endTag;
   private Set<String> messageFilters;
+  private Set<String> pathFilters;
 
   private HistoryRequest() {
-    this.messageFilters = Sets.newHashSet();
-    // use builder!
+    this.messageFilters = new HashSet<>();
+    this.pathFilters = new HashSet<>();
   }
 
   public static Builder builder() {
@@ -69,6 +70,10 @@ public class HistoryRequest {
 
   public Set<String> getMessageFilters() {
     return Collections.unmodifiableSet(this.messageFilters);
+  }
+
+  public Set<String> getPathFilters() {
+    return Collections.unmodifiableSet(this.pathFilters);
   }
 
   /**
@@ -168,8 +173,22 @@ public class HistoryRequest {
      * @return the builder itself.
      */
     public Builder addMessageFilter(String filterExpression) {
-      if (StringUtils.isNotEmpty(filterExpression)) {
+      if (StringUtils.isNotBlank(filterExpression)) {
         this.request.messageFilters.add(filterExpression);
+      }
+      return this;
+    }
+
+    /**
+     * Adds the specified relative file path to the list of path filters of the request. The history will only be
+     * retrieved for the files specified by the path filters.
+     *
+     * @param path a file path which is relative to the repository.
+     * @return the builder itself.
+     */
+    public Builder addPathFilter(String path) {
+      if (StringUtils.isNotBlank(path)) {
+        this.request.pathFilters.add(path.replace("\\", "/"));
       }
       return this;
     }
