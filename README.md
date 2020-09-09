@@ -1,8 +1,13 @@
-Unleash Maven Plugin - More Efficient and Reliable Maven Releases
+Unleash Maven Plugin - More Efficient And Reliable Maven Releases
 =================================================================
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.itemis.maven.plugins/unleash-maven-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.itemis.maven.plugins/unleash-maven-plugin)
 
 The Unleash Maven Plugin provides functionality to release Maven projects as it is possible with the Maven Release Plugin. While the idea and the core feature (building release artifacts) is the similar, there are many serious differences that make the unleash plugin much more reliable and efficient than the official release plugin. It is furthermore highly extensible and adaptable to your specific requirements when building releases.
+
+
+No Longer Under Development
+---------------------------
+I am sorry to announce that this plugin is no longer under active development. Due to lack of time and personal needs, I have decided to finally stop further development.
 
 
 The Background
