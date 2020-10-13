@@ -24,7 +24,7 @@
     <version.cdi-plugin-utils>3.4.0</version.cdi-plugin-utils>
     <version.commons-lang3>3.4</version.commons-lang3>
     <version.guava>23.0</version.guava>
-    <version.junit>4.12</version.junit>
+    <version.junit>4.13.1</version.junit>
     <version.junit-dataprovider>1.10.3</version.junit-dataprovider>
     <version.maven>3.3.9</version.maven>
     <version.maven-invoker>2.2</version.maven-invoker>
